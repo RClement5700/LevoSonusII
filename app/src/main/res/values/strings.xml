@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">LevoSonusII</string>
     <string name="title_activity_main">MainActivity</string>
+
+    <!-- Login Screen -->
+    <string name="btn_text_login">Login</string>
+    <string name="label_employee_id">Employee Id</string>
+    <string name="label_equipment_id">Equipment Id</string>
 </resources>

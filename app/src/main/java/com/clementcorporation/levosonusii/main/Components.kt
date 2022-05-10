@@ -4,15 +4,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clementcorporation.levosonusii.R
@@ -42,13 +48,14 @@ fun LevoSonusLogo(size: Dp = 96.dp) {
 }
 
 @Composable
-fun LSTextField(value: String = "", label: String = "", onValueChange: (String) -> Unit = {}) {
+fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+                imeAction: ImeAction = ImeAction.Next, onAction: KeyboardActions = KeyboardActions.Default,
+                onValueChange: (String) -> Unit = {}
+) {
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth().padding(Constants.PADDING),
-        value = value,
-        onValueChange = {
-            onValueChange
-        },
+        value = userInput.value,
+        onValueChange = onValueChange,
         label = {
             Text(
                 text = label,
@@ -62,6 +69,8 @@ fun LSTextField(value: String = "", label: String = "", onValueChange: (String) 
         ),
         shape = RoundedCornerShape(Constants.CURVATURE),
         singleLine = true,
-        maxLines = 1
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction),
+        keyboardActions = onAction
     )
 }
