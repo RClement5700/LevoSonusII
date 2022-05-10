@@ -4,5 +4,7 @@ import androidx.compose.ui.unit.dp
 
 
 object Constants {
-    val DEFAULT_PADDING = 8.dp
+    val ELEVATION = 8.dp
+    val CURVATURE = 16.dp
+    val PADDING = 8.dp
 }

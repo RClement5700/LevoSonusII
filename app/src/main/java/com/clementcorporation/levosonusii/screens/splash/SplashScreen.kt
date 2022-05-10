@@ -3,7 +3,6 @@ package com.clementcorporation.levosonusii.screens.splash
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +20,15 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
+import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
-private val ELEVATION = 8.dp
-private val CURVATURE = 16.dp
-private val PADDING = 8.dp
+
 @Composable
 fun SplashScreen(navController: NavController) {
     Surface(
@@ -51,26 +53,20 @@ fun SplashScreen(navController: NavController) {
             )
             delay(2000L)
 
-//            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
-//                navController.navigate(ReaderScreens.LoginScreen.name)
-//            }else {
-//                navController.navigate(ReaderScreens.ReaderHomeScreen.name)
+            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
+                navController.navigate(LevoSonusScreens.LoginScreen.name)
+            } //else {
+//                navController.navigate(LevoSonusScreens.HomeScreen.name)
 //            }
 
-
         }
-
         Card(
             modifier = Modifier
                 .scale(scale.value)
                 .padding(start = 150.dp, end = 150.dp),
             shape = CircleShape,
             elevation = ELEVATION,
-            backgroundColor = Color.LightGray,
-            border = BorderStroke(
-                width = 2.dp,
-                color = Color.LightGray
-            )
+            backgroundColor = Color.White.copy(0.5f)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
