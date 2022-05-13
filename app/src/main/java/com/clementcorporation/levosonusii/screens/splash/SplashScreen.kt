@@ -63,7 +63,7 @@ fun SplashScreen(navController: NavController) {
         Card(
             modifier = Modifier
                 .scale(scale.value)
-                .padding(start = 150.dp, end = 150.dp),
+                .padding(top = 175.dp, bottom = 175.dp, start = 16.dp, end = 16.dp),
             shape = CircleShape,
             elevation = ELEVATION,
             backgroundColor = Color.White.copy(0.5f)
