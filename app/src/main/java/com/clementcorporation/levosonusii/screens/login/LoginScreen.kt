@@ -90,11 +90,6 @@ fun LoginScreen(navController: NavController) {
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
-                    viewModel.createUserWithEmailAndPassword(navController.context, email = employeeId.value.trim(),
-                        password.value.trim(), home = {
-                            navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        }
-                    )
                 }) {
                 if(viewModel.loading.value == true) {
                     CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)

@@ -2,8 +2,10 @@ package com.clementcorporation.levosonusii.screens.register
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -23,7 +25,6 @@ import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.login.*
 
 private const val LOGO_SIZE = 50
 private const val REGISTER_BTN_HEIGHT = 50
@@ -32,7 +33,7 @@ private val ENABLED_BUTTON_COLOR = Color(0xFF32527B)
 
 @Composable
 fun RegisterScreen(navController: NavController) {
-    val viewModel: LoginViewModel = viewModel()
+    val viewModel: RegisterViewModel = viewModel()
     val email = remember{
         mutableStateOf("")
     }
@@ -57,7 +58,9 @@ fun RegisterScreen(navController: NavController) {
         shape = RoundedCornerShape(Constants.CURVATURE)
     ) {
         Column(
-            modifier = Modifier.padding(top = 50.dp),
+            modifier = Modifier
+                .padding(top = 50.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -68,7 +71,7 @@ fun RegisterScreen(navController: NavController) {
                 }
             ) {
                 email.value = it
-                isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty() 
+                isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
                         && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
             }
             LSTextField(
@@ -155,8 +158,9 @@ fun RegisterScreen(navController: NavController) {
             }
         }
     }
+
 }
-private fun createUser(viewModel: LoginViewModel, navController: NavController, email: MutableState<String>,
+private fun createUser(viewModel: RegisterViewModel, navController: NavController, email: MutableState<String>,
 password: MutableState<String>, home: () -> Unit) {
     viewModel.createUserWithEmailAndPassword(
         context = navController.context,
