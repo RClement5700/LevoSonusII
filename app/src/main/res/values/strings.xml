@@ -4,6 +4,10 @@
 
     <!-- Login Screen -->
     <string name="btn_text_login">Login</string>
+    <string name="btn_text_register">Register</string>
+    <string name="label_first_name">First Name</string>
+    <string name="label_last_name">Last Name</string>
+    <string name="label_email_address">Email Address</string>
     <string name="label_employee_id">Employee Id</string>
-    <string name="label_equipment_id">Equipment Id</string>
+    <string name="label_password">Password</string>
 </resources>

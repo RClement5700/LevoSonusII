@@ -48,7 +48,7 @@ fun LevoSonusLogo(size: Dp = 96.dp) {
 }
 
 @Composable
-fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
                 imeAction: ImeAction = ImeAction.Next, onAction: KeyboardActions = KeyboardActions.Default,
                 onValueChange: (String) -> Unit = {}
 ) {

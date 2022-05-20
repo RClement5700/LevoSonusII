@@ -53,12 +53,12 @@ fun SplashScreen(navController: NavController) {
             )
             delay(2000L)
 
-            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
-                navController.navigate(LevoSonusScreens.LoginScreen.name)
-            } //else {
+//            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
+//                navController.navigate(LevoSonusScreens.LoginScreen.name)
+//            } else {
 //                navController.navigate(LevoSonusScreens.HomeScreen.name)
 //            }
-
+            navController.navigate(LevoSonusScreens.LoginScreen.name)
         }
         Card(
             modifier = Modifier

@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.clementcorporation.levosonusii.screens.home.HomeScreen
 import com.clementcorporation.levosonusii.screens.login.LoginScreen
+import com.clementcorporation.levosonusii.screens.register.RegisterScreen
 import com.clementcorporation.levosonusii.screens.splash.SplashScreen
 
 @Composable
@@ -18,8 +20,10 @@ fun LevoSonusNavigation() {
             LoginScreen(navController)
         }
         composable(LevoSonusScreens.RegisterScreen.name){
+            RegisterScreen(navController = navController)
         }
         composable(LevoSonusScreens.HomeScreen.name){
+            HomeScreen()
         }
     }
 }
