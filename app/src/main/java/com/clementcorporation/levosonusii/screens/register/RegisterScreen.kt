@@ -102,7 +102,7 @@ fun RegisterScreen(navController: NavController) {
                 label = stringResource(id = R.string.label_password),
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
-                    createUser(viewModel, navController, email, password) {
+                    createUser(viewModel, navController, email, password, firstName, lastName) {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }
@@ -123,7 +123,7 @@ fun RegisterScreen(navController: NavController) {
                     disabledBackgroundColor = Color.LightGray
                 ),
                 onClick = {
-                    createUser(viewModel, navController, email, password) {
+                    createUser(viewModel, navController, email, password, firstName, lastName) {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }) {
@@ -162,11 +162,13 @@ fun RegisterScreen(navController: NavController) {
 
 }
 private fun createUser(viewModel: RegisterViewModel, navController: NavController, email: MutableState<String>,
-password: MutableState<String>, home: () -> Unit) {
+password: MutableState<String>, firstName: MutableState<String>, lastName: MutableState<String>, home: () -> Unit) {
     viewModel.createUserWithEmailAndPassword(
         context = navController.context,
         email = email.value,
         password = password.value,
+        firstName = firstName.value,
+        lastName = lastName.value,
         home = {
             navController.navigate(LevoSonusScreens.HomeScreen.name)
         }

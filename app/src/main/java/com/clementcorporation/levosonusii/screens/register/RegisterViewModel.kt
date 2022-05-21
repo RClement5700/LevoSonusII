@@ -17,7 +17,8 @@ class RegisterViewModel: ViewModel() {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
-    fun createUserWithEmailAndPassword(context: Context, email: String, password: String, home: () -> Unit = {}) {
+    fun createUserWithEmailAndPassword(context: Context, email: String, password: String, firstName: String,
+                                       lastName: String, home: () -> Unit = {}) {
         if (_loading.value == false) {
             _loading.value = true
             try {
@@ -26,7 +27,7 @@ class RegisterViewModel: ViewModel() {
                         if (task.isSuccessful) {
                             try {
                                 task.result?.user?.email?.let {
-                                    createUser(emailAddress = it)
+                                    createUser(emailAddress = it, firstName = firstName.trim(), lastName = lastName.trim())
                                 }
                                 home()
                             } catch(e: Exception) {
@@ -44,20 +45,14 @@ class RegisterViewModel: ViewModel() {
         }
     }
 
-    private fun createUser(emailAddress: String) {
+    private fun createUser(emailAddress: String, firstName: String, lastName: String) {
         val userId = auth.currentUser?.uid
         val lsUser = LevoSonusUser(
             userId = userId.toString(),
-            emailAddress = emailAddress
+            emailAddress = emailAddress,
+            name = "$firstName $lastName",
         ).toMap()
-        FirebaseFirestore.getInstance().collection("users").document(
-            (0..10000).random().toString()
-        ).get().isSuccessful
-
-
-
-
-
-//            .add(lsUser)
+        val employeeId = (0..10000).random().toString()
+        FirebaseFirestore.getInstance().collection("users").document(employeeId).set(lsUser)
     }
 }

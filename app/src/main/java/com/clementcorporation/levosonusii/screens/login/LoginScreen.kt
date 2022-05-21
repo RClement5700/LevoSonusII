@@ -8,7 +8,6 @@ import androidx.compose.material.*
 import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -68,7 +67,9 @@ fun LoginScreen(navController: NavController) {
                 label = stringResource(id = R.string.label_password),
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
-                    navController.navigate(LevoSonusScreens.HomeScreen.name)
+                    viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                    })
                 }
             ) {
                 password.value = it
