@@ -21,26 +21,16 @@ class LoginViewModel: ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                /*
-                    TODO: -get email from Firebase based on corresponding employee Id
-                          -update navController once sign in is completed
-                 */
-                email = FirebaseFirestore.getInstance().collection("users")
-                    .document(userId).get().result?.getString("emailAddress")
-                println("Email: $email")
-            } catch (e: Exception) {
-                e.localizedMessage?.let {
-                    Log.d("Sign In: ", it)
-                }
-            }
-        }.invokeOnCompletion { throwable ->
-            try {
-                email?.let {
-                    auth.signInWithEmailAndPassword(it.trim(), password.trim()).addOnCompleteListener{
-                            task -> Log.d("Sign In: ", "SUCCESS")
-                        home()
+                FirebaseFirestore.getInstance().collection("users")
+                    .document(userId).get().addOnCompleteListener { document ->
+                        email = document.result?.getString("emailAddress")
+                        email?.let {
+                            auth.signInWithEmailAndPassword(it.trim(), password.trim()).addOnCompleteListener{
+                                task -> Log.d("Sign In: ", "SUCCESS")
+                            home()
+                            }
+                        }
                     }
-                }
             } catch (e: Exception) {
                 e.localizedMessage?.let {
                     Log.d("Sign In: ", it)
