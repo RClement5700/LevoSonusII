@@ -21,15 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.main.Constants
+import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
+import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
+import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
+import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-
-private const val LOGO_SIZE = 50
-private const val REGISTER_BTN_HEIGHT = 50
-private const val REGISTER_BTN_WIDTH = 200
-private val ENABLED_BUTTON_COLOR = Color(0xFF32527B)
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -52,10 +53,10 @@ fun RegisterScreen(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(Constants.PADDING),
-        elevation = Constants.ELEVATION,
+            .padding(PADDING.dp),
+        elevation = ELEVATION.dp,
         backgroundColor = Color.White,
-        shape = RoundedCornerShape(Constants.CURVATURE)
+        shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Column(
             modifier = Modifier
@@ -112,10 +113,10 @@ fun RegisterScreen(navController: NavController) {
             }
             Button(
                 modifier = Modifier
-                    .height(REGISTER_BTN_HEIGHT.dp)
-                    .width(REGISTER_BTN_WIDTH.dp),
-                shape = RoundedCornerShape(Constants.CURVATURE),
-                elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION),
+                    .height(BTN_HEIGHT.dp)
+                    .width(BTN_WIDTH.dp),
+                shape = RoundedCornerShape(CURVATURE.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
                 enabled = isRegisterButtonEnabled.value,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = ENABLED_BUTTON_COLOR,
@@ -142,8 +143,8 @@ fun RegisterScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                val prefaceText = "Already Signed Up?"
-                val linkedText = "Login"
+                val prefaceText = stringResource(id = R.string.register_navigation_pretext)
+                val linkedText = stringResource(id = R.string.register_navigation_link_text)
                 Text(text = prefaceText, color = Color.Gray)
                 Text(
                     text = linkedText,

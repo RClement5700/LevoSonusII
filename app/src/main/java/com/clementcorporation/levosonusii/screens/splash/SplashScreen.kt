@@ -34,10 +34,10 @@ fun SplashScreen(navController: NavController) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(PADDING),
-        elevation = ELEVATION,
+            .padding(PADDING.dp),
+        elevation = ELEVATION.dp,
         color = Color.White,
-        shape = RoundedCornerShape(CURVATURE)
+        shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         val scale = remember {
             Animatable(0f)
@@ -65,7 +65,7 @@ fun SplashScreen(navController: NavController) {
                 .scale(scale.value)
                 .padding(top = 175.dp, bottom = 175.dp, start = 16.dp, end = 16.dp),
             shape = CircleShape,
-            elevation = ELEVATION,
+            elevation = ELEVATION.dp,
             backgroundColor = Color.White.copy(0.5f)
         ) {
             Column(

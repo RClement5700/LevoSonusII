@@ -18,17 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
+import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-
-private const val LOGO_SIZE = 50
-private const val LOGIN_BTN_HEIGHT = 50
-private const val LOGIN_BTN_WIDTH = 200
-private val ENABLED_BUTTON_COLOR = Color(0xFF32527B)
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -45,10 +44,10 @@ fun LoginScreen(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(PADDING),
-        elevation = ELEVATION,
+            .padding(PADDING.dp),
+        elevation = ELEVATION.dp,
         backgroundColor = Color.White,
-        shape = RoundedCornerShape(CURVATURE)
+        shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Column(
             modifier = Modifier.padding(top = 50.dp),
@@ -77,10 +76,10 @@ fun LoginScreen(navController: NavController) {
             }
             Button(
                 modifier = Modifier
-                    .height(LOGIN_BTN_HEIGHT.dp)
-                    .width(LOGIN_BTN_WIDTH.dp),
+                    .height(BTN_HEIGHT.dp)
+                    .width(BTN_WIDTH.dp),
                 shape = RoundedCornerShape(CURVATURE),
-                elevation = elevation(defaultElevation = ELEVATION),
+                elevation = elevation(defaultElevation = ELEVATION.dp),
                 enabled = isLoginButtonEnabled.value,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = ENABLED_BUTTON_COLOR,
@@ -107,8 +106,8 @@ fun LoginScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                val prefaceText = "New User?"
-                val linkedText = "Sign Up"
+                val prefaceText = stringResource(id = R.string.login_navigation_pretext)
+                val linkedText = stringResource(id = R.string.login_navigation_link_text)
                 Text(text = prefaceText, color = Color.Gray)
                 Text(
                     text = linkedText,

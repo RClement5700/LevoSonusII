@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.PADDING
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
@@ -53,7 +55,7 @@ fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: Str
                 onValueChange: (String) -> Unit = {}
 ) {
     OutlinedTextField(
-        modifier = Modifier.fillMaxWidth().padding(Constants.PADDING),
+        modifier = Modifier.fillMaxWidth().padding(PADDING.dp),
         value = userInput.value,
         onValueChange = onValueChange,
         label = {
@@ -67,7 +69,7 @@ fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: Str
             focusedBorderColor = Color.Blue,
             textColor = Color.Black
         ),
-        shape = RoundedCornerShape(Constants.CURVATURE),
+        shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
         maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction),
