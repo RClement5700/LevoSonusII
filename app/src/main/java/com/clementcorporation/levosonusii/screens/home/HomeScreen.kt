@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.LSFAB
@@ -29,15 +30,18 @@ fun HomeScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .padding(PADDING.dp),
+        elevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Scaffold(
-            backgroundColor = Color.LightGray,
+            backgroundColor = Color.White,
             topBar = {
                 LSAppBar(employeeName = viewModel.getDataStore().data.collectAsState(initial =
-                LSUserInfo()).value.name
-                )
+                    LSUserInfo()).value.name
+                ) {
+                    //open menu -> Account, Settings, Sign Out
+                }
             },
             floatingActionButton = {
                 LSFAB()

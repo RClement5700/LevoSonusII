@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -56,30 +57,35 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
 
 @Composable
 fun LSAppBar(employeeName: String, onClick: () -> Unit = {}) {
-    TopAppBar(
-        elevation = ELEVATION.dp,
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(PADDING.dp)
+            .background(shape = RoundedCornerShape(CURVATURE.dp), color = Color.White)
             .clickable {
                 onClick
-            }
-        ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(PADDING.dp)
-                .background(shape = RoundedCornerShape(CURVATURE.dp), color = Color.White),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            LevoSonusLogo(25.dp, showText = false)
-            Text(
-                modifier = Modifier.padding(PADDING.dp),
-                text = employeeName,
-                color = Color.Gray
-            )
-        }
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End
+    ) {
+        LSProfileIcon(modifier = Modifier.background(color = Color.LightGray, shape = CircleShape))
+        Text(
+            modifier = Modifier.padding(PADDING.dp),
+            text = employeeName,
+            color = Color.Gray,
+            fontWeight = FontWeight.Bold
+        )
     }
+}
+
+@Composable
+fun LSProfileIcon(modifier: Modifier = Modifier) {
+    Image(
+        modifier = modifier,
+        painter = painterResource(id = R.drawable.levosonus_rocket_logo), //replace with user uploaded profile pic
+        contentDescription = "Profile Picture",
+        contentScale = ContentScale.Crop
+    )
 }
 
 @Composable
@@ -87,7 +93,7 @@ fun LSFAB() {
     FloatingActionButton(
         onClick = { /*TODO - show VoiceInputWindow*/ },
         shape = CircleShape,
-        backgroundColor = Color.White,
+        backgroundColor = Constants.ENABLED_BUTTON_COLOR,
         elevation = FloatingActionButtonDefaults.elevation(),
         ) {
         LevoSonusLogo(50.dp, showText = false)
