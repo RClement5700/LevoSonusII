@@ -58,6 +58,7 @@ fun SplashScreen(navController: NavController) {
 //            } else {
 //                navController.navigate(LevoSonusScreens.HomeScreen.name)
 //            }
+            FirebaseAuth.getInstance().signOut()
             navController.navigate(LevoSonusScreens.LoginScreen.name)
         }
         Card(

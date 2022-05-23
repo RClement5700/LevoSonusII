@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
@@ -34,7 +34,7 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 
 @Composable
 fun RegisterScreen(navController: NavController) {
-    val viewModel: RegisterViewModel = viewModel()
+    val viewModel: RegisterViewModel = hiltViewModel()
     val email = remember{
         mutableStateOf("")
     }
@@ -103,7 +103,7 @@ fun RegisterScreen(navController: NavController) {
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
                     }
                 }
             ) {
@@ -124,7 +124,7 @@ fun RegisterScreen(navController: NavController) {
                 ),
                 onClick = {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
                     }
                 }) {
                 if(viewModel.loading.value == true) {
@@ -161,16 +161,14 @@ fun RegisterScreen(navController: NavController) {
     }
 
 }
+
 private fun createUser(viewModel: RegisterViewModel, navController: NavController, email: MutableState<String>,
-password: MutableState<String>, firstName: MutableState<String>, lastName: MutableState<String>, home: () -> Unit) {
+password: MutableState<String>, firstName: MutableState<String>, lastName: MutableState<String>, goToNextScreen: () -> Unit) {
     viewModel.createUserWithEmailAndPassword(
         context = navController.context,
         email = email.value,
         password = password.value,
         firstName = firstName.value,
         lastName = lastName.value,
-        home = {
-            navController.navigate(LevoSonusScreens.HomeScreen.name)
-        }
     )
 }

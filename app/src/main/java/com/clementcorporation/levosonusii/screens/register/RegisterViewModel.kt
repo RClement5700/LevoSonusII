@@ -3,22 +3,32 @@ package com.clementcorporation.levosonusii.screens.register
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.main.Constants.EMPLOYEE_ID
+import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.LevoSonusUser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RegisterViewModel: ViewModel() {
+@HiltViewModel
+class RegisterViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>): ViewModel() {
+
     private val auth: FirebaseAuth = Firebase.auth
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
     fun createUserWithEmailAndPassword(context: Context, email: String, password: String, firstName: String,
-                                       lastName: String, home: () -> Unit = {}) {
+                                       lastName: String, goToNextScreen: () -> Unit = {}) {
         if (_loading.value == false) {
             _loading.value = true
             try {
@@ -29,7 +39,7 @@ class RegisterViewModel: ViewModel() {
                                 task.result?.user?.email?.let {
                                     createUser(emailAddress = it, firstName = firstName.trim(), lastName = lastName.trim())
                                 }
-                                home()
+                                goToNextScreen()
                             } catch(e: Exception) {
                                 Toast.makeText(context, "Cannot Create User", Toast.LENGTH_SHORT).show()
                             }
@@ -52,7 +62,12 @@ class RegisterViewModel: ViewModel() {
             emailAddress = emailAddress,
             name = "$firstName $lastName",
         ).toMap()
-        val employeeId = (0..10000).random().toString()
+        val employeeId = (999..10000).random().toString()
+        viewModelScope.launch {
+            sessionDataStore.updateData { userInfo ->
+                userInfo.copy(employeeId = employeeId)
+            }
+        }
         FirebaseFirestore.getInstance().collection("users").document(employeeId).set(lsUser)
     }
 }

@@ -4,6 +4,7 @@ enum class LevoSonusScreens {
     SplashScreen,
     LoginScreen,
     RegisterScreen,
+    CreateVoiceProfileScreen,
     HomeScreen
     /*
     Equipment,

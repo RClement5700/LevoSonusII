@@ -6,7 +6,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
 import androidx.compose.material.ButtonDefaults.elevation
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
@@ -30,7 +32,7 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    val viewModel: LoginViewModel = viewModel()
+    val viewModel: LoginViewModel = hiltViewModel()
     val employeeId = remember{
         mutableStateOf("")
     }
@@ -68,7 +70,8 @@ fun LoginScreen(navController: NavController) {
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+//                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
                     })
                 }
             ) {
@@ -88,7 +91,8 @@ fun LoginScreen(navController: NavController) {
                 ),
                 onClick = {
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+//                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
                     })
                 }) {
                 if(viewModel.loading.value == true) {
