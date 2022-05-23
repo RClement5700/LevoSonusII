@@ -70,8 +70,7 @@ fun LoginScreen(navController: NavController) {
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
-//                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
                 }
             ) {
@@ -91,8 +90,7 @@ fun LoginScreen(navController: NavController) {
                 ),
                 onClick = {
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
-//                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
                 }) {
                 if(viewModel.loading.value == true) {

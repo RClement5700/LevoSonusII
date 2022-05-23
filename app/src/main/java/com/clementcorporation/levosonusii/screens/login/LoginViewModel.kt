@@ -2,13 +2,10 @@ package com.clementcorporation.levosonusii.screens.login
 
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.main.Constants.EMPLOYEE_ID
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -25,19 +22,27 @@ class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore
     val loading: LiveData<Boolean> = _loading
 
     fun signInWithEmailAndPassword(userId: String, password: String, home: () -> Unit = {}) {
+        var name: String? = ""
         var email: String? = ""
         viewModelScope.launch {
             _loading.value = true
             try {
                 FirebaseFirestore.getInstance().collection("users")
                     .document(userId).get().addOnCompleteListener { document ->
+                        name = document.result?.getString("name")
                         email = document.result?.getString("emailAddress")
-                        email?.let {
-                            auth.signInWithEmailAndPassword(it.trim(), password.trim()).addOnCompleteListener{ task ->
+                        email?.let { emailAdd ->
+                            auth.signInWithEmailAndPassword(emailAdd.trim(), password.trim()).addOnCompleteListener{ task ->
                                 Log.d("Sign In: ", "SUCCESS")
-                                viewModelScope.launch {
-                                    sessionDataStore.updateData { userInfo ->
-                                        userInfo.copy(employeeId = userId)
+                                name?.let {
+                                    viewModelScope.launch {
+                                        sessionDataStore.updateData { userInfo ->
+                                            userInfo.copy(
+                                                employeeId = userId,
+                                                emailAddress = emailAdd,
+                                                name = it
+                                            )
+                                        }
                                     }
                                 }
                                 home()

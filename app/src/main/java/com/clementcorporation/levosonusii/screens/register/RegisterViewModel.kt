@@ -4,12 +4,10 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.main.Constants.EMPLOYEE_ID
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.LevoSonusUser
 import com.google.firebase.auth.FirebaseAuth
@@ -65,7 +63,11 @@ class RegisterViewModel @Inject constructor(private val sessionDataStore: DataSt
         val employeeId = (999..10000).random().toString()
         viewModelScope.launch {
             sessionDataStore.updateData { userInfo ->
-                userInfo.copy(employeeId = employeeId)
+                userInfo.copy(
+                    employeeId = employeeId,
+                    name = "$firstName $lastName",
+                    emailAddress = emailAddress
+                )
             }
         }
         FirebaseFirestore.getInstance().collection("users").document(employeeId).set(lsUser)

@@ -1,6 +1,8 @@
 package com.clementcorporation.levosonusii.main
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,11 +25,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
-fun LevoSonusLogo(size: Dp = 96.dp) {
+fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
     Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Card(
             modifier = Modifier.size(size),
@@ -40,14 +43,59 @@ fun LevoSonusLogo(size: Dp = 96.dp) {
                 contentScale = ContentScale.Crop
             )
         }
-        Text(
-            text = stringResource(id = R.string.app_name),
-            style = MaterialTheme.typography.h6,
-            fontStyle = FontStyle.Italic,
-            color = Color.Gray
-        )
+        if (showText) {
+            Text(
+                text = stringResource(id = R.string.app_name),
+                style = MaterialTheme.typography.h6,
+                fontStyle = FontStyle.Italic,
+                color = Color.Gray
+            )
+        }
     }
 }
+
+@Composable
+fun LSAppBar(employeeName: String, onClick: () -> Unit = {}) {
+    TopAppBar(
+        elevation = ELEVATION.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick
+            }
+        ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(PADDING.dp)
+                .background(shape = RoundedCornerShape(CURVATURE.dp), color = Color.White),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            LevoSonusLogo(25.dp, showText = false)
+            Text(
+                modifier = Modifier.padding(PADDING.dp),
+                text = employeeName,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+@Composable
+fun LSFAB() {
+    FloatingActionButton(
+        onClick = { /*TODO - show VoiceInputWindow*/ },
+        shape = CircleShape,
+        backgroundColor = Color.White,
+        elevation = FloatingActionButtonDefaults.elevation(),
+        ) {
+        LevoSonusLogo(50.dp, showText = false)
+    }
+}
+
+
+
 
 @Composable
 fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
@@ -55,7 +103,9 @@ fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: Str
                 onValueChange: (String) -> Unit = {}
 ) {
     OutlinedTextField(
-        modifier = Modifier.fillMaxWidth().padding(PADDING.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp),
         value = userInput.value,
         onValueChange = onValueChange,
         label = {

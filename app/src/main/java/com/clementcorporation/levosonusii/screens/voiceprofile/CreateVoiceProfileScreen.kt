@@ -34,33 +34,38 @@ import com.google.firebase.firestore.FirebaseFirestore
 @Composable
 fun CreateVoiceProfileScreen(navController: NavController) {
     val viewModel: CreateVoiceProfileViewModel = hiltViewModel()
-    Column(
+
+    Card(
+        elevation = Constants.ELEVATION.dp,
+        shape = RoundedCornerShape(Constants.CURVATURE.dp),
+        backgroundColor = Color.White,
         modifier = Modifier
-            .background(
-                color = Color.White,
-                shape = RoundedCornerShape(Constants.CURVATURE.dp))
             .padding(PADDING.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize(.5f)
     ) {
-        Card(
-            elevation = Constants.ELEVATION.dp,
-            shape = RoundedCornerShape(Constants.CURVATURE.dp),
-            backgroundColor = Color.White,
+        Column(
             modifier = Modifier
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(Constants.CURVATURE.dp))
                 .padding(PADDING.dp)
-                .fillMaxSize(.5f)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 modifier = Modifier.padding(PADDING.dp),
                 text = "Employee ID: ${viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.employeeId}",
                 color = Color.Gray
             )
+            Text(
+                modifier = Modifier.padding(PADDING.dp),
+                text = "Email Address: ${viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.emailAddress}",
+                color = Color.Gray
+            )
 //            FirebaseFirestore.getInstance().collection("users").document(
 //                viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.employeeId
 //            )
-
         }
     }
 }

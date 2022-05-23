@@ -28,7 +28,7 @@ fun LevoSonusNavigation() {
             CreateVoiceProfileScreen(navController = navController)
         }
         composable(LevoSonusScreens.HomeScreen.name){
-            HomeScreen()
+            HomeScreen(navController = navController)
         }
     }
 }
