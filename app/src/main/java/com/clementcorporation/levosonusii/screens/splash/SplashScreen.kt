@@ -26,6 +26,8 @@ import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
 
@@ -52,7 +54,6 @@ fun SplashScreen(navController: NavController) {
                     })
             )
             delay(2000L)
-
             if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
                 navController.navigate(LevoSonusScreens.LoginScreen.name)
             } else {

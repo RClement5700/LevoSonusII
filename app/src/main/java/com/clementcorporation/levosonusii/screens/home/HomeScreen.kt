@@ -4,12 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.FabPosition
-import androidx.compose.material.FloatingActionButtonDefaults
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -21,6 +17,8 @@ import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.LSFAB
 import com.clementcorporation.levosonusii.model.LSUserInfo
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -37,17 +35,14 @@ fun HomeScreen(navController: NavController) {
         Scaffold(
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(employeeName = viewModel.getDataStore().data.collectAsState(initial =
-                    LSUserInfo()).value.name
-                ) {
-                    //open menu -> Account, Settings, Sign Out
-                }
+                LSAppBar(employeeName = viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.name)
             },
             floatingActionButton = {
                 LSFAB()
             },
             floatingActionButtonPosition = FabPosition.End,
         ) {
+
         }
     }
     /*
