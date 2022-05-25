@@ -42,6 +42,9 @@ fun LoginScreen(navController: NavController) {
     val isLoginButtonEnabled = remember{
         mutableStateOf(false)
     }
+    val showProgressBar = remember{
+        mutableStateOf(false)
+    }
     Card(
         modifier = Modifier
             .fillMaxSize()
@@ -89,12 +92,13 @@ fun LoginScreen(navController: NavController) {
                     disabledBackgroundColor = Color.LightGray
                 ),
                 onClick = {
+                    showProgressBar.value = true
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
                 }) {
-                if(viewModel.loading.value == true) {
-                    CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
+                if(showProgressBar.value) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
                 } else {
                     Text(
                         text = stringResource(id = R.string.btn_text_login),

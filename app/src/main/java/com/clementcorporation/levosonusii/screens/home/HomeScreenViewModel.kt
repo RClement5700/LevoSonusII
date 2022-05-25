@@ -9,5 +9,5 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>):
     ViewModel() {
-        fun getDataStore() = sessionDataStore
+    fun getDataStore() = sessionDataStore
 }

@@ -18,14 +18,11 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>): ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
-    private val _loading = MutableLiveData(false)
-    val loading: LiveData<Boolean> = _loading
 
     fun signInWithEmailAndPassword(userId: String, password: String, home: () -> Unit = {}) {
         var name: String? = ""
         var email: String? = ""
         viewModelScope.launch {
-            _loading.value = true
             try {
                 FirebaseFirestore.getInstance().collection("users")
                     .document(userId).get().addOnCompleteListener { document ->
@@ -55,6 +52,5 @@ class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore
                 }
             }
         }
-        _loading.value = false
     }
 }

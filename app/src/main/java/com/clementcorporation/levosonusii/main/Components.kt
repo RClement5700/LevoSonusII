@@ -26,14 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
@@ -62,9 +60,10 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
 }
 
 @Composable
-fun LSAppBar(employeeName: String, onClickProfilePic: () -> Unit = {}, onClickAlertBtn: () -> Unit = {}
+fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, employeeName: String,
+             onClickProfilePic: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
+             onClickSignOut: () -> Unit = {}
 ) {
-    var expandMenu by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -97,27 +96,28 @@ fun LSAppBar(employeeName: String, onClickProfilePic: () -> Unit = {}, onClickAl
         ) {
             Icon(imageVector = Icons.Default.Notifications, contentDescription = "Menu Button")
         }
-        IconButton(
-            onClick = {
-                expandMenu = true
+        Box(contentAlignment = Alignment.BottomEnd) {
+            IconButton(
+                onClick = {
+                    expandMenu.value = !expandMenu.value
+                }
+            ) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu Button")
             }
-        ) {
-            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu Button")
-        }
-        DropdownMenu(
-            offset = DpOffset(x = 100.dp, y = 0.dp), //x = Alignment.End ?
-            expanded = expandMenu,
-            onDismissRequest = { expandMenu = false }
-        ) {
-            DropdownMenuItem(onClick = { /* Handle refresh! */ }) {
-                Text("Account")
-            }
-            DropdownMenuItem(onClick = { /* Handle settings! */ }) {
-                Text("Settings")
-            }
-            Divider()
-            DropdownMenuItem(onClick = { Firebase.auth.signOut()}) {
-                Text("Sign Out")
+            DropdownMenu(
+                expanded = expandMenu.value,
+                onDismissRequest = { expandMenu.value = false }
+            ) {
+                DropdownMenuItem(onClick = { /* Handle refresh! */ }) {
+                    Text("Account")
+                }
+                DropdownMenuItem(onClick = { /* Handle settings! */ }) {
+                    Text("Settings")
+                }
+                Divider()
+                DropdownMenuItem(onClick = onClickSignOut) {
+                    Text("Sign Out")
+                }
             }
         }
     }
