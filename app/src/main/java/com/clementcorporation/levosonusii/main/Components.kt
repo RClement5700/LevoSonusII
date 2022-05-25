@@ -74,7 +74,7 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
     ) {
         LSProfileIcon(
             modifier = Modifier
-                .size(50.dp)
+                .size(25.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.LightGray, CircleShape)
                 .clickable {
@@ -141,7 +141,7 @@ fun LSFAB() {
         backgroundColor = Constants.ENABLED_BUTTON_COLOR,
         elevation = FloatingActionButtonDefaults.elevation(),
         ) {
-        LevoSonusLogo(50.dp, showText = false)
+        LevoSonusLogo(size = 50.dp, showText = false)
     }
 }
 

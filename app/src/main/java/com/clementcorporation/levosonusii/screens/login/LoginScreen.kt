@@ -72,6 +72,7 @@ fun LoginScreen(navController: NavController) {
                 label = stringResource(id = R.string.label_password),
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
+                    showProgressBar.value = true
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })

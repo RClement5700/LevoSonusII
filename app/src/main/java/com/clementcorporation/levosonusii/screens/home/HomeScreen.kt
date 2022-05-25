@@ -60,22 +60,38 @@ fun HomeScreen(navController: NavController) {
             },
             floatingActionButtonPosition = FabPosition.End,
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (viewModel.showProgressBar.value) CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    color = Constants.ENABLED_BUTTON_COLOR
-                )
-            }
+                Card(
+                    modifier = Modifier.fillMaxSize().padding(PADDING.dp),
+                    shape = RoundedCornerShape(CURVATURE.dp),
+                    backgroundColor = Color.White,
+                    elevation = ELEVATION.dp,
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (viewModel.showProgressBar.value) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(50.dp),
+                                strokeWidth = 2.dp,
+                                color = Constants.ENABLED_BUTTON_COLOR
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                        }
+                    }
+                }
+//            }
         }
     }
+}
     /*
         TODO:
             -select equipment
             -select department
             -load voice profile
      */
-}
