@@ -1,5 +1,6 @@
 package com.clementcorporation.levosonusii.screens.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -19,19 +20,18 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.LSFAB
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val expandMenu = remember {
-        mutableStateOf(false)
-    }
-    val showProgressBar = remember {
-        mutableStateOf(false)
+    BackHandler {
+        viewModel.signOut()
+        viewModel.viewModelScope.launch {
+            delay(2000L)
+            navController.navigate(LevoSonusScreens.LoginScreen.name)
+        }
     }
     Surface(
         modifier = Modifier
@@ -45,11 +45,9 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = expandMenu, employeeName = viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.name,
+                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu, employeeName = viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.name,
                     onClickSignOut = {
-                        Firebase.auth.signOut()
-                        showProgressBar.value = true
-                        expandMenu.value = false
+                        viewModel.signOut()
                         viewModel.viewModelScope.launch {
                             delay(2000L)
                             navController.navigate(LevoSonusScreens.LoginScreen.name)
@@ -67,7 +65,7 @@ fun HomeScreen(navController: NavController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (showProgressBar.value) CircularProgressIndicator(
+                if (viewModel.showProgressBar.value) CircularProgressIndicator(
                     strokeWidth = 2.dp,
                     color = Constants.ENABLED_BUTTON_COLOR
                 )
@@ -76,7 +74,6 @@ fun HomeScreen(navController: NavController) {
     }
     /*
         TODO:
-            -create logout functionality (onBackPressed asks to log out when on HomeScreen)
             -select equipment
             -select department
             -load voice profile

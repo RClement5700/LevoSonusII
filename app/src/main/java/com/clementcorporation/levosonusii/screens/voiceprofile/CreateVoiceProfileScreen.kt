@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 /*
     TODO:
+        -https://stackoverflow.com/questions/68852110/show-custom-alert-dialog-in-jetpack-compose
         -pass employeeId from dataStore into db
         -display employeeId, email & name to user
         -request that they take a screen shot or write it down
