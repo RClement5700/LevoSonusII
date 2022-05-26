@@ -11,8 +11,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,10 +20,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,12 +76,10 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
     ) {
         LSProfileIcon(
             modifier = Modifier
-                .size(25.dp)
+                .size(35.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.LightGray, CircleShape)
-                .clickable {
-                    onClickProfilePic
-                }
+                .clickable(onClick = onClickProfilePic)
         )
         Text(
             modifier = Modifier.padding(PADDING.dp),
@@ -90,11 +90,9 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
         )
         Spacer(Modifier.weight(1f))
         IconButton(
-            onClick = {
-                onClickAlertBtn
-            }
+            onClick = onClickAlertBtn
         ) {
-            Icon(imageVector = Icons.Default.Notifications, contentDescription = "Menu Button")
+            Icon(imageVector = Icons.Default.Notifications, contentDescription = "Alert Button")
         }
         Box(contentAlignment = Alignment.BottomEnd) {
             IconButton(
@@ -145,8 +143,43 @@ fun LSFAB() {
     }
 }
 
-
-
+@Composable
+fun NavTile(title: String, onClick: () -> Unit = {}) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp)
+            .clickable(onClick = onClick),
+        elevation = Constants.ELEVATION.dp,
+        shape = RoundedCornerShape(CURVATURE.dp),
+        backgroundColor = Color.White
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                modifier = Modifier.padding(PADDING.dp),
+                text = title,
+                color = Constants.ENABLED_BUTTON_COLOR,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp,
+                fontStyle = FontStyle.Italic,
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(
+                onClick = onClick
+            ) {
+                Icon(
+                    tint = Constants.ENABLED_BUTTON_COLOR,
+                    imageVector = Icons.Default.ArrowRight,
+                    contentDescription = "Open Voice Profile"
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
@@ -175,5 +208,47 @@ fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: Str
         maxLines = 1,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction),
         keyboardActions = onAction
+    )
+}
+@Composable
+fun LSPasswordTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+                onAction: KeyboardActions = KeyboardActions.Default,
+                onValueChange: (String) -> Unit = {}
+) {
+    var passwordVisibility: Boolean by remember { mutableStateOf(false) }
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp),
+        value = userInput.value,
+        onValueChange = onValueChange,
+        trailingIcon = {
+            IconButton(onClick = {
+                passwordVisibility = !passwordVisibility
+            }) {
+                Icon(
+                    imageVector = if (passwordVisibility) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    tint = Color.Black,
+                    contentDescription = "Show Password"
+                )
+            }
+        },
+        label = {
+            Text(
+                text = label,
+                color = Color.LightGray
+            )
+        },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            unfocusedBorderColor = Color.Black,
+            focusedBorderColor = Color.Blue,
+            textColor = Color.Black
+        ),
+        shape = RoundedCornerShape(CURVATURE.dp),
+        singleLine = true,
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+        keyboardActions = onAction,
+        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
     )
 }

@@ -26,6 +26,7 @@ import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
+import com.clementcorporation.levosonusii.main.LSPasswordTextField
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -67,10 +68,9 @@ fun LoginScreen(navController: NavController) {
                 employeeId.value = it
                 isLoginButtonEnabled.value = employeeId.value.isNotEmpty() && password.value.isNotEmpty()
             }
-            LSTextField(
+            LSPasswordTextField(
                 userInput = password,
                 label = stringResource(id = R.string.label_password),
-                imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     showProgressBar.value = true
                     viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {

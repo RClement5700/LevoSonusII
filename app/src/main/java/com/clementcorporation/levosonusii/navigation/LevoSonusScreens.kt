@@ -5,12 +5,13 @@ enum class LevoSonusScreens {
     LoginScreen,
     RegisterScreen,
     CreateVoiceProfileScreen,
-    HomeScreen
-    /*
-    Equipment,
-    Departments,
-    OrderListScreen,
-    OrderItemScreen,
-    OrderCompleteScreen
-     */
+    HomeScreen,
+    EquipmentScreen,
+    DepartmentsScreen,
+    OrdersScreen,
+    HealthAndWellnessScreen,
+    PayAndBenefitsScreen,
+    MessagesScreen,
+    AnnouncementsScreen,
+    GameCenterScreen
 }
