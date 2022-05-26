@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
@@ -63,7 +64,7 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
 
 @Composable
 fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, employeeName: String,
-             onClickProfilePic: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
+             profilePicUrl: String, onClickProfilePic: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
              onClickSignOut: () -> Unit = {}
 ) {
     Row(
@@ -79,7 +80,8 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
                 .size(35.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.LightGray, CircleShape)
-                .clickable(onClick = onClickProfilePic)
+                .clickable(onClick = onClickProfilePic),
+            imageUrl = profilePicUrl
         )
         Text(
             modifier = Modifier.padding(PADDING.dp),
@@ -122,10 +124,13 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
 }
 
 @Composable
-fun LSProfileIcon(modifier: Modifier) {
+fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
     Image(
         modifier = modifier,
-        painter = painterResource(id = R.drawable.levosonus_rocket_logo), //replace with user uploaded profile pic
+        painter = rememberImagePainter(data = imageUrl, builder = {
+            crossfade(false)
+            placeholder(R.drawable.levosonus_rocket_logo)
+        }),
         contentDescription = "Profile Picture",
         contentScale = ContentScale.Crop
     )

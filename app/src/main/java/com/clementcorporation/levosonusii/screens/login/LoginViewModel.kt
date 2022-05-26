@@ -1,9 +1,9 @@
 package com.clementcorporation.levosonusii.screens.login
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.model.LSUserInfo
@@ -19,31 +19,41 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>): ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
 
-    fun signInWithEmailAndPassword(userId: String, password: String, home: () -> Unit = {}) {
+    fun signInWithEmailAndPassword(context: Context, userId: String, password: String, home: () -> Unit = {}) {
         var name: String? = ""
         var email: String? = ""
+        var profilePicUrl: String? = ""
         viewModelScope.launch {
             try {
                 FirebaseFirestore.getInstance().collection("users")
                     .document(userId).get().addOnCompleteListener { document ->
-                        name = document.result?.getString("name")
-                        email = document.result?.getString("emailAddress")
-                        email?.let { emailAdd ->
-                            auth.signInWithEmailAndPassword(emailAdd.trim(), password.trim()).addOnCompleteListener{ task ->
-                                Log.d("Sign In: ", "SUCCESS")
-                                name?.let {
-                                    viewModelScope.launch {
-                                        sessionDataStore.updateData { userInfo ->
-                                            userInfo.copy(
-                                                employeeId = userId,
-                                                emailAddress = emailAdd,
-                                                name = it
-                                            )
+                        if (document.result.exists()) {
+                            name = document.result?.getString("name")
+                            email = document.result?.getString("emailAddress")
+                            profilePicUrl = document.result?.getString("profilePicUrl")
+                            email?.let { email ->
+                                auth.signInWithEmailAndPassword(email.trim(), password.trim())
+                                    .addOnCompleteListener { task ->
+                                        Log.d("Sign In: ", "SUCCESS")
+                                        name?.let { name ->
+                                            profilePicUrl?.let { url ->
+                                                viewModelScope.launch {
+                                                    sessionDataStore.updateData { userInfo ->
+                                                        userInfo.copy(
+                                                            employeeId = userId,
+                                                            emailAddress = email,
+                                                            name = name,
+                                                            profilePicUrl = url
+                                                        )
+                                                    }
+                                                    home()
+                                                }
+                                            }
                                         }
                                     }
-                                }
-                                home()
                             }
+                        } else {
+                            Toast.makeText(context, "Invalid Employee ID or Password", Toast.LENGTH_LONG).show()
                         }
                     }
             } catch (e: Exception) {

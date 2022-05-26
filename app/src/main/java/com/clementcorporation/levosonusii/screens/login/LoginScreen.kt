@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
@@ -30,6 +31,8 @@ import com.clementcorporation.levosonusii.main.LSPasswordTextField
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -73,9 +76,13 @@ fun LoginScreen(navController: NavController) {
                 label = stringResource(id = R.string.label_password),
                 onAction = KeyboardActions {
                     showProgressBar.value = true
-                    viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
+                    viewModel.signInWithEmailAndPassword(context = navController.context, userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
+                    viewModel.viewModelScope.launch {
+                        delay(2000L)
+                        showProgressBar.value = false
+                    }
                 }
             ) {
                 password.value = it
@@ -94,9 +101,13 @@ fun LoginScreen(navController: NavController) {
                 ),
                 onClick = {
                     showProgressBar.value = true
-                    viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
+                    viewModel.signInWithEmailAndPassword(context = navController.context, userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
+                    viewModel.viewModelScope.launch {
+                        delay(2000L)
+                        showProgressBar.value = false
+                    }
                 }) {
                 if(showProgressBar.value) {
                     CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
