@@ -3,6 +3,7 @@ package com.clementcorporation.levosonusii.screens.register
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +25,7 @@ class RegisterViewModel @Inject constructor(private val sessionDataStore: DataSt
     private val auth: FirebaseAuth = Firebase.auth
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
+    val employeeId = mutableStateOf("")
 
     fun createUserWithEmailAndPassword(context: Context, email: String, password: String, firstName: String,
                                        lastName: String, goToNextScreen: () -> Unit = {}) {
@@ -60,16 +62,16 @@ class RegisterViewModel @Inject constructor(private val sessionDataStore: DataSt
             emailAddress = emailAddress,
             name = "$firstName $lastName",
         ).toMap()
-        val employeeId = (999..10000).random().toString()
+        employeeId.value = (999..10000).random().toString()
         viewModelScope.launch {
             sessionDataStore.updateData { userInfo ->
                 userInfo.copy(
-                    employeeId = employeeId,
+                    employeeId = employeeId.value,
                     name = "$firstName $lastName",
                     emailAddress = emailAddress
                 )
             }
         }
-        FirebaseFirestore.getInstance().collection("users").document(employeeId).set(lsUser)
+        FirebaseFirestore.getInstance().collection("users").document(employeeId.value).set(lsUser)
     }
 }

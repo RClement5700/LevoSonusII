@@ -1,5 +1,6 @@
 package com.clementcorporation.levosonusii.screens.register
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +29,7 @@ import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
+import com.clementcorporation.levosonusii.main.LSAlertDialog
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -66,6 +68,28 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
+            val showAlertDialog = remember {
+                mutableStateOf(false)
+            }
+            if (showAlertDialog.value) {
+                LSAlertDialog(
+                    showAlertDialog = showAlertDialog,
+                    dialogTitle = "New User Created",
+                    dialogBody = remember {
+                        mutableStateOf(
+                            "Name: ${firstName.value} ${lastName.value} \nEmail: ${email.value} \nEmployee ID: ${viewModel.employeeId.value} \nReady to Proceed?"
+                        )
+                    },
+                    onPositiveButtonClicked = {
+                        showAlertDialog.value = false
+                        navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                    },
+                    onNegativeButtonClicked = {
+                        Toast.makeText(navController.context, "Take a screenshot to save your credentials",
+                            Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
             LSTextField(userInput = email, label = stringResource(id = R.string.label_email_address),
                 onAction = KeyboardActions {
                     defaultKeyboardAction(ImeAction.Next)
@@ -103,7 +127,7 @@ fun RegisterScreen(navController: NavController) {
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
+                        showAlertDialog.value = true
                     }
                 }
             ) {
@@ -124,7 +148,7 @@ fun RegisterScreen(navController: NavController) {
                 ),
                 onClick = {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
+                        showAlertDialog.value = true
                     }
                 }) {
                 if(viewModel.loading.value == true) {
@@ -170,5 +194,6 @@ password: MutableState<String>, firstName: MutableState<String>, lastName: Mutab
         password = password.value,
         firstName = firstName.value,
         lastName = lastName.value,
+        goToNextScreen = goToNextScreen
     )
 }

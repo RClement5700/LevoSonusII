@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateVoiceProfileViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>):
+class VoiceProfileViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>):
     ViewModel() {
         fun getDataStore() = sessionDataStore
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -256,4 +257,61 @@ fun LSPasswordTextField(userInput: MutableState<String> = mutableStateOf(""), la
         keyboardActions = onAction,
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
     )
+}
+
+@Composable
+fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
+    dialogBody: MutableState<String> = mutableStateOf(""), onPositiveButtonClicked: () -> Unit = {},
+                  onNegativeButtonClicked: () -> Unit = {}
+) {
+    if (showAlertDialog.value) {
+        AlertDialog(
+            modifier = Modifier.fillMaxWidth(.9f).fillMaxHeight(.6f),
+            backgroundColor = Color.White,
+            shape = RoundedCornerShape(CURVATURE.dp),
+            properties = DialogProperties(),
+            onDismissRequest = {
+                showAlertDialog.value = false
+            },
+            buttons = {
+                Column(modifier = Modifier.padding(PADDING.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                    LevoSonusLogo(size = 40.dp, showText = true)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(fontSize = 13.sp, fontWeight = FontWeight.Bold, text = dialogTitle)
+                    if (dialogBody.value.isNotEmpty()) {
+                        Spacer(modifier = Modifier.weight(.1f))
+                        Text(fontSize = 10.sp, fontWeight = FontWeight.Bold, text = dialogBody.value)
+                    }
+                    Spacer(modifier = Modifier.weight(.2f))
+                    Row(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .weight(1f),
+                            onClick = onPositiveButtonClicked,
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
+                        ) {
+                            Text(text = "Yes", color = Color.White)
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .weight(1f),
+                            onClick = onNegativeButtonClicked,
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
+                        ) {
+                            Text(text = "No", color = Color.White)
+                        }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        )
+    }
 }

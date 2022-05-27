@@ -46,8 +46,8 @@ fun HomeScreen(navController: NavController) {
         mutableStateOf(false)
     }
     BackHandler {
-        viewModel.signOut()
         viewModel.viewModelScope.launch {
+            viewModel.signOut()
             delay(2000L)
             navController.popBackStack()
             navController.navigate(LevoSonusScreens.LoginScreen.name)
@@ -69,8 +69,8 @@ fun HomeScreen(navController: NavController) {
                     employeeName = viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.name,
                     profilePicUrl = imageUrl,
                     onClickSignOut = {
-                        viewModel.signOut()
                         viewModel.viewModelScope.launch {
+                            viewModel.signOut()
                             delay(2000L)
                             navController.popBackStack()
                             navController.navigate(LevoSonusScreens.LoginScreen.name)
@@ -180,7 +180,7 @@ fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewMod
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 NavTile(title = "VOICE PROFILE") {
-                    navController.navigate(LevoSonusScreens.CreateVoiceProfileScreen.name)
+                    navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                 }
                 NavTile(title = "EQUIPMENT") { //SearchBar: filters equipment based on number input; display list of equipment in use; attach forklift/EPJ icon
                     navController.navigate(LevoSonusScreens.EquipmentScreen.name)

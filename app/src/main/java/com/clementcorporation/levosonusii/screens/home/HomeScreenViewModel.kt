@@ -16,8 +16,11 @@ class HomeScreenViewModel @Inject constructor(private val sessionDataStore: Data
     val showProgressBar = mutableStateOf(false)
 
     fun getDataStore() = sessionDataStore
-    fun signOut() {
+    suspend fun signOut() {
         Firebase.auth.signOut()
+        sessionDataStore.updateData {
+            LSUserInfo()
+        }
         showProgressBar.value = true
         expandMenu.value = false
     }

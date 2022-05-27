@@ -15,7 +15,7 @@ import com.clementcorporation.levosonusii.screens.orders.OrdersScreen
 import com.clementcorporation.levosonusii.screens.payandbenefits.PayAndBenefitsScreen
 import com.clementcorporation.levosonusii.screens.register.RegisterScreen
 import com.clementcorporation.levosonusii.screens.splash.SplashScreen
-import com.clementcorporation.levosonusii.screens.voiceprofile.CreateVoiceProfileScreen
+import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileScreen
 
 @Composable
 fun LevoSonusNavigation() {
@@ -30,8 +30,8 @@ fun LevoSonusNavigation() {
         composable(LevoSonusScreens.RegisterScreen.name){
             RegisterScreen(navController = navController)
         }
-        composable(LevoSonusScreens.CreateVoiceProfileScreen.name){
-            CreateVoiceProfileScreen(navController = navController)
+        composable(LevoSonusScreens.VoiceProfileScreen.name){
+            VoiceProfileScreen(navController = navController)
         }
         composable(LevoSonusScreens.HomeScreen.name){
             HomeScreen(navController = navController)
