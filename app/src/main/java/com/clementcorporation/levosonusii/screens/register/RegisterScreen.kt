@@ -74,7 +74,7 @@ fun RegisterScreen(navController: NavController) {
             if (showAlertDialog.value) {
                 LSAlertDialog(
                     showAlertDialog = showAlertDialog,
-                    dialogTitle = "New User Created",
+                    dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
                         mutableStateOf(
                             "Name: ${firstName.value} ${lastName.value} \nEmail: ${email.value} \nEmployee ID: ${viewModel.employeeId.value} \nReady to Proceed?"

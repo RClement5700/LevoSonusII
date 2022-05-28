@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">LevoSonusII</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="alert_dialog_positive_button_text">Yes</string>
+    <string name="alert_dialog_negative_button_text">No</string>
 
     <!-- Login Screen -->
     <string name="btn_text_login">Login</string>
@@ -16,5 +18,23 @@
     <string name="label_last_name">Last Name</string>
     <string name="register_navigation_pretext">Already Signed Up?</string>
     <string name="register_navigation_link_text">Login</string>
+    <string name="register_alert_dialog_title">New User Created</string>
+
+    <!-- Home Screen -->
+    <string name="menu_item_account_label">Account</string>
+    <string name="menu_item_settings_label">Settings</string>
+    <string name="menu_item_sign_out_label">Sign Out</string>
+    <string name="homescreen_tile_voice_profile_label">VOICE PROFILE</string>
+    <string name="homescreen_tile_equipment_label">EQUIPMENT</string>
+    <string name="homescreen_tile_departments_label">DEPARTMENTS</string>
+    <string name="homescreen_tile_health_wellness_label">HEALTH &amp; WELLNESS</string>
+    <string name="homescreen_tile_pay_benefits_label">PAY &amp; BENEFITS</string>
+    <string name="homescreen_tile_orders_label">ORDERS</string>
+    <string name="homescreen_tile_messages_label">MESSAGES</string>
+    <string name="homescreen_tile_announcements_label">ANNOUNCEMENTS</string>
+    <string name="homescreen_tile_game_center_label">GAME CENTER</string>
+
+    <!-- Voice Profile Screen -->
+    <string name="voice_profile_alert_dialog_title">Create Voice Profile?</string>
 
 </resources>

@@ -110,14 +110,14 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
                 onDismissRequest = { expandMenu.value = false }
             ) {
                 DropdownMenuItem(onClick = { /* Handle refresh! */ }) {
-                    Text("Account")
+                    Text(stringResource(id = R.string.menu_item_account_label))
                 }
                 DropdownMenuItem(onClick = { /* Handle settings! */ }) {
-                    Text("Settings")
+                    Text(stringResource(id = R.string.menu_item_settings_label))
                 }
                 Divider()
                 DropdownMenuItem(onClick = onClickSignOut) {
-                    Text("Sign Out")
+                    Text(stringResource(id = R.string.menu_item_sign_out_label))
                 }
             }
         }
@@ -266,7 +266,9 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
 ) {
     if (showAlertDialog.value) {
         AlertDialog(
-            modifier = Modifier.fillMaxWidth(.9f).fillMaxHeight(.6f),
+            modifier = Modifier
+                .fillMaxWidth(.9f)
+                .fillMaxHeight(.6f),
             backgroundColor = Color.White,
             shape = RoundedCornerShape(CURVATURE.dp),
             properties = DialogProperties(),
@@ -297,7 +299,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             onClick = onPositiveButtonClicked,
                             colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
                         ) {
-                            Text(text = "Yes", color = Color.White)
+                            Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
                         }
                         Button(
                             modifier = Modifier
@@ -306,7 +308,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             onClick = onNegativeButtonClicked,
                             colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
                         ) {
-                            Text(text = "No", color = Color.White)
+                            Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
                         }
                     }
                     Spacer(modifier = Modifier.weight(1f))
