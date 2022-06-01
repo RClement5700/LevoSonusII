@@ -130,7 +130,8 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
 
 @Composable
 fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
-    val isUrlEmpty = imageUrl.contentEquals("${STORAGE_BASE_URL}${STORAGE_APPENDED_URL}", true)
+    val isUrlEmpty = imageUrl.contentEquals("${STORAGE_BASE_URL}${STORAGE_APPENDED_URL}", true) ||
+            imageUrl.isEmpty()
     Image(
         modifier = modifier,
         painter = if (isUrlEmpty) {

@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val imageUrl = "${STORAGE_BASE_URL}${viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl}${STORAGE_APPENDED_URL}"
+    val imageUrl = "${STORAGE_BASE_URL}${viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl}${STORAGE_APPENDED_URL}"
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
@@ -67,7 +67,7 @@ fun HomeScreen(navController: NavController) {
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
-                    employeeName = viewModel.getDataStore().data.collectAsState(initial = LSUserInfo()).value.name,
+                    employeeName = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
                     profilePicUrl = imageUrl,
                     onClickSignOut = {
                         viewModel.viewModelScope.launch {

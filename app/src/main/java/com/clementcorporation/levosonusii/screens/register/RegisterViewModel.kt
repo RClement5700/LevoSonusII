@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.LevoSonusUser
+import com.clementcorporation.levosonusii.model.VoiceProfile
+import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileCommands
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,8 +22,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegisterViewModel @Inject constructor(private val sessionDataStore: DataStore<LSUserInfo>): ViewModel() {
-
+class RegisterViewModel @Inject constructor(
+    private val sessionDataStore: DataStore<LSUserInfo>,
+    private val voiceProfileDataStore: DataStore<VoiceProfile>
+    ): ViewModel()
+{
     private val auth: FirebaseAuth = Firebase.auth
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
@@ -57,10 +62,16 @@ class RegisterViewModel @Inject constructor(private val sessionDataStore: DataSt
 
     private fun createUser(emailAddress: String, firstName: String, lastName: String) {
         val userId = auth.currentUser?.uid
+        val voiceProfile: HashMap<String, ArrayList<String>> = hashMapOf()
+        VoiceProfileCommands.values().forEach {
+            voiceProfile[it.name] = arrayListOf()
+        }
         val lsUser = LevoSonusUser(
             userId = userId.toString(),
             emailAddress = emailAddress,
             name = "$firstName $lastName",
+            voiceProfile = voiceProfile
+        //WHY ISN'T THE PROFILEPICURL BEING ADDED TO THE MAP UPON CREATION OF NEW USER?
         ).toMap()
         employeeId.value = (999..10000).random().toString()
         viewModelScope.launch {
@@ -70,6 +81,9 @@ class RegisterViewModel @Inject constructor(private val sessionDataStore: DataSt
                     name = "$firstName $lastName",
                     emailAddress = emailAddress
                 )
+            }
+            voiceProfileDataStore.updateData { vp ->
+                vp.copy(voiceProfileMap = voiceProfile)
             }
         }
         FirebaseFirestore.getInstance().collection("users").document(employeeId.value).set(lsUser)
