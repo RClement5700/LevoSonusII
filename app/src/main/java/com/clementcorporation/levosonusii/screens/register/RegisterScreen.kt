@@ -68,25 +68,42 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
-            val showAlertDialog = remember {
+            val showNewUserDialog = remember {
                 mutableStateOf(false)
             }
-            if (showAlertDialog.value) {
+            val showVoiceProfileDialog = remember {
+                mutableStateOf(false)
+            }
+            if (showNewUserDialog.value) {
                 LSAlertDialog(
-                    showAlertDialog = showAlertDialog,
+                    showAlertDialog = showNewUserDialog,
                     dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
                         mutableStateOf(
-                            "Name: ${firstName.value} ${lastName.value} \nEmail: ${email.value} \nEmployee ID: ${viewModel.employeeId.value} \nReady to Proceed?"
+                            "\nName: ${firstName.value} ${lastName.value} \nEmail: ${email.value} \nEmployee ID: ${viewModel.employeeId.value} \nReady to Proceed?"
                         )
                     },
                     onPositiveButtonClicked = {
-                        showAlertDialog.value = false
-                        navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                        showNewUserDialog.value = false
+                        showVoiceProfileDialog.value = true
                     },
                     onNegativeButtonClicked = {
                         Toast.makeText(navController.context, "Take a screenshot to save your credentials",
                             Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+            if (showVoiceProfileDialog.value) {
+                LSAlertDialog(
+                    showAlertDialog = showVoiceProfileDialog,
+                    dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
+                    onPositiveButtonClicked = {
+                        showVoiceProfileDialog.value = false
+                        navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                    },
+                    onNegativeButtonClicked = {
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+
                     }
                 )
             }
@@ -127,7 +144,7 @@ fun RegisterScreen(navController: NavController) {
                 imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        showAlertDialog.value = true
+                        showNewUserDialog.value = true
                     }
                 }
             ) {
@@ -148,7 +165,7 @@ fun RegisterScreen(navController: NavController) {
                 ),
                 onClick = {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
-                        showAlertDialog.value = true
+                        showNewUserDialog.value = true
                     }
                 }) {
                 if(viewModel.loading.value == true) {

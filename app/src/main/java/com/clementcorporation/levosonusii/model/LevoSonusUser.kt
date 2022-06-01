@@ -5,7 +5,8 @@ data class LevoSonusUser(
     val name: String = "",
     val emailAddress: String,
     var equipmentId: String = "",
-    var departmentId: String = ""
+    var departmentId: String = "",
+    var voiceProfileId: String = ""
 ) {
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf(
@@ -13,7 +14,8 @@ data class LevoSonusUser(
             "name" to name,
             "emailAddress" to emailAddress,
             "equipmentId" to equipmentId,
-            "departmentId" to departmentId
+            "departmentId" to departmentId,
+            "voiceProfileId" to voiceProfileId
         )
     }
 }

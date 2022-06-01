@@ -35,7 +35,11 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
+import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
 import com.clementcorporation.levosonusii.main.Constants.PADDING
+import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
+import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
@@ -126,12 +130,17 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
 
 @Composable
 fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
+    val isUrlEmpty = imageUrl.contentEquals("${STORAGE_BASE_URL}${STORAGE_APPENDED_URL}", true)
     Image(
         modifier = modifier,
-        painter = rememberImagePainter(data = imageUrl, builder = {
-            crossfade(false)
-            placeholder(R.drawable.levosonus_rocket_logo)
-        }),
+        painter = if (isUrlEmpty) {
+            painterResource(id = R.drawable.levosonus_rocket_logo)
+        } else {
+            rememberImagePainter(data = imageUrl, builder = {
+                crossfade(false)
+                placeholder(R.drawable.levosonus_rocket_logo)
+            })
+        },
         contentDescription = "Profile Picture",
         contentScale = ContentScale.Crop
     )
@@ -142,7 +151,7 @@ fun LSFAB() {
     FloatingActionButton(
         onClick = { /*TODO - show VoiceInputWindow*/ },
         shape = CircleShape,
-        backgroundColor = Constants.ENABLED_BUTTON_COLOR,
+        backgroundColor = ENABLED_BUTTON_COLOR,
         elevation = FloatingActionButtonDefaults.elevation(),
         ) {
         LevoSonusLogo(size = 50.dp, showText = false)
@@ -156,7 +165,7 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
             .fillMaxWidth()
             .padding(PADDING.dp)
             .clickable(onClick = onClick),
-        elevation = Constants.ELEVATION.dp,
+        elevation = ELEVATION.dp,
         shape = RoundedCornerShape(CURVATURE.dp),
         backgroundColor = Color.White
     ) {
@@ -168,7 +177,7 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
             Text(
                 modifier = Modifier.padding(PADDING.dp),
                 text = title,
-                color = Constants.ENABLED_BUTTON_COLOR,
+                color = ENABLED_BUTTON_COLOR,
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 12.sp,
                 fontStyle = FontStyle.Italic,
@@ -178,7 +187,7 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
                 onClick = onClick
             ) {
                 Icon(
-                    tint = Constants.ENABLED_BUTTON_COLOR,
+                    tint = ENABLED_BUTTON_COLOR,
                     imageVector = Icons.Default.ArrowRight,
                     contentDescription = "Open Voice Profile"
                 )
@@ -264,56 +273,54 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
     dialogBody: MutableState<String> = mutableStateOf(""), onPositiveButtonClicked: () -> Unit = {},
                   onNegativeButtonClicked: () -> Unit = {}
 ) {
-    if (showAlertDialog.value) {
-        AlertDialog(
-            modifier = Modifier
-                .fillMaxWidth(.9f)
-                .fillMaxHeight(.6f),
-            backgroundColor = Color.White,
-            shape = RoundedCornerShape(CURVATURE.dp),
-            properties = DialogProperties(),
-            onDismissRequest = {
-                showAlertDialog.value = false
-            },
-            buttons = {
-                Column(modifier = Modifier.padding(PADDING.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    LevoSonusLogo(size = 40.dp, showText = true)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(fontSize = 13.sp, fontWeight = FontWeight.Bold, text = dialogTitle)
-                    if (dialogBody.value.isNotEmpty()) {
-                        Spacer(modifier = Modifier.weight(.1f))
-                        Text(fontSize = 10.sp, fontWeight = FontWeight.Bold, text = dialogBody.value)
-                    }
-                    Spacer(modifier = Modifier.weight(.2f))
-                    Row(
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            modifier = Modifier
-                                .padding(2.dp)
-                                .weight(1f),
-                            onClick = onPositiveButtonClicked,
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
-                        ) {
-                            Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
-                        }
-                        Button(
-                            modifier = Modifier
-                                .padding(2.dp)
-                                .weight(1f),
-                            onClick = onNegativeButtonClicked,
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Constants.ENABLED_BUTTON_COLOR)
-                        ) {
-                            Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
-                        }
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
+    AlertDialog(
+        modifier = Modifier
+            .fillMaxWidth(.9f)
+            .fillMaxHeight(.6f),
+        backgroundColor = Color.White,
+        shape = RoundedCornerShape(CURVATURE.dp),
+        properties = DialogProperties(),
+        onDismissRequest = {
+            showAlertDialog.value = false
+        },
+        buttons = {
+            Column(modifier = Modifier.padding(PADDING.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                LevoSonusLogo(size = 40.dp, showText = true)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(fontSize = 13.sp, fontWeight = FontWeight.Bold, text = dialogTitle)
+                if (dialogBody.value.isNotEmpty()) {
+                    Spacer(modifier = Modifier.weight(.1f))
+                    Text(fontSize = 10.sp, fontWeight = FontWeight.Bold, text = dialogBody.value)
                 }
+                Spacer(modifier = Modifier.weight(.2f))
+                Row(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .weight(1f),
+                        onClick = onPositiveButtonClicked,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ENABLED_BUTTON_COLOR)
+                    ) {
+                        Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
+                    }
+                    Button(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .weight(1f),
+                        onClick = onNegativeButtonClicked,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ENABLED_BUTTON_COLOR)
+                    ) {
+                        Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
             }
-        )
-    }
+        }
+    )
 }

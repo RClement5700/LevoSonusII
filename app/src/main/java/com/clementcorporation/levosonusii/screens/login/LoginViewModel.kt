@@ -23,6 +23,7 @@ class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore
         var name: String? = ""
         var email: String? = ""
         var profilePicUrl: String? = ""
+        var voiceProfileId: String? = ""
         viewModelScope.launch {
             try {
                 FirebaseFirestore.getInstance().collection("users")
@@ -31,22 +32,26 @@ class LoginViewModel @Inject constructor(private val sessionDataStore: DataStore
                             name = document.result?.getString("name")
                             email = document.result?.getString("emailAddress")
                             profilePicUrl = document.result?.getString("profilePicUrl")
+                            voiceProfileId = document.result?.getString("voiceProfileId")
                             email?.let { email ->
                                 auth.signInWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener { task ->
                                         Log.d("Sign In: ", "SUCCESS")
                                         name?.let { name ->
                                             profilePicUrl?.let { url ->
-                                                viewModelScope.launch {
-                                                    sessionDataStore.updateData { userInfo ->
-                                                        userInfo.copy(
-                                                            employeeId = userId,
-                                                            emailAddress = email,
-                                                            name = name,
-                                                            profilePicUrl = url
-                                                        )
+                                                voiceProfileId?.let { voiceProfileId ->
+                                                    viewModelScope.launch {
+                                                        sessionDataStore.updateData { userInfo ->
+                                                            userInfo.copy(
+                                                                employeeId = userId,
+                                                                emailAddress = email,
+                                                                name = name,
+                                                                profilePicUrl = url,
+                                                                voiceProfileId = voiceProfileId
+                                                            )
+                                                        }
+                                                        home()
                                                     }
-                                                    home()
                                                 }
                                             }
                                         }
