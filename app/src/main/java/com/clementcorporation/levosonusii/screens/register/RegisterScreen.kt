@@ -138,6 +138,11 @@ fun RegisterScreen(navController: NavController) {
                 isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
                         && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
             }
+                /*
+                    TODO:
+                        -add visibility toggle -> see LoginScreen
+                        -hash password
+                 */
             LSTextField(
                 userInput = password,
                 label = stringResource(id = R.string.label_password),

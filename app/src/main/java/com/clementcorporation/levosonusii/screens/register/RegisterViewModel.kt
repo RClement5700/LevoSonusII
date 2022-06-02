@@ -37,6 +37,10 @@ class RegisterViewModel @Inject constructor(
         if (_loading.value == false) {
             _loading.value = true
             try {
+                /*
+                    TODO:
+                        -handle malformed email format input
+                 */
                 auth.createUserWithEmailAndPassword(email.trim(), password.trim())
                     .addOnCompleteListener{task ->
                         if (task.isSuccessful) {
@@ -70,8 +74,7 @@ class RegisterViewModel @Inject constructor(
             userId = userId.toString(),
             emailAddress = emailAddress,
             name = "$firstName $lastName",
-            voiceProfile = voiceProfile
-        //WHY ISN'T THE PROFILEPICURL BEING ADDED TO THE MAP UPON CREATION OF NEW USER?
+            voiceProfile = voiceProfile,
         ).toMap()
         employeeId.value = (999..10000).random().toString()
         viewModelScope.launch {
