@@ -40,6 +40,7 @@ class RegisterViewModel @Inject constructor(
                 /*
                     TODO:
                         -handle malformed email format input
+                        -try/catch block not catching the exception?
                  */
                 auth.createUserWithEmailAndPassword(email.trim(), password.trim())
                     .addOnCompleteListener{task ->
@@ -56,11 +57,11 @@ class RegisterViewModel @Inject constructor(
                         } else {
                             Log.d("Create User: ", task.result.toString())
                         }
-                        _loading.value = false
                     }
             } catch (e: Exception) {
                 Toast.makeText(context, "Cannot Create User", Toast.LENGTH_SHORT).show()
             }
+            _loading.value = false
         }
     }
 

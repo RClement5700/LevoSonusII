@@ -30,6 +30,7 @@ import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAlertDialog
+import com.clementcorporation.levosonusii.main.LSPasswordTextField
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -138,15 +139,9 @@ fun RegisterScreen(navController: NavController) {
                 isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
                         && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
             }
-                /*
-                    TODO:
-                        -add visibility toggle -> see LoginScreen
-                        -hash password
-                 */
-            LSTextField(
+            LSPasswordTextField(
                 userInput = password,
                 label = stringResource(id = R.string.label_password),
-                imeAction = ImeAction.Done,
                 onAction = KeyboardActions {
                     createUser(viewModel, navController, email, password, firstName, lastName) {
                         showNewUserDialog.value = true
