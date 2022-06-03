@@ -198,14 +198,12 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
 }
 
 @Composable
-fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""), label: String = "",
                 imeAction: ImeAction = ImeAction.Next, onAction: KeyboardActions = KeyboardActions.Default,
                 onValueChange: (String) -> Unit = {}
 ) {
     OutlinedTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(PADDING.dp),
+        modifier = modifier,
         value = userInput.value,
         onValueChange = onValueChange,
         label = {
@@ -227,15 +225,13 @@ fun LSTextField(userInput: MutableState<String> = mutableStateOf(""), label: Str
     )
 }
 @Composable
-fun LSPasswordTextField(userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+fun LSPasswordTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""), label: String = "",
                 onAction: KeyboardActions = KeyboardActions.Default,
                 onValueChange: (String) -> Unit = {}
 ) {
     var passwordVisibility: Boolean by remember { mutableStateOf(false) }
     OutlinedTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(PADDING.dp),
+        modifier = modifier,
         value = userInput.value,
         onValueChange = onValueChange,
         trailingIcon = {
