@@ -13,6 +13,6 @@ class VoiceProfileViewModel @Inject constructor(
     private val voiceProfileDataStore: DataStore<VoiceProfile>
     ): ViewModel()
 {
-        fun getDataStore() = sessionDataStore
-        fun getVoiceProfileDataStore() = voiceProfileDataStore
+    fun getDataStore() = sessionDataStore
+    fun getVoiceProfileDataStore() = voiceProfileDataStore
 }

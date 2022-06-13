@@ -55,9 +55,7 @@ fun HomeScreen(navController: NavController) {
         }
     }
     Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(PADDING.dp),
+        modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
@@ -81,11 +79,7 @@ fun HomeScreen(navController: NavController) {
                         inflateProfilePic.value = !inflateProfilePic.value
                     }
                 )
-            },
-            floatingActionButton = {
-                LSFAB()
-            },
-            floatingActionButtonPosition = FabPosition.End,
+            }
         ) {
             InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = imageUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)

@@ -35,9 +35,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(navController: NavController) {
     Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(PADDING.dp),
+        modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)

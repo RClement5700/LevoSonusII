@@ -1,5 +1,7 @@
 package com.clementcorporation.levosonusii.main
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -31,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -148,9 +152,10 @@ fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
 }
 
 @Composable
-fun LSFAB() {
+fun LSFAB(onClick: () -> Unit = {}) {
     FloatingActionButton(
-        onClick = { /*TODO - show VoiceInputWindow*/ },
+        modifier = Modifier.zIndex(1f),
+        onClick = onClick,
         shape = CircleShape,
         backgroundColor = ENABLED_BUTTON_COLOR,
         elevation = FloatingActionButtonDefaults.elevation(),

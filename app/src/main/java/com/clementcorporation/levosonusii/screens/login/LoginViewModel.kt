@@ -1,8 +1,16 @@
 package com.clementcorporation.levosonusii.screens.login
 
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.*
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -74,5 +82,50 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private val scanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            val device: BluetoothDevice = result.device
+            // ...do whatever you want with this found device
+        }
+
+        override fun onBatchScanResults(results: List<ScanResult?>?) {
+            // Ignore for now
+        }
+
+        override fun onScanFailed(errorCode: Int) {
+            // Ignore for now
+        }
+    }
+
+    //scanMode = when and how long the Bluetooth stack is actually searching for devices
+    private var scanSettings = ScanSettings.Builder()
+        .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+        .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+        .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+        .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT)
+        .setReportDelay(0L)
+        .build()
+
+    fun scan(context: Context) {
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val adapter: BluetoothAdapter = bluetoothManager.adapter
+        val scanner: BluetoothLeScanner = adapter.bluetoothLeScanner
+        val peripheralAddresses = arrayOf("01:0A:5C:7D:D0:1A")
+        val filters: MutableList<ScanFilter?> = ArrayList()
+        for (address in peripheralAddresses) {
+            val filter = ScanFilter.Builder()
+                .setDeviceAddress(address)
+                .build()
+            filters.add(filter)
+        }
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            scanner.startScan(filters, scanSettings, scanCallback)
+            return
+        }
+        Log.d(TAG, "scan started");
     }
 }

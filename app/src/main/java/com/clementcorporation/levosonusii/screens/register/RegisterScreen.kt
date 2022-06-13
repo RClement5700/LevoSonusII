@@ -62,9 +62,7 @@ fun RegisterScreen(navController: NavController) {
         mutableStateOf(false)
     }
     Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(PADDING.dp),
+        modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
         backgroundColor = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
