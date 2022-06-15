@@ -1,32 +1,48 @@
 package com.clementcorporation.levosonusii.main
 
-import android.content.res.Configuration
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.clementcorporation.levosonusii.main.Constants.CURVATURE
-import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import androidx.navigation.compose.rememberNavController
 import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
+import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity() {
+    private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val resultCode = result.resultCode
+        if (resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            val data: Intent? = result.data
+            //doSomeOperations()
+            //if user says the phrase "poptarts"
+            //call function poptart
+
+            //if user says the phrase "banana"
+            //call function banana
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (results?.isNotEmpty() == true) Toast.makeText(applicationContext, "sound detected", Toast.LENGTH_LONG).show()
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -43,10 +59,6 @@ class MainActivity : ComponentActivity() {
                         Box(
                             contentAlignment = Alignment.Center
                         ) {
-                            val showVoiceCommandWindow = remember {
-                                viewModel.showVoiceCommandWindow
-                            }
-                            if (showVoiceCommandWindow.value) VoiceCommandWindow()
                             Box(
                                 modifier = Modifier.padding(8.dp),
                                 contentAlignment = Alignment.BottomEnd
@@ -58,9 +70,17 @@ class MainActivity : ComponentActivity() {
                                         -handle VoiceCommand in this activity:
                                             https://stackoverflow.com/questions/62671106/onactivityresult-method-is-deprecated-what-is-the-alternative
                                  */
+                                val navController = rememberNavController()
+                                val showFAB = remember {
+                                    mutableStateOf(!navController.currentDestination?.route.contentEquals(LevoSonusScreens.SplashScreen.name))
+                                }
                                 LevoSonusNavigation()
-                                LSFAB {
-                                    showVoiceCommandWindow.value = !showVoiceCommandWindow.value
+                                Log.d("","current destination: ${navController.currentDestination?.route}")
+                                Log.d("","screen name == current destination: ${navController.currentDestination?.route.contentEquals(LevoSonusScreens.SplashScreen.name)}")
+                                if (showFAB.value) {
+                                    LSFAB {
+                                        onClickVoiceCommandBtn()
+                                    }
                                 }
                             }
                         }
@@ -69,31 +89,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun VoiceCommandWindow() {
-    var width = 0.5f
-    var height = 0.75f
-    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
-        width = height
-        height = 0.5f
-    }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(width)
-            .fillMaxHeight(height)
-            .zIndex(1f)
-            .padding(Constants.PADDING.dp),
-        shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = Color.White,
-        elevation = ELEVATION.dp
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            LevoSonusLogo(size = 50.dp, showText = false)
+    private fun onClickVoiceCommandBtn() {
+//        val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).let {
+        val i = Intent(this, VoiceCommandActivity::class.java).let {
+        it.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            it.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak Up")
         }
+        resultLauncher.launch(i)
     }
 }

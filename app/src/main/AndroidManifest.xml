@@ -29,5 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".main.VoiceCommandActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.Transparent"
+            android:launchMode="singleInstance" />
     </application>
 </manifest>
