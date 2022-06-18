@@ -91,12 +91,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun onClickVoiceCommandBtn() {
-//        val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).let {
-        val i = Intent(this, VoiceCommandActivity::class.java).let {
-        it.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            it.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak Up")
-        }
+        val i = Intent(this, VoiceCommandActivity::class.java)
         resultLauncher.launch(i)
     }
 }

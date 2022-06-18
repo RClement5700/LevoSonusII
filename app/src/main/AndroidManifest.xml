@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <uses-feature
@@ -36,4 +37,7 @@
             android:theme="@style/Theme.Transparent"
             android:launchMode="singleInstance" />
     </application>
+    <queries>
+        <package android:name="com.google.android.googlequicksearchbox"/>
+    </queries>
 </manifest>

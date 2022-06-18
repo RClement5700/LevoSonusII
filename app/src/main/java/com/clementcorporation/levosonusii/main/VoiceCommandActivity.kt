@@ -1,6 +1,8 @@
 package com.clementcorporation.levosonusii.main
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -9,6 +11,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -25,12 +28,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.ContextCompat
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import java.util.*
 
 class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
-    private val TAG = "InputSpeechActivity"
+    private val TAG = "VoiceCommandActivity"
     private val wordsSpoken = mutableStateOf("")
     private lateinit var intentRecognizer: Intent
     private lateinit var speechRecognizer: SpeechRecognizer
@@ -83,7 +87,6 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
 
         override fun onDone(utteranceId: String?) {
             Log.e(TAG, "Utterance Listener: DONE")
-            speechRecognizer.startListening(intentRecognizer)
         }
 
         override fun onError(utteranceId: String?) {
@@ -99,6 +102,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
         super.onCreate(savedInstanceState)
         prompt = "Rohan Clement Simmonds"
         intentRecognizer = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1000)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US)
         }
@@ -118,7 +122,30 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                 }
             }
         }
-        speechRecognizer.startListening(intentRecognizer)
+        when {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+                    PackageManager.PERMISSION_GRANTED -> {
+                try {
+                    speechRecognizer.run {
+                        stopListening()
+                        startListening(intentRecognizer)
+                    }
+                } catch(e: Exception) {
+                    Log.e(TAG, "Error: ${e.localizedMessage}")
+                    Toast.makeText(this@VoiceCommandActivity, "Start Listening Failed", Toast.LENGTH_LONG).show()
+                }
+            }
+//            shouldShowRequestPermissionRationale(...) -> {
+            // In an educational UI, explain to the user why your app requires this
+            // permission for a specific feature to behave as expected. In this UI,
+            // include a "cancel" or "no thanks" button that allows the user to
+            // continue using your app without granting the permission.
+//            showInContextUI(...)
+//        }
+            else -> {
+                requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission_group.MICROPHONE), 0)
+            }
+        }
     }
 
     override fun onReadyForSpeech(params: Bundle?) {
@@ -141,29 +168,21 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
     }
 
     override fun onError(error: Int) {
-        speechRecognizer.run {
-            stopListening()
-            startListening(intentRecognizer)
-        }
         Log.e(TAG, "Error: $error")
+        return
     }
 
     override fun onResults(results: Bundle?) {
         results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
-            val result = it?.get(0) as String
-//            result = SpeechProcessor.processSpeech(result) write SpeechProcessor
-            setResult(ComponentActivity.RESULT_OK, Intent().apply {
-                putExtra(RecognizerIntent.EXTRA_RESULTS, result)
-                Log.e(TAG, "Result: $result")
-            })
-            if (wordsSpoken.value.isEmpty()) {
-                wordsSpoken.value = result
-            } else {
-                wordsSpoken.value += " $result"
-            }
-            speechRecognizer.stopListening()
+            it?.get(0)?.let { result ->
+                wordsSpoken.value = result.trim()
+                setResult(RESULT_OK, Intent().apply {
+                    putExtra(RecognizerIntent.EXTRA_RESULTS, result)
+                    Log.e(TAG, "Result: $result")
+                })
+                speechRecognizer.stopListening()
 //            binding.imgViewAnimator.clearAnimation()
-            finish()
+            }
         }
     }
 
