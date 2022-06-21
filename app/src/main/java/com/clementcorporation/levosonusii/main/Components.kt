@@ -2,6 +2,7 @@ package com.clementcorporation.levosonusii.main
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -165,7 +166,7 @@ fun LSFAB(onClick: () -> Unit = {}) {
 }
 
 @Composable
-fun NavTile(title: String, onClick: () -> Unit = {}) {
+fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: MutableState<Boolean> = mutableStateOf(false), onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -180,6 +181,14 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            if (showIcon.value) {
+                Icon(
+                    modifier = Modifier.size(50.dp).padding(PADDING.dp),
+                    tint = ENABLED_BUTTON_COLOR,
+                    painter = painterResource(id = icon),
+                    contentDescription = ""
+                )
+            }
             Text(
                 modifier = Modifier.padding(PADDING.dp),
                 text = title,
@@ -195,7 +204,7 @@ fun NavTile(title: String, onClick: () -> Unit = {}) {
                 Icon(
                     tint = ENABLED_BUTTON_COLOR,
                     imageVector = Icons.Default.ArrowRight,
-                    contentDescription = "Open Voice Profile"
+                    contentDescription = ""
                 )
             }
         }

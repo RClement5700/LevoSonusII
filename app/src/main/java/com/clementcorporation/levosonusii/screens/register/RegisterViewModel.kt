@@ -77,6 +77,7 @@ class RegisterViewModel @Inject constructor(
             name = "$firstName $lastName",
             voiceProfile = voiceProfile,
         ).toMap()
+        val doc = FirebaseFirestore.getInstance().collection("HannafordFoods").document("users")
         employeeId.value = (999..10000).random().toString()
         viewModelScope.launch {
             sessionDataStore.updateData { userInfo ->
@@ -90,6 +91,6 @@ class RegisterViewModel @Inject constructor(
                 vp.copy(voiceProfileMap = voiceProfile)
             }
         }
-        FirebaseFirestore.getInstance().collection("users").document(employeeId.value).set(lsUser)
+        doc.update(employeeId.value, lsUser)
     }
 }

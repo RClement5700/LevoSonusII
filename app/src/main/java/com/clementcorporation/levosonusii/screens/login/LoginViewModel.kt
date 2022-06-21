@@ -9,7 +9,6 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
@@ -39,13 +38,13 @@ class LoginViewModel @Inject constructor(
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
             try {
-                FirebaseFirestore.getInstance().collection("users")
-                    .document(userId).get().addOnCompleteListener { document ->
-                        if (document.result.exists()) {
-                            name = document.result?.getString("name")
-                            email = document.result?.getString("emailAddress")
-                            profilePicUrl = document.result?.getString("profilePicUrl")
-                            voiceProfile = document.result.data?.get("voiceProfile") as Map<*,*>
+                FirebaseFirestore.getInstance().collection("HannafordFoods")
+                    .document("users").get().addOnCompleteListener { document ->
+                        document.result?.get(userId)?.let {
+                            name = (it as HashMap<*,*>)["name"] as String
+                            email = it["emailAddress"] as String
+                            profilePicUrl = it["profilePicUrl"] as String
+                            voiceProfile = it["voiceProfile"] as HashMap<*, *>
                             email?.let { email ->
                                 auth.signInWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener { task ->
@@ -72,8 +71,6 @@ class LoginViewModel @Inject constructor(
                                         }
                                     }
                             }
-                        } else {
-                            Toast.makeText(context, "Invalid Employee ID or Password", Toast.LENGTH_LONG).show()
                         }
                     }
             } catch (e: Exception) {

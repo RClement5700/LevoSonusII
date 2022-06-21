@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -39,8 +40,7 @@ class MainActivity : ComponentActivity() {
 
             //if user says the phrase "banana"
             //call function banana
-            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            if (results?.isNotEmpty() == true) Toast.makeText(applicationContext, "sound detected", Toast.LENGTH_LONG).show()
+            val results = data?.getStringExtra(RecognizerIntent.EXTRA_RESULTS)
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,7 +91,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun onClickVoiceCommandBtn() {
-        val i = Intent(this, VoiceCommandActivity::class.java)
+        val i = Intent(this, VoiceCommandActivity::class.java).apply {
+            putExtra(PROMPT_KEYWORD, "Enter Employee ID")
+        }
         resultLauncher.launch(i)
     }
 }

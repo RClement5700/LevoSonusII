@@ -29,8 +29,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
+import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
@@ -96,11 +100,11 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setContent {
             VoiceCommandWindow()
         }
-        super.onCreate(savedInstanceState)
-        prompt = "Rohan Clement Simmonds"
+        prompt = intent.getStringExtra(PROMPT_KEYWORD) as String
         intentRecognizer = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1000)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -109,10 +113,9 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
             setRecognitionListener(this@VoiceCommandActivity)
         }
-        tts = TextToSpeech(this) {
+        tts = TextToSpeech(this@VoiceCommandActivity) {
             when (it) {
                 TextToSpeech.SUCCESS -> {
-//                    animator.start()
                     tts.language = Locale.US
                     tts.setOnUtteranceProgressListener(LSUtteranceProgressListener())
                     tts.speak(
@@ -123,7 +126,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
             }
         }
         when {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+            ContextCompat.checkSelfPermission(this@VoiceCommandActivity, Manifest.permission.RECORD_AUDIO) ==
                     PackageManager.PERMISSION_GRANTED -> {
                 try {
                     speechRecognizer.run {
@@ -135,13 +138,6 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                     Toast.makeText(this@VoiceCommandActivity, "Start Listening Failed", Toast.LENGTH_LONG).show()
                 }
             }
-//            shouldShowRequestPermissionRationale(...) -> {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected. In this UI,
-            // include a "cancel" or "no thanks" button that allows the user to
-            // continue using your app without granting the permission.
-//            showInContextUI(...)
-//        }
             else -> {
                 requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission_group.MICROPHONE), 0)
             }
@@ -169,19 +165,21 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
 
     override fun onError(error: Int) {
         Log.e(TAG, "Error: $error")
-        return
     }
 
     override fun onResults(results: Bundle?) {
         results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
-            it?.get(0)?.let { result ->
+            it?.first()?.let { result ->
                 wordsSpoken.value = result.trim()
                 setResult(RESULT_OK, Intent().apply {
                     putExtra(RecognizerIntent.EXTRA_RESULTS, result)
                     Log.e(TAG, "Result: $result")
                 })
                 speechRecognizer.stopListening()
-//            binding.imgViewAnimator.clearAnimation()
+                lifecycleScope.launch {
+                    delay(1000L)
+                    finish()
+                }
             }
         }
     }

@@ -11,7 +11,7 @@ data class LevoSonusUser(
 ) {
     fun toMap(): MutableMap<String, Any> {
         return mutableMapOf(
-            "user_id" to userId,
+            "userId" to userId,
             "name" to name,
             "emailAddress" to emailAddress,
             "equipmentId" to equipmentId,
