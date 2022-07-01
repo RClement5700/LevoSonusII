@@ -29,26 +29,17 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
-class MainActivity : ComponentActivity(), RecognitionListener {
+class MainActivity : ComponentActivity(){
     private val TAG = "MainActivity"
-    private val wordsSpoken = mutableStateOf("")
-    private lateinit var intentRecognizer: Intent
-    private lateinit var speechRecognizer: SpeechRecognizer
-//    private lateinit var tts: TextToSpeech
+    private val isServiceRunning = mutableStateOf(false)
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val resultCode = result.resultCode
+    val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
-            // There are no request codes
             val data: Intent? = result.data
             //doSomeOperations()
-            //if user says the phrase "poptarts"
-            //call function poptart
-
-            //if user says the phrase "banana"
-            //call function banana
             val results = data?.getStringExtra(RecognizerIntent.EXTRA_RESULTS)
         }
-    }
+}
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -73,8 +64,6 @@ class MainActivity : ComponentActivity(), RecognitionListener {
                                     TODO:
                                         -hide FAB on SplashScreen
                                         -build UI for VoiceCommandWindow below
-                                        -handle VoiceCommand in this activity:
-                                            https://stackoverflow.com/questions/62671106/onactivityresult-method-is-deprecated-what-is-the-alternative
                                  */
                                 val navController = rememberNavController()
                                 val showFAB = remember {
@@ -94,10 +83,35 @@ class MainActivity : ComponentActivity(), RecognitionListener {
                 }
             }
         }
+        startService()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startService()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopService()
+    }
+
+    private fun stopService() {
         try {
-            startService(Intent(this, LevoSonusService::class.java))
+            stopService(Intent(this, LevoSonusService::class.java))
+            isServiceRunning.value = false
         } catch(e: Exception) {
             e.localizedMessage?.let { Log.d(TAG, it) }
+        }
+    }
+
+    private fun startService() {
+        try {
+            startService(Intent(this, LevoSonusService::class.java))
+            isServiceRunning.value = true
+        } catch(e: Exception) {
+            e.localizedMessage?.let { Log.d(TAG, it) }
+            isServiceRunning.value = false
         }
     }
 
@@ -106,53 +120,5 @@ class MainActivity : ComponentActivity(), RecognitionListener {
             putExtra(PROMPT_KEYWORD, prompt)
         }
         resultLauncher.launch(i)
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        Log.e(TAG, "Ready for Speech Input")
-    }
-
-    override fun onBeginningOfSpeech() {
-        Log.e(TAG, "Speech Beginning")
-    }
-
-    override fun onRmsChanged(rmsdB: Float) {
-    }
-
-    override fun onBufferReceived(buffer: ByteArray?) {
-        Log.e(TAG,"Buffer Received: $buffer")
-    }
-
-    override fun onEndOfSpeech() {
-        Log.e(TAG, "End of Speech")
-    }
-
-    override fun onError(error: Int) {
-        Log.e(TAG, "Error: $error")
-        speechRecognizer.startListening(intentRecognizer)
-    }
-
-    override fun onResults(results: Bundle?) {
-        results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
-            it?.first()?.let { result ->
-                wordsSpoken.value = result.trim()
-                setResult(RESULT_OK, Intent().apply {
-                    putExtra(RecognizerIntent.EXTRA_RESULTS, result)
-                    Log.e(TAG, "Result: $result")
-                })
-                if (wordsSpoken.value.contentEquals("JARVIS", true)) {
-                    onClickVoiceCommandBtn()
-                } else {
-                    speechRecognizer.startListening(intentRecognizer)
-                }
-            }
-        }
-    }
-
-    override fun onPartialResults(partialResults: Bundle?) {
-    }
-
-    override fun onEvent(eventType: Int, params: Bundle?) {
-        Log.e(TAG, "Event Type: $eventType")
     }
 }

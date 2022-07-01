@@ -17,7 +17,7 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.supervisorScope
+import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import java.util.*
 
 class LevoSonusService: Service(), RecognitionListener {
@@ -88,8 +88,6 @@ class LevoSonusService: Service(), RecognitionListener {
 
     override fun onError(error: Int) {
         Log.e(TAG, "Error: $error")
-        //Mute the sound the phone makes when it begins listening
-        //https://developer.android.com/guide/topics/media-apps/volume-and-earphones
         speechRecognizer.startListening(intentRecognizer)
     }
 
@@ -97,14 +95,11 @@ class LevoSonusService: Service(), RecognitionListener {
         results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
             it?.first()?.let { result ->
                 wordsSpoken.value = result.trim()
-//                setResult(ComponentActivity.RESULT_OK, Intent().apply {
-//                    putExtra(RecognizerIntent.EXTRA_RESULTS, result)
-//                    Log.e(TAG, "Result: $result")
-//                })
                 if (wordsSpoken.value.contentEquals("JARVIS", true)) {
                     unmuteSystem()
                     startActivity(Intent(this, VoiceCommandActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .putExtra(PROMPT_KEYWORD, "How Can I Help?" )
                     )
                 } else {
                     speechRecognizer.startListening(intentRecognizer)
@@ -121,17 +116,11 @@ class LevoSonusService: Service(), RecognitionListener {
     }
 
     private fun muteSystem() {
-        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
-        aManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
-        aManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
-        aManager.setStreamVolume(AudioManager.STREAM_RING, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
-        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
+        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, AudioManager.ADJUST_MUTE)
+        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.ADJUST_MUTE)
     }
     private fun unmuteSystem() {
-        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 3, AudioManager.FLAG_PLAY_SOUND)
-        aManager.setStreamVolume(AudioManager.STREAM_ALARM, 3, AudioManager.FLAG_PLAY_SOUND)
-        aManager.setStreamVolume(AudioManager.STREAM_MUSIC, 3, AudioManager.FLAG_PLAY_SOUND)
-        aManager.setStreamVolume(AudioManager.STREAM_RING, 3, AudioManager.FLAG_PLAY_SOUND)
-        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 3, AudioManager.FLAG_PLAY_SOUND)
+        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 4, AudioManager.ADJUST_UNMUTE)
+        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 4, AudioManager.ADJUST_UNMUTE)
     }
 }
