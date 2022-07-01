@@ -31,7 +31,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
     private val TAG = "MainActivity"
-    private val isServiceRunning = mutableStateOf(false)
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
     val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -99,7 +98,6 @@ class MainActivity : ComponentActivity(){
     private fun stopService() {
         try {
             stopService(Intent(this, LevoSonusService::class.java))
-            isServiceRunning.value = false
         } catch(e: Exception) {
             e.localizedMessage?.let { Log.d(TAG, it) }
         }
@@ -108,10 +106,8 @@ class MainActivity : ComponentActivity(){
     private fun startService() {
         try {
             startService(Intent(this, LevoSonusService::class.java))
-            isServiceRunning.value = true
         } catch(e: Exception) {
             e.localizedMessage?.let { Log.d(TAG, it) }
-            isServiceRunning.value = false
         }
     }
 
