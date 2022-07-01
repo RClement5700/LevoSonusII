@@ -21,6 +21,7 @@ import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.NavTile
 
@@ -39,14 +40,14 @@ fun DepartmentsScreen(navController: NavController) {
             Text(
                 text = "Departments",
                 modifier = Modifier.padding(8.dp),
-                color = Constants.ENABLED_BUTTON_COLOR,
+                color = LS_BLUE,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Italic,
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Divider(color = Constants.ENABLED_BUTTON_COLOR, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
+            Divider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
             Spacer(modifier = Modifier.height(8.dp))
             NavTile(title = "Grocery", icon = R.drawable.grocery_icon, showIcon = remember{mutableStateOf(true)})
             NavTile(title = "Meat", icon = R.drawable.meat_icon1, showIcon = remember{mutableStateOf(true)})

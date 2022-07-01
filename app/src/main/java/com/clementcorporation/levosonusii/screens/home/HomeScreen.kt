@@ -27,12 +27,11 @@ import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
 import com.clementcorporation.levosonusii.main.LSAppBar
-import com.clementcorporation.levosonusii.main.LSFAB
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -164,7 +163,7 @@ fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewMod
                         .zIndex(1f)
                         .size(50.dp),
                     strokeWidth = 2.dp,
-                    color = ENABLED_BUTTON_COLOR
+                    color = LS_BLUE
                 )
             }
             Column(

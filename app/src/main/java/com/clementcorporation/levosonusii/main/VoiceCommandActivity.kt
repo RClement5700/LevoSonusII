@@ -43,7 +43,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
     private lateinit var intentRecognizer: Intent
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var tts: TextToSpeech
-    private lateinit var prompt: String
+    private var prompt = "How Can I Help?"
 
     @Composable
     fun VoiceCommandWindow() {
@@ -104,7 +104,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
         setContent {
             VoiceCommandWindow()
         }
-        prompt = intent.getStringExtra(PROMPT_KEYWORD) as String
+//        prompt = intent.getStringExtra(PROMPT_KEYWORD) as String
         intentRecognizer = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1000)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)

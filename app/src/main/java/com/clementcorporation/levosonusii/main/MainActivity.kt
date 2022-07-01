@@ -3,9 +3,10 @@ package com.clementcorporation.levosonusii.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,7 +29,12 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), RecognitionListener {
+    private val TAG = "MainActivity"
+    private val wordsSpoken = mutableStateOf("")
+    private lateinit var intentRecognizer: Intent
+    private lateinit var speechRecognizer: SpeechRecognizer
+//    private lateinit var tts: TextToSpeech
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -88,12 +94,65 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        try {
+            startService(Intent(this, LevoSonusService::class.java))
+        } catch(e: Exception) {
+            e.localizedMessage?.let { Log.d(TAG, it) }
+        }
     }
 
-    private fun onClickVoiceCommandBtn() {
+    private fun onClickVoiceCommandBtn(prompt: String = "How Can I Help?") {
         val i = Intent(this, VoiceCommandActivity::class.java).apply {
-            putExtra(PROMPT_KEYWORD, "Enter Employee ID")
+            putExtra(PROMPT_KEYWORD, prompt)
         }
         resultLauncher.launch(i)
+    }
+
+    override fun onReadyForSpeech(params: Bundle?) {
+        Log.e(TAG, "Ready for Speech Input")
+    }
+
+    override fun onBeginningOfSpeech() {
+        Log.e(TAG, "Speech Beginning")
+    }
+
+    override fun onRmsChanged(rmsdB: Float) {
+    }
+
+    override fun onBufferReceived(buffer: ByteArray?) {
+        Log.e(TAG,"Buffer Received: $buffer")
+    }
+
+    override fun onEndOfSpeech() {
+        Log.e(TAG, "End of Speech")
+    }
+
+    override fun onError(error: Int) {
+        Log.e(TAG, "Error: $error")
+        speechRecognizer.startListening(intentRecognizer)
+    }
+
+    override fun onResults(results: Bundle?) {
+        results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
+            it?.first()?.let { result ->
+                wordsSpoken.value = result.trim()
+                setResult(RESULT_OK, Intent().apply {
+                    putExtra(RecognizerIntent.EXTRA_RESULTS, result)
+                    Log.e(TAG, "Result: $result")
+                })
+                if (wordsSpoken.value.contentEquals("JARVIS", true)) {
+                    onClickVoiceCommandBtn()
+                } else {
+                    speechRecognizer.startListening(intentRecognizer)
+                }
+            }
+        }
+    }
+
+    override fun onPartialResults(partialResults: Bundle?) {
+    }
+
+    override fun onEvent(eventType: Int, params: Bundle?) {
+        Log.e(TAG, "Event Type: $eventType")
     }
 }

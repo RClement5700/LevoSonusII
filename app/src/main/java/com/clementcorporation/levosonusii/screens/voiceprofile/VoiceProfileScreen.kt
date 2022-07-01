@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.main.Constants
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.VoiceProfile
 
@@ -36,14 +37,14 @@ fun VoiceProfileScreen(navController: NavController) {
             Text(
                 text = "Voice Profile",
                 modifier = Modifier.padding(8.dp),
-                color = Constants.ENABLED_BUTTON_COLOR,
+                color = LS_BLUE,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Italic,
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Divider(color = Constants.ENABLED_BUTTON_COLOR, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
+            Divider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
             Spacer(modifier = Modifier.height(8.dp))
             viewModel.getVoiceProfileDataStore().data.collectAsState(
                 initial = VoiceProfile()

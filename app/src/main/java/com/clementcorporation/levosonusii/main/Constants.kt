@@ -12,5 +12,5 @@ object Constants {
     const val LOGO_SIZE = 50
     const val BTN_HEIGHT = 50
     const val BTN_WIDTH = 200
-    val ENABLED_BUTTON_COLOR = Color(0xFF32527B)
+    val LS_BLUE = Color(0xFF32527B)
 }

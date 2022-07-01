@@ -28,7 +28,7 @@ import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAlertDialog
@@ -219,7 +219,7 @@ fun PortraitContent(
         elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
         enabled = isRegisterButtonEnabled.value,
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = ENABLED_BUTTON_COLOR,
+            backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
@@ -346,7 +346,7 @@ fun LandscapeContent(
             elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
             enabled = isRegisterButtonEnabled.value,
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = ENABLED_BUTTON_COLOR,
+                backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {

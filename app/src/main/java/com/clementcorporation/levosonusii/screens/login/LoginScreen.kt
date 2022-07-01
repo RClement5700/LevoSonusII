@@ -29,7 +29,7 @@ import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSPasswordTextField
@@ -141,7 +141,7 @@ fun PortraitButtonAndRegistrationContent(
         elevation = elevation(defaultElevation = ELEVATION.dp),
         enabled = isLoginButtonEnabled.value,
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = ENABLED_BUTTON_COLOR,
+            backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
@@ -210,7 +210,7 @@ fun LandscapeButtonAndRegistrationContent(
             elevation = elevation(defaultElevation = ELEVATION.dp),
             enabled = isLoginButtonEnabled.value,
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = ENABLED_BUTTON_COLOR,
+                backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {

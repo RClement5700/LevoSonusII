@@ -41,7 +41,7 @@ import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
@@ -158,7 +158,7 @@ fun LSFAB(onClick: () -> Unit = {}) {
         modifier = Modifier.zIndex(1f),
         onClick = onClick,
         shape = CircleShape,
-        backgroundColor = ENABLED_BUTTON_COLOR,
+        backgroundColor = LS_BLUE,
         elevation = FloatingActionButtonDefaults.elevation(),
         ) {
         LevoSonusLogo(size = 50.dp, showText = false)
@@ -184,7 +184,7 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
             if (showIcon.value) {
                 Icon(
                     modifier = Modifier.size(50.dp).padding(PADDING.dp),
-                    tint = ENABLED_BUTTON_COLOR,
+                    tint = LS_BLUE,
                     painter = painterResource(id = icon),
                     contentDescription = ""
                 )
@@ -192,7 +192,7 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
             Text(
                 modifier = Modifier.padding(PADDING.dp),
                 text = title,
-                color = ENABLED_BUTTON_COLOR,
+                color = LS_BLUE,
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 12.sp,
                 fontStyle = FontStyle.Italic,
@@ -202,7 +202,7 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
                 onClick = onClick
             ) {
                 Icon(
-                    tint = ENABLED_BUTTON_COLOR,
+                    tint = LS_BLUE,
                     imageVector = Icons.Default.ArrowRight,
                     contentDescription = ""
                 )
@@ -316,7 +316,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             .padding(2.dp)
                             .weight(1f),
                         onClick = onPositiveButtonClicked,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ENABLED_BUTTON_COLOR)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = LS_BLUE)
                     ) {
                         Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
                     }
@@ -325,7 +325,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             .padding(2.dp)
                             .weight(1f),
                         onClick = onNegativeButtonClicked,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ENABLED_BUTTON_COLOR)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = LS_BLUE)
                     ) {
                         Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
                     }

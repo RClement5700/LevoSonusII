@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
-import com.clementcorporation.levosonusii.main.Constants.ENABLED_BUTTON_COLOR
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.NavTile
 
 @Composable
@@ -39,14 +39,14 @@ fun EquipmentScreen(navController: NavController) {
             Text(
                 text = "Equipment",
                 modifier = Modifier.padding(8.dp),
-                color = ENABLED_BUTTON_COLOR,
+                color = LS_BLUE,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Italic,
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Divider(color = ENABLED_BUTTON_COLOR, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
+            Divider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
             Spacer(modifier = Modifier.height(8.dp))
             NavTile(title = "Headset", icon = R.drawable.headset_icon, showIcon = remember {
                 mutableStateOf(true)
