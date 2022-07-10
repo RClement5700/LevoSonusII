@@ -1,11 +1,11 @@
 package com.clementcorporation.levosonusii.main
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
@@ -104,10 +105,24 @@ class MainActivity : ComponentActivity(){
     }
 
     private fun startService() {
-        try {
-            startService(Intent(this, LevoSonusService::class.java))
-        } catch(e: Exception) {
-            e.localizedMessage?.let { Log.d(TAG, it) }
+        when {
+            ContextCompat.checkSelfPermission(
+                this@MainActivity, Manifest.permission.RECORD_AUDIO) ==
+                    PackageManager.PERMISSION_GRANTED -> {
+                try {
+                    startService(Intent(this, LevoSonusService::class.java))
+                } catch(e: Exception) {
+                    e.localizedMessage?.let { Log.d(TAG, it) }
+                }
+            }
+            else -> {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission_group.MICROPHONE),
+                    0
+                )
+            }
         }
     }
 

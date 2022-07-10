@@ -22,14 +22,10 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
-import com.clementcorporation.levosonusii.main.MainActivity
-import com.clementcorporation.levosonusii.main.MainActivityViewModel
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay

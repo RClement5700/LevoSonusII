@@ -12,7 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.LevoSonusUser
 import com.clementcorporation.levosonusii.model.VoiceProfile
-import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileCommands
+import com.clementcorporation.levosonusii.main.VoiceProfileConstants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -68,7 +68,7 @@ class RegisterViewModel @Inject constructor(
     private fun createUser(emailAddress: String, firstName: String, lastName: String) {
         val userId = auth.currentUser?.uid
         val voiceProfile: HashMap<String, ArrayList<String>> = hashMapOf()
-        VoiceProfileCommands.values().forEach {
+        VoiceProfileConstants.values().forEach {
             voiceProfile[it.name] = arrayListOf()
         }
         val lsUser = LevoSonusUser(

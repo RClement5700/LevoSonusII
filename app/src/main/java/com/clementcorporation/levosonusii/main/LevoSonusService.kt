@@ -53,12 +53,7 @@ class LevoSonusService: Service(), RecognitionListener {
                 }
             }
             else -> {
-                requestPermissions(Activity(),
-                    arrayOf(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission_group.MICROPHONE),
-                    0
-                )
+                Toast.makeText(this, "Voice Command Offline", Toast.LENGTH_LONG).show()
             }
         }
         muteSystem()

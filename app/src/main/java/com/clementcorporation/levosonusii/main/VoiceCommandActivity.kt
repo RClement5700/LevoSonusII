@@ -180,6 +180,12 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                     putExtra(RecognizerIntent.EXTRA_RESULTS, result)
                     Log.e(TAG, "Result: $result")
                 })
+                when (wordsSpoken.value) {
+                    //TODO: research UseCases
+                    VoiceCommands.LOGIN.name -> {}
+                    VoiceCommands.REGISTER.name -> {}
+
+                }
                 speechRecognizer.stopListening()
                 lifecycleScope.launch {
                     delay(1000L)

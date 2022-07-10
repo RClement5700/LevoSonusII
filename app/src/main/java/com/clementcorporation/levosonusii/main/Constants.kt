@@ -14,3 +14,29 @@ object Constants {
     const val BTN_WIDTH = 200
     val LS_BLUE = Color(0xFF32527B)
 }
+
+enum class VoiceProfileConstants {
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SIX,
+    SEVEN,
+    EIGHT,
+    NINE,
+    ZERO,
+    JARVIS,
+    YES,
+    NO,
+    LOGIN,
+    REGISTER,
+    ORDERS
+}
+
+enum class VoiceCommands {
+    JARVIS,
+    LOGIN,
+    REGISTER,
+    OPEN
+}
