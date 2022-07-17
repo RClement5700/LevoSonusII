@@ -1,7 +1,9 @@
 package com.clementcorporation.levosonusii.screens.departments
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -18,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
@@ -34,6 +35,7 @@ fun DepartmentsScreen(navController: NavController) {
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Column(
+            modifier = Modifier.verticalScroll(state = rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {

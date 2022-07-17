@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
@@ -31,9 +32,10 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
+    private lateinit var navController: NavHostController
     private val TAG = "MainActivity"
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-    val resultCode = result.resultCode
+        val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
             //doSomeOperations()
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity(){
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: MainActivityViewModel = hiltViewModel()
+            navController = rememberNavController()
             LevoSonusIITheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -65,11 +68,10 @@ class MainActivity : ComponentActivity(){
                                         -hide FAB on SplashScreen
                                         -build UI for VoiceCommandWindow below
                                  */
-                                val navController = rememberNavController()
                                 val showFAB = remember {
-                                    mutableStateOf(!navController.currentDestination?.route.contentEquals(LevoSonusScreens.SplashScreen.name))
+                                    mutableStateOf(false)
                                 }
-                                LevoSonusNavigation()
+                                LevoSonusNavigation(navController, showFAB)
                                 Log.d("","current destination: ${navController.currentDestination?.route}")
                                 Log.d("","screen name == current destination: ${navController.currentDestination?.route.contentEquals(LevoSonusScreens.SplashScreen.name)}")
                                 if (showFAB.value) {
@@ -93,6 +95,11 @@ class MainActivity : ComponentActivity(){
 
     override fun onStop() {
         super.onStop()
+        stopService()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         stopService()
     }
 

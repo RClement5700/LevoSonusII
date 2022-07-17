@@ -1,10 +1,10 @@
 package com.clementcorporation.levosonusii.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
 import com.clementcorporation.levosonusii.screens.departments.DepartmentsScreen
 import com.clementcorporation.levosonusii.screens.equipment.EquipmentScreen
@@ -19,47 +19,59 @@ import com.clementcorporation.levosonusii.screens.splash.SplashScreen
 import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileScreen
 
 @Composable
-fun LevoSonusNavigation() {
-    val navController = rememberNavController()
+fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>) {
     NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
         composable(LevoSonusScreens.SplashScreen.name){
             SplashScreen(navController)
+            showFab.value = false
         }
         composable(LevoSonusScreens.LoginScreen.name){
             LoginScreen(navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.RegisterScreen.name){
             RegisterScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.VoiceProfileScreen.name){
             VoiceProfileScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.HomeScreen.name){
             HomeScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.EquipmentScreen.name){
             EquipmentScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.DepartmentsScreen.name){
             DepartmentsScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.HealthAndWellnessScreen.name){
             HealthAndWellnessScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.PayAndBenefitsScreen.name){
             PayAndBenefitsScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.MessagesScreen.name){
             MessagesScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.OrdersScreen.name){
             OrdersScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.AnnouncementsScreen.name){
             AnnouncementsScreen(navController = navController)
+            showFab.value = true
         }
         composable(LevoSonusScreens.GameCenterScreen.name){
             GameCenterScreen(navController = navController)
+            showFab.value = true
         }
     }
 }
