@@ -1,7 +1,6 @@
 package com.clementcorporation.levosonusii.main
 
 import android.Manifest
-import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -15,7 +14,6 @@ import android.speech.SpeechRecognizer
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import java.util.*
@@ -62,6 +60,12 @@ class LevoSonusService: Service(), RecognitionListener {
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        speechRecognizer.destroy()
+    }
+
     override fun onReadyForSpeech(params: Bundle?) {
         Log.e(TAG, "Ready for Speech Input")
     }
@@ -94,7 +98,7 @@ class LevoSonusService: Service(), RecognitionListener {
                     unmuteSystem()
                     startActivity(Intent(this, VoiceCommandActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .putExtra(PROMPT_KEYWORD, "How Can I Help?" )
+                        .putExtra(PROMPT_KEYWORD, "How Can I Help?")
                     )
                 } else {
                     speechRecognizer.startListening(intentRecognizer)

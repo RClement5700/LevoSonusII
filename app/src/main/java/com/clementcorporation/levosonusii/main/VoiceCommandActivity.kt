@@ -30,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
+import com.clementcorporation.levosonusii.main.Constants.USER_INPUT
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
@@ -54,13 +56,14 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
             height = 0.75f
         }
         Box(
-            modifier = Modifier
-                .clickable {
-                    finish()
-                },
+            modifier = Modifier.clickable {
+                finish()
+            },
             contentAlignment = Alignment.TopEnd
         ) {
-            IconButton(modifier = Modifier.size(25.dp).zIndex(1f), onClick = { finish() }) {
+            IconButton(modifier = Modifier
+                .size(25.dp)
+                .zIndex(1f), onClick = { finish() }) {
                 Icon(imageVector = Icons.Filled.Cancel, contentDescription = "Close", tint = Color.Red)
             }
             Card(
@@ -180,12 +183,9 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                     putExtra(RecognizerIntent.EXTRA_RESULTS, result)
                     Log.e(TAG, "Result: $result")
                 })
-                when (wordsSpoken.value) {
-                    //TODO: research UseCases
-                    VoiceCommands.LOGIN.name -> {}
-                    VoiceCommands.REGISTER.name -> {}
-
-                }
+                val userInput = Intent(USER_INPUT)
+                userInput.putExtra("USER_INPUT", wordsSpoken.value)
+                LocalBroadcastManager.getInstance(this).sendBroadcast(userInput)
                 speechRecognizer.stopListening()
                 lifecycleScope.launch {
                     delay(1000L)

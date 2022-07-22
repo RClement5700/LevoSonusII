@@ -2,7 +2,10 @@ package com.clementcorporation.levosonusii.main
 
 import android.Manifest
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
@@ -20,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
@@ -28,6 +32,7 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
@@ -38,14 +43,34 @@ class MainActivity : ComponentActivity(){
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
-            //doSomeOperations()
             val results = data?.getStringExtra(RecognizerIntent.EXTRA_RESULTS)
+            results?.let {
+                executeVoiceCommand(it)
+            }
         }
-}
+    }
+    private lateinit var bManager: LocalBroadcastManager
+    private val bReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            if (intent.action == Constants.USER_INPUT) {
+                val userInput = intent.getStringExtra("USER_INPUT")
+                userInput?.let {
+                    executeVoiceCommand(it)
+                }
+            }
+        }
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: MainActivityViewModel = hiltViewModel()
+            val intentFilter = IntentFilter().apply {
+                addAction(Constants.USER_INPUT)
+            }
+            bManager = LocalBroadcastManager.getInstance(this).apply {
+                registerReceiver(bReceiver, intentFilter)
+            }
             navController = rememberNavController()
             LevoSonusIITheme {
                 Surface(
@@ -72,8 +97,6 @@ class MainActivity : ComponentActivity(){
                                     mutableStateOf(false)
                                 }
                                 LevoSonusNavigation(navController, showFAB)
-                                Log.d("","current destination: ${navController.currentDestination?.route}")
-                                Log.d("","screen name == current destination: ${navController.currentDestination?.route.contentEquals(LevoSonusScreens.SplashScreen.name)}")
                                 if (showFAB.value) {
                                     LSFAB {
                                         onClickVoiceCommandBtn()
@@ -86,6 +109,17 @@ class MainActivity : ComponentActivity(){
             }
         }
         startService()
+    }
+
+    private fun executeVoiceCommand(command: String) {
+        when (command) {
+            VoiceCommands.LOGIN.name.lowercase(Locale.ENGLISH) -> {
+                navController.navigate(LevoSonusScreens.LoginScreen.name)
+            }
+            VoiceCommands.REGISTER.name.lowercase(Locale.ENGLISH) -> {
+                navController.navigate(LevoSonusScreens.RegisterScreen.name)
+            }
+        }
     }
 
     override fun onResume() {
@@ -101,6 +135,7 @@ class MainActivity : ComponentActivity(){
     override fun onDestroy() {
         super.onDestroy()
         stopService()
+        bManager.unregisterReceiver(bReceiver);
     }
 
     private fun stopService() {
