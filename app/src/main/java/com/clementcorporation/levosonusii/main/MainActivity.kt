@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -31,14 +32,17 @@ import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
     private lateinit var navController: NavHostController
     private val TAG = "MainActivity"
+    private lateinit var viewModel: MainActivityViewModel
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -64,7 +68,7 @@ class MainActivity : ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val viewModel: MainActivityViewModel = hiltViewModel()
+            viewModel = hiltViewModel()
             val intentFilter = IntentFilter().apply {
                 addAction(Constants.USER_INPUT)
             }
@@ -112,12 +116,45 @@ class MainActivity : ComponentActivity(){
     }
 
     private fun executeVoiceCommand(command: String) {
-        when (command) {
-            VoiceCommands.LOGIN.name.lowercase(Locale.ENGLISH) -> {
-                navController.navigate(LevoSonusScreens.LoginScreen.name)
-            }
-            VoiceCommands.REGISTER.name.lowercase(Locale.ENGLISH) -> {
-                navController.navigate(LevoSonusScreens.RegisterScreen.name)
+        if (!FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
+            when (command) {
+                VoiceCommands.ANNOUNCEMENTS -> {
+                    navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
+                }
+                VoiceCommands.BENEFITS -> {
+                    navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
+                }
+                VoiceCommands.DEPARTMENTS-> {
+                    navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
+                }
+                VoiceCommands.EQUIPMENT -> {
+                    navController.navigate(LevoSonusScreens.EquipmentScreen.name)
+                }
+                VoiceCommands.GAME_CENTER -> {
+                    navController.navigate(LevoSonusScreens.GameCenterScreen.name)
+                }
+                VoiceCommands.HOME -> {
+                    navController.navigate(LevoSonusScreens.HomeScreen.name)
+                }
+                VoiceCommands.HEALTH -> {
+                    navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
+                }
+                VoiceCommands.MESSAGES -> {
+                    navController.navigate(LevoSonusScreens.MessagesScreen.name)
+                }
+                VoiceCommands.ORDERS -> {
+                    navController.navigate(LevoSonusScreens.OrdersScreen.name)
+                }
+                VoiceCommands.SIGN_OUT -> {
+                    lifecycleScope.launch {
+                        viewModel.signOut()
+                        delay(1000L)
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                    }
+                }
+                VoiceCommands.VOICE_PROFILE -> {
+                    navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                }
             }
         }
     }

@@ -35,9 +35,18 @@ enum class VoiceProfileConstants {
     ORDERS
 }
 
-enum class VoiceCommands {
-    JARVIS,
-    LOGIN,
-    REGISTER,
-    OPEN
-}
+object VoiceCommands {
+    val SIGN_OUT = "sign out"
+    val HOME = "home"
+    val ANNOUNCEMENTS = "annoucements"
+    val DEPARTMENTS = "departments"
+    val EQUIPMENT = "equipment"
+    val GAME_CENTER ="game center"
+    val HEALTH = "health"
+    val MESSAGES = "messages"
+    val BENEFITS = "benefits"
+    val ORDERS = "orders"
+    val VOICE_PROFILE = "voice profile"
+    val CURRENT_ORDER = "current order"
+    val NEXT_ORDER = "next order"
+  }

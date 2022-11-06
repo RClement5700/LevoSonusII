@@ -23,6 +23,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
+//MOVE SIGN-IN FUNCTIONALITY TO MAIN VIEW MODEL
+
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,

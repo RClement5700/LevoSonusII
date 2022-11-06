@@ -1,8 +1,6 @@
 package com.clementcorporation.levosonusii.main
 
-import android.content.Context
-import android.content.Intent
-import android.graphics.drawable.Icon
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -45,6 +42,7 @@ import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
 import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
+import com.google.android.material.R.drawable.material_ic_keyboard_arrow_previous_black_24dp
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
@@ -72,9 +70,10 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
     }
 }
 
+@SuppressLint("PrivateResource")
 @Composable
-fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, employeeName: String,
-             profilePicUrl: String, onClickProfilePic: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
+fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, title: String,
+             profilePicUrl: String?, onClickLeftIcon: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
              onClickSignOut: () -> Unit = {}
 ) {
     Row(
@@ -85,17 +84,29 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        LSProfileIcon(
-            modifier = Modifier
-                .size(35.dp)
-                .clip(CircleShape)
-                .border(2.dp, Color.LightGray, CircleShape)
-                .clickable(onClick = onClickProfilePic),
-            imageUrl = profilePicUrl
-        )
+        if (profilePicUrl != null) {
+            LSProfileIcon(
+                modifier = Modifier
+                    .size(35.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Color.LightGray, CircleShape)
+                    .clickable(onClick = onClickLeftIcon),
+                imageUrl = profilePicUrl
+            )
+        } else {
+            Image(
+                modifier = Modifier
+                        .size(35.dp)
+                        .clip(CircleShape)
+                        .clickable(onClick = onClickLeftIcon),
+                painter = painterResource(id = material_ic_keyboard_arrow_previous_black_24dp),
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop
+            )
+        }
         Text(
             modifier = Modifier.padding(PADDING.dp),
-            text = employeeName,
+            text = title,
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp
@@ -130,7 +141,7 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, em
                 }
             }
         }
-    }
+    } 
 }
 
 @Composable
