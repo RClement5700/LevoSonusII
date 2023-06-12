@@ -73,7 +73,7 @@ fun VoiceProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(8.dp))
                 viewModel.getVoiceProfileDataStore().data.collectAsState(
                     initial = VoiceProfile()
-                ).value.voiceProfileMap.keys.forEach {
+                ).value.voiceProfileMap.keys.sorted().forEach {
                     NavTile(title = it) {
 
                     }
