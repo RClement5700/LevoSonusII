@@ -25,7 +25,5 @@ class MainActivityViewModel @Inject constructor(
         voiceProfileDataStore.updateData {
             VoiceProfile()
         }
-//        showProgressBar.value = true
-//        expandMenu.value = false
     }
 }

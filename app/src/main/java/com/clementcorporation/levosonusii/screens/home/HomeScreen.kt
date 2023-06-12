@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.screens.home
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -35,13 +36,15 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import com.clementcorporation.levosonusii.screens.equipment.TAG
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val imageUrl = "${STORAGE_BASE_URL}${viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl}${STORAGE_APPENDED_URL}"
+    val voiceProfileUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
+    val imageUrl = "${STORAGE_BASE_URL}$voiceProfileUrl${STORAGE_APPENDED_URL}"
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
@@ -80,6 +83,7 @@ fun HomeScreen(navController: NavController) {
                 )
             }
         ) {
+            Log.e(TAG, it.toString())
             InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = imageUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
@@ -145,48 +149,53 @@ fun InflatableProfilePic(inflateProfilePic: MutableState<Boolean>, imageUrl: Str
 
 @Composable
 fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewModel) {
-    if (viewModel.showProgressBar.value) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .zIndex(1f)
-                .size(50.dp),
-            strokeWidth = 2.dp,
-            color = LS_BLUE
-        )
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(state = rememberScrollState()),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        NavTile(title = stringResource(id = R.string.homescreen_tile_voice_profile_label)) {
-            navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+        if (viewModel.showProgressBar.value) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .size(50.dp),
+                strokeWidth = 2.dp,
+                color = LS_BLUE
+            )
         }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_equipment_label)) { //SearchBar: filters equipment based on number input; display list of equipment in use; attach forklift/EPJ icon
-            navController.navigate(LevoSonusScreens.EquipmentScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_departments_label)) { //choose department, display remaining orders & number of users in each department
-            navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_health_wellness_label)) { //breaks; lunch; rewards; time-off; biometrics: steps, heartrate, etc
-            navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)) {//in app text messaging
-            navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_orders_label)) { //currentOrder: remaining picks, goBacks, currentPick, nextPick; PastOrders
-            navController.navigate(LevoSonusScreens.OrdersScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_messages_label)) {//in app text messaging
-            navController.navigate(LevoSonusScreens.MessagesScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_announcements_label)) {//company wide & local announcements
-            navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
-        }
-        NavTile(title = stringResource(id = R.string.homescreen_tile_game_center_label)) {//Casino where employees can place wagers using points accumulated by various tasks
-            navController.navigate(LevoSonusScreens.GameCenterScreen.name)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(state = rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            NavTile(title = stringResource(id = R.string.homescreen_tile_voice_profile_label)) {
+                navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_equipment_label)) { //SearchBar: filters equipment based on number input; display list of equipment in use; attach forklift/EPJ icon
+                navController.navigate(LevoSonusScreens.EquipmentScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_departments_label)) { //choose department, display remaining orders & number of users in each department
+                navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_health_wellness_label)) { //breaks; lunch; rewards; time-off; biometrics: steps, heartrate, etc
+                navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)) {//in app text messaging
+                navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_orders_label)) { //currentOrder: remaining picks, goBacks, currentPick, nextPick; PastOrders
+                navController.navigate(LevoSonusScreens.OrdersScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_messages_label)) {//in app text messaging
+                navController.navigate(LevoSonusScreens.MessagesScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_announcements_label)) {//company wide & local announcements
+                navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
+            }
+            NavTile(title = stringResource(id = R.string.homescreen_tile_game_center_label)) {//Casino where employees can place wagers using points accumulated by various tasks
+                navController.navigate(LevoSonusScreens.GameCenterScreen.name)
+            }
         }
     }
 }

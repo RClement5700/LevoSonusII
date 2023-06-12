@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
 import com.clementcorporation.levosonusii.screens.departments.DepartmentsScreen
 import com.clementcorporation.levosonusii.screens.equipment.EquipmentScreen
+import com.clementcorporation.levosonusii.screens.equipment.HeadsetsScreen
+import com.clementcorporation.levosonusii.screens.equipment.MachinesScreen
 import com.clementcorporation.levosonusii.screens.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.screens.home.HomeScreen
 import com.clementcorporation.levosonusii.screens.login.LoginScreen
@@ -71,6 +73,17 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
         }
         composable(LevoSonusScreens.GameCenterScreen.name){
             GameCenterScreen(navController = navController)
+            showFab.value = true
+        }
+        composable(LevoSonusScreens.MachinesScreen.name){
+            MachinesScreen(navController = navController)
+            showFab.value = true
+        }
+        composable(LevoSonusScreens.HeadsetsScreen.name){
+            HeadsetsScreen(navController = navController)
+            showFab.value = true
+        }
+        composable(LevoSonusScreens.ProductScannersScreen.name){
             showFab.value = true
         }
     }

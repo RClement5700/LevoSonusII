@@ -13,5 +13,8 @@ enum class LevoSonusScreens {
     PayAndBenefitsScreen,
     MessagesScreen,
     AnnouncementsScreen,
-    GameCenterScreen
+    GameCenterScreen,
+    MachinesScreen,
+    HeadsetsScreen,
+    ProductScannersScreen
 }

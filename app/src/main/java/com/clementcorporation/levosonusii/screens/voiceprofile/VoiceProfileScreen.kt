@@ -1,5 +1,6 @@
 package com.clementcorporation.levosonusii.screens.voiceprofile
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +21,7 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -64,6 +66,7 @@ fun VoiceProfileScreen(navController: NavController) {
                 )
             }
         ) {
+            Log.e(TAG, it.toString())
             Column(modifier = Modifier.verticalScroll(enabled = true, state = rememberScrollState())) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Divider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))

@@ -109,7 +109,7 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
             text = title,
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
-            fontSize = 12.sp
+            fontSize = 14.sp
         )
         Spacer(Modifier.weight(1f))
         IconButton(
@@ -173,6 +173,54 @@ fun LSFAB(onClick: () -> Unit = {}) {
         elevation = FloatingActionButtonDefaults.elevation(),
         ) {
         LevoSonusLogo(size = 50.dp, showText = false)
+    }
+}
+
+@Composable
+fun SelectionTile(title: String? = null, icon: Int? = null,
+    isSelected: MutableState<Boolean> = mutableStateOf(false)) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp)
+            .clickable(onClick = {
+                isSelected.value = true
+            }),
+        elevation = ELEVATION.dp,
+        shape = RoundedCornerShape(CURVATURE.dp),
+        backgroundColor = Color.White
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            icon?.let {
+                Icon(
+                    modifier = Modifier.size(50.dp).padding(PADDING.dp),
+                    tint = LS_BLUE,
+                    painter = painterResource(id = it),
+                    contentDescription = ""
+                )
+            }
+            title?.let {
+                Text(
+                    modifier = Modifier.padding(PADDING.dp),
+                    text = it,
+                    color = LS_BLUE,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 12.sp,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Icon(
+                modifier = Modifier.size(if (isSelected.value) 24.dp else 0.dp),
+                tint = LS_BLUE,
+                imageVector = Icons.Default.Check,
+                contentDescription = "Selected Tile"
+            )
+        }
     }
 }
 

@@ -96,6 +96,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
             Log.e(TAG, "Utterance Listener: DONE")
         }
 
+        @Deprecated("Deprecated Utterance Progress Listener initialized")
         override fun onError(utteranceId: String?) {
             Log.e(TAG,"Utterance Listener: ERROR")
             onStart(utteranceId)
