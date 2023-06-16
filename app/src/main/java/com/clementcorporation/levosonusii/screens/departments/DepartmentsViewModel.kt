@@ -11,7 +11,7 @@ class DepartmentsViewModel: ViewModel() {
         .document("departments")
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
-    val showProgressBar = mutableStateOf(false)
+    val showProgressBar = mutableStateOf(true)
 
     init {
         fetchDepartmentsData()

@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -106,7 +107,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
             LazyColumn {
                 departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                     items(departments) { department ->
-                        DepartmentTile(title = department.title, url = department.iconUrl)
+                        DepartmentTile(department)
                     }
                 }
             }
@@ -128,7 +129,7 @@ fun DepartmentIcon(modifier: Modifier, url: String) {
 }
 
 @Composable
-fun DepartmentTile(title: String, url: String, onClick: () -> Unit = {}) {
+fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,23 +142,106 @@ fun DepartmentTile(title: String, url: String, onClick: () -> Unit = {}) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Start
         ) {
-            DepartmentIcon(
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(Constants.PADDING.dp),
-                url = url
-            )
-            Text(
-                modifier = Modifier.padding(Constants.PADDING.dp),
-                text = title,
-                color = LS_BLUE,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 12.sp,
-                fontStyle = FontStyle.Italic,
-                fontWeight = FontWeight.Bold
-            )
+            Column(
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    DepartmentIcon(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(Constants.PADDING.dp),
+                        url = department.iconUrl
+                    )
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = department.title,
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 16.sp,
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.9f).padding(Constants.PADDING.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Image(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(id = R.drawable.electric_pallet_jack_icon),
+                        contentScale = ContentScale.Crop,
+                        contentDescription = "Electric Pallet Jack Icon"
+                    )
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = "Order Pickers:",
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = department.orderPickersCount,
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 12.sp,
+                    )
+
+                    Image(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(id = R.drawable.forklift_icon),
+                        contentScale = ContentScale.Crop,
+                        contentDescription = "Forklift Icon"
+                    )
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = "Forklifts:",
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = department.forkliftCount,
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 12.sp,
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = "Remaining Orders:",
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(Constants.PADDING.dp),
+                        text = department.remainingOrders,
+                        color = LS_BLUE,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 12.sp,
+                    )
+                }
+            }
             IconButton(
                 onClick = onClick
             ) {
