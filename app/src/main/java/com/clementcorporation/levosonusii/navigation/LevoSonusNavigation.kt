@@ -2,6 +2,7 @@ package com.clementcorporation.levosonusii.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,7 +22,7 @@ import com.clementcorporation.levosonusii.screens.splash.SplashScreen
 import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileScreen
 
 @Composable
-fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>) {
+fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>, lifecycleOwner: LifecycleOwner) {
     NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
         composable(LevoSonusScreens.SplashScreen.name){
             SplashScreen(navController)
@@ -48,7 +49,7 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.DepartmentsScreen.name){
-            DepartmentsScreen(navController = navController)
+            DepartmentsScreen(navController = navController, lifecycleOwner)
             showFab.value = true
         }
         composable(LevoSonusScreens.HealthAndWellnessScreen.name){

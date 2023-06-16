@@ -100,7 +100,7 @@ class MainActivity : ComponentActivity(){
                                 val showFAB = remember {
                                     mutableStateOf(false)
                                 }
-                                LevoSonusNavigation(navController, showFAB)
+                                LevoSonusNavigation(navController, showFAB, this@MainActivity)
                                 if (showFAB.value) {
                                     LSFAB {
                                         onClickVoiceCommandBtn()

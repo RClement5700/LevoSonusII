@@ -30,8 +30,6 @@ import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
-import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
-import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
@@ -43,8 +41,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val voiceProfileUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
-    val imageUrl = "${STORAGE_BASE_URL}$voiceProfileUrl${STORAGE_APPENDED_URL}"
+    val profilePicUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
@@ -68,7 +65,7 @@ fun HomeScreen(navController: NavController) {
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
-                    profilePicUrl = imageUrl,
+                    profilePicUrl = profilePicUrl,
                     onClickSignOut = {
                         viewModel.viewModelScope.launch {
                             viewModel.signOut()
@@ -84,7 +81,7 @@ fun HomeScreen(navController: NavController) {
             }
         ) {
             Log.e(TAG, it.toString())
-            InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = imageUrl)
+            InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = profilePicUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
     }
