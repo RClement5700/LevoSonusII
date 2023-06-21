@@ -2,16 +2,18 @@ package com.clementcorporation.levosonusii.screens.departments
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
+import com.clementcorporation.levosonusii.model.LSUserInfo
+import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
 class DepartmentsViewModel: ViewModel() {
-    private val document = FirebaseFirestore.getInstance()
-        .collection("HannafordFoods")
-        .document("departments")
+    private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
+    private val document = collection.document("departments")
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
     val showProgressBar = mutableStateOf(true)
+    val selectedDepartmentId = mutableStateOf("")
 
     init {
         fetchDepartmentsData()
@@ -50,6 +52,30 @@ class DepartmentsViewModel: ViewModel() {
                 }
                 _departmentsLiveData.postValue(departments.toList())
             }
+        }
+    }
+
+    fun setSelectedDepartment(departmentId: String) {
+        viewModelScope.launch {
+            selectedDepartmentId.value = departmentId
+        }
+    }
+
+    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+        //TODO: replace hardcoded userId with userInfo.userId
+        viewModelScope.launch {
+            collection.document("users").update(userInfo.employeeId,
+                mapOf(
+                    "departmentId" to selectedDepartmentId.value,
+                    "equipmentId" to userInfo.equipmentId,
+                    "name" to userInfo.name,
+                    "emailAddress" to userInfo.emailAddress,
+                    "profilePicUrl" to userInfo.profilePicUrl,
+                    "userId" to "",
+                    "voiceProfile" to voiceProfile.voiceProfileMap
+                )
+            )
+            showProgressBar.value = false
         }
     }
 }

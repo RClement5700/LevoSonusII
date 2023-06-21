@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +34,10 @@ import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
+import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
+import com.clementcorporation.levosonusii.model.LSUserInfo
+import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
@@ -80,6 +84,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 )
             }
         ) {
+            Log.e(TAG, it.toString())
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -94,7 +99,6 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     )
                 }
             }
-            Log.e(TAG, it.toString())
             Column {
                 Spacer(modifier = Modifier.height(4.dp))
                 Divider(
@@ -104,10 +108,50 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            LazyColumn {
-                departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
-                    items(departments) { department ->
-                        DepartmentTile(department)
+            Column(
+                modifier = Modifier.fillMaxSize().padding(0.dp, 4.dp, 0.dp, 0.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+                    departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
+                        items(departments) { department ->
+                            //TODO: set single selection for tiles
+                            //      get department from firebase and set color of defined tile
+                            val isSelected = remember {
+                                mutableStateOf(false)
+                            }
+                            DepartmentTile(department, isSelected) {
+                                isSelected.value = !isSelected.value
+                                departmentsViewModel.setSelectedDepartment(department.id)
+                            }
+                        }
+                    }
+                }
+                val userInfo = hsViewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value
+                val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
+                Button(
+                    modifier = Modifier.padding(PADDING.dp).fillMaxWidth().fillMaxHeight(),
+                    shape = RoundedCornerShape(CURVATURE),
+                    elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = LS_BLUE,
+                        disabledBackgroundColor = Color.LightGray
+                    ),
+                    onClick = {
+                        //TODO: return to home screen
+                        //      update LSUserInfo
+                        departmentsViewModel.showProgressBar.value = true
+                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile)
+                    }) {
+                    if(departmentsViewModel.showProgressBar.value) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.btn_text_apply),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -129,7 +173,8 @@ fun DepartmentIcon(modifier: Modifier, url: String) {
 }
 
 @Composable
-fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
+fun DepartmentTile(department: Department, isSelected: MutableState<Boolean>, onClick: () -> Unit = {}) {
+    val backgroundColor = if (isSelected.value) Color.Cyan else Color.White
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,7 +182,7 @@ fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
             .clickable(onClick = onClick),
         elevation = ELEVATION.dp,
         shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = Color.White
+        backgroundColor = backgroundColor
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -170,7 +215,9 @@ fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth(0.9f).padding(Constants.PADDING.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .padding(Constants.PADDING.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {

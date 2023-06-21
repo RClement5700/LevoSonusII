@@ -40,8 +40,6 @@ import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
-import com.clementcorporation.levosonusii.main.Constants.STORAGE_APPENDED_URL
-import com.clementcorporation.levosonusii.main.Constants.STORAGE_BASE_URL
 import com.google.android.material.R.drawable.material_ic_keyboard_arrow_previous_black_24dp
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
@@ -146,11 +144,9 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
 
 @Composable
 fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
-    val isUrlEmpty = imageUrl.contentEquals("${STORAGE_BASE_URL}${STORAGE_APPENDED_URL}", true) ||
-            imageUrl.isEmpty()
     Image(
         modifier = modifier,
-        painter = if (isUrlEmpty) {
+        painter = if (imageUrl.isNullOrEmpty()) {
             painterResource(id = R.drawable.levosonus_rocket_logo)
         } else {
             rememberImagePainter(data = imageUrl, builder = {
