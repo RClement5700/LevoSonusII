@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.screens.departments
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.*
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
@@ -13,7 +14,7 @@ class DepartmentsViewModel: ViewModel() {
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
     val showProgressBar = mutableStateOf(true)
-    val selectedDepartmentId = mutableStateOf("")
+    private val selectedDepartmentId = mutableStateOf("")
 
     init {
         fetchDepartmentsData()
@@ -51,6 +52,7 @@ class DepartmentsViewModel: ViewModel() {
                     ))
                 }
                 _departmentsLiveData.postValue(departments.toList())
+                showProgressBar.value = false
             }
         }
     }
@@ -61,20 +63,34 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile, dataStore: DataStore<LSUserInfo>) {
         viewModelScope.launch {
-            collection.document("users").update(userInfo.employeeId,
-                mapOf(
-                    "departmentId" to selectedDepartmentId.value,
-                    "equipmentId" to userInfo.equipmentId,
-                    "name" to userInfo.name,
-                    "emailAddress" to userInfo.emailAddress,
-                    "profilePicUrl" to userInfo.profilePicUrl,
-                    "userId" to userInfo.firebaseId,
-                    "voiceProfile" to voiceProfile.voiceProfileMap
+            if (selectedDepartmentId.value.isNotEmpty()) {
+                collection.document("users").update(
+                    userInfo.employeeId,
+                    mapOf(
+                        "departmentId" to selectedDepartmentId.value,
+                        "equipmentId" to userInfo.equipmentId,
+                        "name" to userInfo.name,
+                        "emailAddress" to userInfo.emailAddress,
+                        "profilePicUrl" to userInfo.profilePicUrl,
+                        "userId" to userInfo.firebaseId,
+                        "voiceProfile" to voiceProfile.voiceProfileMap
+                    )
                 )
-            )
-            showProgressBar.value = false
+                dataStore.updateData {
+                    it.copy(
+                        name = userInfo.name,
+                        employeeId = userInfo.employeeId,
+                        firebaseId = userInfo.firebaseId,
+                        departmentId = selectedDepartmentId.value,
+                        equipmentId = userInfo.equipmentId,
+                        emailAddress = userInfo.emailAddress,
+                        profilePicUrl = userInfo.profilePicUrl,
+                    )
+                }
+                showProgressBar.value = false
+            }
         }
     }
 }

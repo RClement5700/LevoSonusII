@@ -114,13 +114,15 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val dataStore = hsViewModel.getUserInfo()
+                val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
+                val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
                 LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
                             //TODO: set single selection for tiles
-                            //      get department from firebase and set color of defined tile
                             val isSelected = remember {
-                                mutableStateOf(false)
+                                mutableStateOf(userInfo.departmentId == department.id)
                             }
                             DepartmentTile(department, isSelected) {
                                 isSelected.value = !isSelected.value
@@ -129,8 +131,6 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                         }
                     }
                 }
-                val userInfo = hsViewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value
-                val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
                 Button(
                     modifier = Modifier.padding(PADDING.dp).fillMaxWidth().fillMaxHeight(),
                     shape = RoundedCornerShape(CURVATURE),
@@ -140,10 +140,9 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-                        //TODO: return to home screen
-                        //      update LSUserInfo
                         departmentsViewModel.showProgressBar.value = true
-                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile)
+                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile, dataStore)
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if(departmentsViewModel.showProgressBar.value) {
                         CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)

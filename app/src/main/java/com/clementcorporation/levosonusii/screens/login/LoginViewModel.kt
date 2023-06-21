@@ -39,6 +39,8 @@ class LoginViewModel @Inject constructor(
         var email: String? = ""
         var profilePicUrl: String? = ""
         var firebaseId: String? = ""
+        var departmentId: String? = ""
+        var equipmentId: String? = ""
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
             try {
@@ -48,6 +50,7 @@ class LoginViewModel @Inject constructor(
                             name = (it as HashMap<*,*>)["name"] as String
                             email = it["emailAddress"] as String
                             firebaseId = it["userId"] as String
+                            departmentId = it["departmentId"] as String
                             profilePicUrl = it["profilePicUrl"] as String
                             voiceProfile = it["voiceProfile"] as HashMap<*, *>
                             email?.let { email ->
@@ -58,20 +61,26 @@ class LoginViewModel @Inject constructor(
                                             profilePicUrl?.let { url ->
                                                 voiceProfile?.let { voiceProfile ->
                                                     firebaseId?.let { firebaseId ->
-                                                        viewModelScope.launch {
-                                                            sessionDataStore.updateData { userInfo ->
-                                                                userInfo.copy(
-                                                                    employeeId = userId,
-                                                                    firebaseId = firebaseId,
-                                                                    emailAddress = email,
-                                                                    name = name,
-                                                                    profilePicUrl = url
-                                                                )
+                                                        departmentId?.let { departmentId ->
+                                                            equipmentId?.let { equipmentId ->
+                                                                viewModelScope.launch {
+                                                                    sessionDataStore.updateData { userInfo ->
+                                                                        userInfo.copy(
+                                                                            employeeId = userId,
+                                                                            firebaseId = firebaseId,
+                                                                            emailAddress = email,
+                                                                            name = name,
+                                                                            profilePicUrl = url,
+                                                                            departmentId = departmentId,
+                                                                            equipmentId = equipmentId
+                                                                        )
+                                                                    }
+                                                                    voiceProfileDataStore.updateData { vp ->
+                                                                        vp.copy(voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>)
+                                                                    }
+                                                                    home()
+                                                                }
                                                             }
-                                                            voiceProfileDataStore.updateData { vp ->
-                                                                vp.copy(voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>)
-                                                            }
-                                                            home()
                                                         }
                                                     }
                                                 }
