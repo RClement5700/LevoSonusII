@@ -62,7 +62,6 @@ class DepartmentsViewModel: ViewModel() {
     }
 
     fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
-        //TODO: replace hardcoded userId with userInfo.userId
         viewModelScope.launch {
             collection.document("users").update(userInfo.employeeId,
                 mapOf(
@@ -71,7 +70,7 @@ class DepartmentsViewModel: ViewModel() {
                     "name" to userInfo.name,
                     "emailAddress" to userInfo.emailAddress,
                     "profilePicUrl" to userInfo.profilePicUrl,
-                    "userId" to "",
+                    "userId" to userInfo.firebaseId,
                     "voiceProfile" to voiceProfile.voiceProfileMap
                 )
             )

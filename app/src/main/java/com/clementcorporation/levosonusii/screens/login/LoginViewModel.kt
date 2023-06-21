@@ -38,6 +38,7 @@ class LoginViewModel @Inject constructor(
         var name: String? = ""
         var email: String? = ""
         var profilePicUrl: String? = ""
+        var firebaseId: String? = ""
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
             try {
@@ -46,6 +47,7 @@ class LoginViewModel @Inject constructor(
                         document.result?.get(userId)?.let {
                             name = (it as HashMap<*,*>)["name"] as String
                             email = it["emailAddress"] as String
+                            firebaseId = it["userId"] as String
                             profilePicUrl = it["profilePicUrl"] as String
                             voiceProfile = it["voiceProfile"] as HashMap<*, *>
                             email?.let { email ->
@@ -55,19 +57,22 @@ class LoginViewModel @Inject constructor(
                                         name?.let { name ->
                                             profilePicUrl?.let { url ->
                                                 voiceProfile?.let { voiceProfile ->
-                                                    viewModelScope.launch {
-                                                        sessionDataStore.updateData { userInfo ->
-                                                            userInfo.copy(
-                                                                employeeId = userId,
-                                                                emailAddress = email,
-                                                                name = name,
-                                                                profilePicUrl = url
-                                                            )
+                                                    firebaseId?.let { firebaseId ->
+                                                        viewModelScope.launch {
+                                                            sessionDataStore.updateData { userInfo ->
+                                                                userInfo.copy(
+                                                                    employeeId = userId,
+                                                                    firebaseId = firebaseId,
+                                                                    emailAddress = email,
+                                                                    name = name,
+                                                                    profilePicUrl = url
+                                                                )
+                                                            }
+                                                            voiceProfileDataStore.updateData { vp ->
+                                                                vp.copy(voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>)
+                                                            }
+                                                            home()
                                                         }
-                                                        voiceProfileDataStore.updateData { vp ->
-                                                            vp.copy(voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>)
-                                                        }
-                                                        home()
                                                     }
                                                 }
                                             }

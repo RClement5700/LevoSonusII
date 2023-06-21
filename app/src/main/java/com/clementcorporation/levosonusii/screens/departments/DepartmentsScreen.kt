@@ -48,6 +48,7 @@ import kotlinx.coroutines.launch
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
     val departmentsViewModel: DepartmentsViewModel = viewModel()
+    //TODO: why doesn't the data load every time the page opens?
     BackHandler {
         hsViewModel.viewModelScope.launch {
             navController.popBackStack()
