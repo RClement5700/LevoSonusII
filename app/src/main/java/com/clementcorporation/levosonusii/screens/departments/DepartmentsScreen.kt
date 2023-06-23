@@ -84,8 +84,8 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     }
                 )
             }
-        ) {
-            Log.e(TAG, it.toString())
+        ) { paddingValue ->
+            Log.e(TAG, paddingValue.toString())
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -120,13 +120,11 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
-                            //TODO: set single selection for tiles
-                            val isSelected = remember {
-                                mutableStateOf(userInfo.departmentId == department.id)
-                            }
-                            DepartmentTile(department, isSelected) {
-                                isSelected.value = !isSelected.value
-                                departmentsViewModel.setSelectedDepartment(department.id)
+                            department.isSelected.value = userInfo.departmentId == department.id
+                            DepartmentTile(department) {
+                                departments.forEach { it.isSelected.value = false }
+                                department.isSelected.value = !department.isSelected.value
+                                departmentsViewModel.setSelectedDepartment(department.id, userInfo, dataStore)
                             }
                         }
                     }
@@ -141,7 +139,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     ),
                     onClick = {
                         departmentsViewModel.showProgressBar.value = true
-                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile, dataStore)
+                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile)
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if(departmentsViewModel.showProgressBar.value) {
@@ -173,12 +171,12 @@ fun DepartmentIcon(modifier: Modifier, url: String) {
 }
 
 @Composable
-fun DepartmentTile(department: Department, isSelected: MutableState<Boolean>, onClick: () -> Unit = {}) {
-    val backgroundColor = if (isSelected.value) Color.Cyan else Color.White
+fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
+    val backgroundColor = if (department.isSelected.value) Color.Cyan else Color.White
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(Constants.PADDING.dp)
+            .padding(PADDING.dp)
             .clickable(onClick = onClick),
         elevation = ELEVATION.dp,
         shape = RoundedCornerShape(CURVATURE.dp),
@@ -217,7 +215,7 @@ fun DepartmentTile(department: Department, isSelected: MutableState<Boolean>, on
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
-                        .padding(Constants.PADDING.dp),
+                        .padding(PADDING.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {

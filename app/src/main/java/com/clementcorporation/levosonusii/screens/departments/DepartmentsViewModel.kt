@@ -57,13 +57,24 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    fun setSelectedDepartment(departmentId: String) {
+    fun setSelectedDepartment(departmentId: String, userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>) {
         viewModelScope.launch {
             selectedDepartmentId.value = departmentId
+            dataStore.updateData {
+                it.copy(
+                    name = userInfo.name,
+                    employeeId = userInfo.employeeId,
+                    firebaseId = userInfo.firebaseId,
+                    departmentId = selectedDepartmentId.value,
+                    equipmentId = userInfo.equipmentId,
+                    emailAddress = userInfo.emailAddress,
+                    profilePicUrl = userInfo.profilePicUrl,
+                )
+            }
         }
     }
 
-    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile, dataStore: DataStore<LSUserInfo>) {
+    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
         viewModelScope.launch {
             if (selectedDepartmentId.value.isNotEmpty()) {
                 collection.document("users").update(
@@ -78,17 +89,6 @@ class DepartmentsViewModel: ViewModel() {
                         "voiceProfile" to voiceProfile.voiceProfileMap
                     )
                 )
-                dataStore.updateData {
-                    it.copy(
-                        name = userInfo.name,
-                        employeeId = userInfo.employeeId,
-                        firebaseId = userInfo.firebaseId,
-                        departmentId = selectedDepartmentId.value,
-                        equipmentId = userInfo.equipmentId,
-                        emailAddress = userInfo.emailAddress,
-                        profilePicUrl = userInfo.profilePicUrl,
-                    )
-                }
                 showProgressBar.value = false
             }
         }
