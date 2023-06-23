@@ -48,7 +48,10 @@ import kotlinx.coroutines.launch
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
     val departmentsViewModel: DepartmentsViewModel = viewModel()
-    //TODO: why doesn't the data load every time the page opens?
+    val currentDepartmentId = remember {
+         mutableStateOf("")
+    }
+
     BackHandler {
         hsViewModel.viewModelScope.launch {
             navController.popBackStack()
@@ -122,7 +125,12 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                         items(departments) { department ->
                             department.isSelected.value = userInfo.departmentId == department.id
                             DepartmentTile(department) {
-                                departments.forEach { it.isSelected.value = false }
+                                departments.forEach {
+                                    if (it.isSelected.value) {
+                                        currentDepartmentId.value = it.id
+                                    }
+                                    it.isSelected.value = false
+                                }
                                 department.isSelected.value = !department.isSelected.value
                                 departmentsViewModel.setSelectedDepartment(department.id, userInfo, dataStore)
                             }
@@ -138,8 +146,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-                        departmentsViewModel.showProgressBar.value = true
-                        departmentsViewModel.updateUserDepartment(userInfo, voiceProfile)
+                        departmentsViewModel.updateUserDepartment(currentDepartmentId.value, userInfo, voiceProfile)
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if(departmentsViewModel.showProgressBar.value) {

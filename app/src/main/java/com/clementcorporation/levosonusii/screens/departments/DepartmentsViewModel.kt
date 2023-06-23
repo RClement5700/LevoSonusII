@@ -74,23 +74,100 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    fun updateUserDepartment(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
-        viewModelScope.launch {
-            if (selectedDepartmentId.value.isNotEmpty()) {
-                collection.document("users").update(
-                    userInfo.employeeId,
+    private fun subtractOrderPickerFromDepartment(currentDepartmentId: String) {
+        document.get().addOnSuccessListener { task ->
+            var currentTitle = ""
+            var currentForkliftCount = ""
+            var currentOrderPickerCount = ""
+            var currentRemainingOrders = ""
+            var currentIconUrl = ""
+            task.data?.forEach {
+                val id = it.key
+                val departmentDetails = (it.value as Map<*, *>)
+                if (currentDepartmentId == id) {
+                    departmentDetails.forEach { details ->
+                        when (details.key) {
+                            "title" -> currentTitle = details.value as String
+                            "forkliftCount" -> currentForkliftCount = details.value as String
+                            "orderPickerCount" -> currentOrderPickerCount = details.value as String
+                            "remainingOrders" -> currentRemainingOrders = details.value as String
+                            "icon" -> currentIconUrl = details.value as String
+                        }
+                    }
+                }
+            }
+            document.update(
+                currentDepartmentId,
+                mapOf(
+                    "forkliftCount" to currentForkliftCount,
+                    "orderPickerCount" to currentOrderPickerCount.toInt().minus(1).toString(),
+                    "remainingOrders" to currentRemainingOrders,
+                    "title" to currentTitle,
+                    "icon" to currentIconUrl
+                )
+            )
+        }
+    }
+
+    private fun addOrderPickerToDepartment() {
+        if (selectedDepartmentId.value.isNotEmpty()) {
+            document.get().addOnSuccessListener { task ->
+                var title = ""
+                var forkliftCount = ""
+                var orderPickerCount = ""
+                var remainingOrders = ""
+                var iconUrl = ""
+                task.data?.forEach {
+                    val id = it.key
+                    val departmentDetails = (it.value as Map<*, *>)
+                    if (selectedDepartmentId.value == id) {
+                        departmentDetails.forEach { details ->
+                            when (details.key) {
+                                "title" -> title = details.value as String
+                                "forkliftCount" -> forkliftCount = details.value as String
+                                "orderPickerCount" -> orderPickerCount = details.value as String
+                                "remainingOrders" -> remainingOrders = details.value as String
+                                "icon" -> iconUrl = details.value as String
+                            }
+                        }
+                    }
+                }
+                document.update(
+                    selectedDepartmentId.value,
                     mapOf(
-                        "departmentId" to selectedDepartmentId.value,
-                        "equipmentId" to userInfo.equipmentId,
-                        "name" to userInfo.name,
-                        "emailAddress" to userInfo.emailAddress,
-                        "profilePicUrl" to userInfo.profilePicUrl,
-                        "userId" to userInfo.firebaseId,
-                        "voiceProfile" to voiceProfile.voiceProfileMap
+                        "forkliftCount" to forkliftCount,
+                        "orderPickerCount" to orderPickerCount.toInt().plus(1).toString(),
+                        "remainingOrders" to remainingOrders,
+                        "title" to title,
+                        "icon" to iconUrl
                     )
                 )
-                showProgressBar.value = false
             }
+        }
+    }
+
+    private fun updateUserInfo(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+        collection.document("users").update(
+            userInfo.employeeId,
+            mapOf(
+                "departmentId" to selectedDepartmentId.value,
+                "equipmentId" to userInfo.equipmentId,
+                "name" to userInfo.name,
+                "emailAddress" to userInfo.emailAddress,
+                "profilePicUrl" to userInfo.profilePicUrl,
+                "userId" to userInfo.firebaseId,
+                "voiceProfile" to voiceProfile.voiceProfileMap
+            )
+        )
+    }
+
+    fun updateUserDepartment(currentDepartmentId: String, userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+        viewModelScope.launch {
+            showProgressBar.value = true
+            updateUserInfo(userInfo, voiceProfile)
+            addOrderPickerToDepartment()
+            subtractOrderPickerFromDepartment(currentDepartmentId)
+            showProgressBar.value = false
         }
     }
 }
