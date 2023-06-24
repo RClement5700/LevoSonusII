@@ -8,9 +8,24 @@ import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
+private const val USERS = "users"
+private const val DEPARTMENTS = "departments"
+private const val DEPARTMENT_ID = "departmentId"
+private const val EQUIPMENT_ID = "equipment_id"
+private const val FORKLIFT_COUNT = "forkliftCount"
+private const val OP_COUNT = "orderPickerCount"
+private const val TITLE = "title"
+private const val REMAINING_ORDERS = "remainingOrders"
+private const val ICON_URL = "icon"
+private const val NAME = "name"
+private const val EMAIL = "emailAddress"
+private const val PIC_URL = "profilePicUrl"
+private const val USER_ID = "userId"
+private const val VOICE_PROFILE = "voiceProfile"
+
 class DepartmentsViewModel: ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
-    private val document = collection.document("departments")
+    private val document = collection.document(DEPARTMENTS)
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
     private val _currentDepartmentIdLiveData = MutableLiveData<String>()
@@ -24,13 +39,13 @@ class DepartmentsViewModel: ViewModel() {
 
     fun fetchCurrentDepartmentId(userInfo: LSUserInfo) {
         viewModelScope.launch {
-            collection.document("users").get().addOnSuccessListener { task ->
+            collection.document(USERS).get().addOnSuccessListener { task ->
                 task.data?.forEach {
                     if (it.key == userInfo.employeeId) {
                         val userDetails = it.value as Map<*, *>
                         userDetails.forEach { details ->
                             when (details.key) {
-                                "departmentId" -> _currentDepartmentIdLiveData.postValue(details.value as String)
+                                DEPARTMENT_ID -> _currentDepartmentIdLiveData.postValue(details.value as String)
                             }
                         }
                     }
@@ -54,11 +69,11 @@ class DepartmentsViewModel: ViewModel() {
                     val departmentDetails = (it.value as Map<*, *>)
                     departmentDetails.forEach { details ->
                         when (details.key) {
-                            "title" -> title = details.value as String
-                            "forkliftCount" -> forkliftCount = details.value as String
-                            "orderPickerCount" -> orderPickerCount = details.value as String
-                            "remainingOrders" -> remainingOrders = details.value as String
-                            "icon" -> iconUrl = details.value as String
+                            TITLE -> title = details.value as String
+                            FORKLIFT_COUNT -> forkliftCount = details.value as String
+                            OP_COUNT -> orderPickerCount = details.value as String
+                            REMAINING_ORDERS -> remainingOrders = details.value as String
+                            ICON_URL -> iconUrl = details.value as String
                         }
                     }
                     departments.add(Department(
@@ -106,11 +121,11 @@ class DepartmentsViewModel: ViewModel() {
                 if (currentDepartmentId == id) {
                     departmentDetails.forEach { details ->
                         when (details.key) {
-                            "title" -> currentTitle = details.value as String
-                            "forkliftCount" -> currentForkliftCount = details.value as String
-                            "orderPickerCount" -> currentOrderPickerCount = details.value as String
-                            "remainingOrders" -> currentRemainingOrders = details.value as String
-                            "icon" -> currentIconUrl = details.value as String
+                            TITLE -> currentTitle = details.value as String
+                            FORKLIFT_COUNT -> currentForkliftCount = details.value as String
+                            OP_COUNT -> currentOrderPickerCount = details.value as String
+                            REMAINING_ORDERS -> currentRemainingOrders = details.value as String
+                            ICON_URL -> currentIconUrl = details.value as String
                         }
                     }
                 }
@@ -118,11 +133,11 @@ class DepartmentsViewModel: ViewModel() {
             document.update(
                 currentDepartmentId,
                 mapOf(
-                    "forkliftCount" to currentForkliftCount,
-                    "orderPickerCount" to currentOrderPickerCount.toInt().minus(1).toString(),
-                    "remainingOrders" to currentRemainingOrders,
-                    "title" to currentTitle,
-                    "icon" to currentIconUrl
+                    FORKLIFT_COUNT to currentForkliftCount,
+                    OP_COUNT to currentOrderPickerCount.toInt().minus(1).toString(),
+                    REMAINING_ORDERS to currentRemainingOrders,
+                    TITLE to currentTitle,
+                    ICON_URL to currentIconUrl
                 )
             )
         }
@@ -142,11 +157,11 @@ class DepartmentsViewModel: ViewModel() {
                     if (selectedDepartmentId.value == id) {
                         departmentDetails.forEach { details ->
                             when (details.key) {
-                                "title" -> title = details.value as String
-                                "forkliftCount" -> forkliftCount = details.value as String
-                                "orderPickerCount" -> orderPickerCount = details.value as String
-                                "remainingOrders" -> remainingOrders = details.value as String
-                                "icon" -> iconUrl = details.value as String
+                                TITLE -> title = details.value as String
+                                FORKLIFT_COUNT -> forkliftCount = details.value as String
+                                OP_COUNT -> orderPickerCount = details.value as String
+                                REMAINING_ORDERS -> remainingOrders = details.value as String
+                                ICON_URL -> iconUrl = details.value as String
                             }
                         }
                     }
@@ -154,11 +169,11 @@ class DepartmentsViewModel: ViewModel() {
                 document.update(
                     selectedDepartmentId.value,
                     mapOf(
-                        "forkliftCount" to forkliftCount,
-                        "orderPickerCount" to orderPickerCount.toInt().plus(1).toString(),
-                        "remainingOrders" to remainingOrders,
-                        "title" to title,
-                        "icon" to iconUrl
+                        FORKLIFT_COUNT to forkliftCount,
+                        OP_COUNT to orderPickerCount.toInt().plus(1).toString(),
+                        REMAINING_ORDERS to remainingOrders,
+                        TITLE to title,
+                        ICON_URL to iconUrl
                     )
                 )
             }
@@ -166,16 +181,16 @@ class DepartmentsViewModel: ViewModel() {
     }
 
     private fun updateUserInfo(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
-        collection.document("users").update(
+        collection.document(USERS).update(
             userInfo.employeeId,
             mapOf(
-                "departmentId" to selectedDepartmentId.value,
-                "equipmentId" to userInfo.equipmentId,
-                "name" to userInfo.name,
-                "emailAddress" to userInfo.emailAddress,
-                "profilePicUrl" to userInfo.profilePicUrl,
-                "userId" to userInfo.firebaseId,
-                "voiceProfile" to voiceProfile.voiceProfileMap
+                DEPARTMENT_ID to selectedDepartmentId.value,
+                EQUIPMENT_ID to userInfo.equipmentId,
+                NAME to userInfo.name,
+                EMAIL to userInfo.emailAddress,
+                PIC_URL to userInfo.profilePicUrl,
+                USER_ID to userInfo.firebaseId,
+                VOICE_PROFILE to voiceProfile.voiceProfileMap
             )
         )
     }
