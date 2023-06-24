@@ -39,6 +39,10 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+//TODO: add page where user selects Forklift or OrderPicker
+//      add selection to LSUserInfo
+//      use selection to add/subtract the count from corresponding data
+
 @Composable
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()

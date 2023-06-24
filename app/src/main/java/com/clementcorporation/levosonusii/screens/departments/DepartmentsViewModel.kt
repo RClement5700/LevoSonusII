@@ -13,11 +13,30 @@ class DepartmentsViewModel: ViewModel() {
     private val document = collection.document("departments")
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
+    private val _currentDepartmentIdLiveData = MutableLiveData<String>()
+    val currentDepartmentIdLiveData: LiveData<String> get() = _currentDepartmentIdLiveData
     val showProgressBar = mutableStateOf(true)
     private val selectedDepartmentId = mutableStateOf("")
 
     init {
         fetchDepartmentsData()
+    }
+
+    fun fetchCurrentDepartmentId(userInfo: LSUserInfo) {
+        viewModelScope.launch {
+            collection.document("users").get().addOnSuccessListener { task ->
+                task.data?.forEach {
+                    if (it.key == userInfo.employeeId) {
+                        val userDetails = it.value as Map<*, *>
+                        userDetails.forEach { details ->
+                            when (details.key) {
+                                "departmentId" -> _currentDepartmentIdLiveData.postValue(details.value as String)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     private fun fetchDepartmentsData() {
         viewModelScope.launch {

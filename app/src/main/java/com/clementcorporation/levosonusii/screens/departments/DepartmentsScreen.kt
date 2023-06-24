@@ -51,6 +51,13 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
     val currentDepartmentId = remember {
          mutableStateOf("")
     }
+    val dataStore = hsViewModel.getUserInfo()
+    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
+    val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
+    departmentsViewModel.fetchCurrentDepartmentId(userInfo)
+    departmentsViewModel.currentDepartmentIdLiveData.observe(lifecycleOwner) {
+        currentDepartmentId.value = it
+    }
 
     BackHandler {
         hsViewModel.viewModelScope.launch {
@@ -117,18 +124,12 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val dataStore = hsViewModel.getUserInfo()
-                val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-                val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
                 LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
                             department.isSelected.value = userInfo.departmentId == department.id
                             DepartmentTile(department) {
                                 departments.forEach {
-                                    if (it.isSelected.value) {
-                                        currentDepartmentId.value = it.id
-                                    }
                                     it.isSelected.value = false
                                 }
                                 department.isSelected.value = !department.isSelected.value
