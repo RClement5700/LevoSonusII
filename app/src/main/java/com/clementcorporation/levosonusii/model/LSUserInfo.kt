@@ -11,4 +11,5 @@ data class LSUserInfo(
     val profilePicUrl: String = "",
     val equipmentId: String = "",
     val departmentId: String = "",
+    val operatorType: String = ""
 )

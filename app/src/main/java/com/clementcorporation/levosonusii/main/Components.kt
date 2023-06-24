@@ -221,6 +221,41 @@ fun SelectionTile(title: String? = null, icon: Int? = null,
 }
 
 @Composable
+fun SelectableTile(title: String, icon: Int = R.drawable.scanner_icon, onClick: () -> Unit = {}) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp)
+            .clickable(onClick = onClick),
+        elevation = ELEVATION.dp,
+        shape = RoundedCornerShape(CURVATURE.dp),
+        backgroundColor = Color.White
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Icon(
+                modifier = Modifier.size(50.dp).padding(PADDING.dp),
+                tint = LS_BLUE,
+                painter = painterResource(id = icon),
+                contentDescription = ""
+            )
+            Text(
+                modifier = Modifier.padding(PADDING.dp),
+                text = title,
+                color = LS_BLUE,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp,
+                fontStyle = FontStyle.Italic,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
 fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: MutableState<Boolean> = mutableStateOf(false), onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier

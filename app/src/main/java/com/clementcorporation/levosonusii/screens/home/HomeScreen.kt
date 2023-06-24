@@ -19,10 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -32,26 +32,23 @@ import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
+import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val profilePicUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
+    val showOperatorTypeWindow = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.operatorType.isEmpty()
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
     BackHandler {
-        viewModel.viewModelScope.launch {
-            viewModel.signOut()
-            delay(2000L)
-            navController.popBackStack()
-            navController.navigate(LevoSonusScreens.LoginScreen.name)
-        }
+        viewModel.signOut()
+        navController.popBackStack()
+        navController.navigate(LevoSonusScreens.LoginScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -67,24 +64,115 @@ fun HomeScreen(navController: NavController) {
                     title = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
-                        viewModel.viewModelScope.launch {
-                            viewModel.signOut()
-                            delay(2000L)
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        }
+                        viewModel.signOut()
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
                     onClickLeftIcon = {
                         inflateProfilePic.value = !inflateProfilePic.value
                     }
                 )
             }
-        ) {
-            Log.e(TAG, it.toString())
+        ) { paddingValues ->
+            Log.e(TAG, paddingValues.toString())
+            if (showOperatorTypeWindow) ChooseOperatorTypeWindow(viewModel)
             InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = profilePicUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
     }
+}
+
+@Composable
+fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .zIndex(1f)
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .fillMaxHeight(0.65f)
+                .padding(PADDING.dp)
+                .zIndex(1f),
+            elevation = ELEVATION.dp,
+            shape = RoundedCornerShape(CURVATURE.dp),
+            backgroundColor = Color.White,
+            border = BorderStroke(2.dp, LS_BLUE)
+        ) {
+            Column(
+                modifier = Modifier.padding(PADDING.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = R.string.operator_type_title_text),
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Divider(
+                    color = LS_BLUE,
+                    thickness = 2.dp,
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                SelectableTile(title = stringResource(id = R.string.operator_type_order_picker_tile_text), icon = R.drawable.electric_pallet_jack_icon) {
+
+                }
+                SelectableTile(title = stringResource(id = R.string.operator_type_forklift_tile_text), icon = R.drawable.forklift_icon) {
+
+                }
+                Button(
+                    modifier = Modifier
+                        .padding(PADDING.dp)
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(CURVATURE),
+                    elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = LS_BLUE,
+                        disabledBackgroundColor = Color.LightGray
+                    ),
+                    onClick = {
+
+                    }) {
+                    if(viewModel.showProgressBar.value) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.btn_text_apply),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                Button(
+                    modifier = Modifier
+                        .padding(PADDING.dp)
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(CURVATURE),
+                    border = BorderStroke(2.dp, LS_BLUE),
+                    elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Color.White,
+                        disabledBackgroundColor = Color.LightGray
+                    ),
+                    onClick = {
+
+                    }) {
+                        Text(
+                            text = stringResource(id = R.string.operator_type_secondary_button_text),
+                            color = LS_BLUE,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
 }
 
 @Composable
