@@ -6,6 +6,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -41,7 +43,10 @@ import com.clementcorporation.levosonusii.screens.equipment.TAG
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val profilePicUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
-    val showOperatorTypeWindow = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.operatorType.isEmpty()
+    val isOperatorTypeEmpty = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.operatorType.isEmpty()
+    val showOperatorTypeWindow = remember{
+        mutableStateOf(isOperatorTypeEmpty)
+    }
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
@@ -75,7 +80,7 @@ fun HomeScreen(navController: NavController) {
             }
         ) { paddingValues ->
             Log.e(TAG, paddingValues.toString())
-            if (showOperatorTypeWindow) ChooseOperatorTypeWindow(viewModel)
+            if (showOperatorTypeWindow.value) ChooseOperatorTypeWindow(viewModel, showOperatorTypeWindow)
             InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = profilePicUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
@@ -83,7 +88,7 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
+fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel, showWindow: MutableState<Boolean>) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +99,7 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .fillMaxHeight(0.65f)
+                .fillMaxHeight(0.5f)
                 .padding(PADDING.dp)
                 .zIndex(1f),
             elevation = ELEVATION.dp,
@@ -107,6 +112,12 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val operatorTypes = listOf(
+                    OperatorType(title = stringResource(id = R.string.operator_type_order_picker_tile_text),
+                        icon = R.drawable.electric_pallet_jack_icon, isSelected = remember { mutableStateOf(false) }),
+                    OperatorType(title = stringResource(id = R.string.operator_type_forklift_tile_text),
+                        icon = R.drawable.forklift_icon, isSelected = remember { mutableStateOf(false) })
+                )
                 Text(
                     text = stringResource(id = R.string.operator_type_title_text),
                     color = Color.Gray,
@@ -119,11 +130,15 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                SelectableTile(title = stringResource(id = R.string.operator_type_order_picker_tile_text), icon = R.drawable.electric_pallet_jack_icon) {
-
-                }
-                SelectableTile(title = stringResource(id = R.string.operator_type_forklift_tile_text), icon = R.drawable.forklift_icon) {
-
+                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f)) {
+                    items(operatorTypes) { type ->
+                        SelectableTile(type.title, type.icon, type.isSelected) {
+                            operatorTypes.forEach {
+                                it.isSelected.value = false
+                            }
+                            type.isSelected.value = !type.isSelected.value
+                        }
+                    }
                 }
                 Button(
                     modifier = Modifier
@@ -162,7 +177,7 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-
+                        showWindow.value = false
                     }) {
                         Text(
                             text = stringResource(id = R.string.operator_type_secondary_button_text),

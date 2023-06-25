@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -40,7 +41,6 @@ import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
-import com.google.android.material.R.drawable.material_ic_keyboard_arrow_previous_black_24dp
 
 private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
 @Composable
@@ -94,10 +94,11 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
         } else {
             Image(
                 modifier = Modifier
-                        .size(35.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = onClickLeftIcon),
-                painter = painterResource(id = material_ic_keyboard_arrow_previous_black_24dp),
+                    .rotate(180f)
+                    .size(35.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onClickLeftIcon),
+                painter = painterResource(id = androidx.constraintlayout.widget.R.drawable.abc_ic_arrow_drop_right_black_24dp),
                 contentDescription = "Profile Picture",
                 contentScale = ContentScale.Crop
             )
@@ -221,7 +222,9 @@ fun SelectionTile(title: String? = null, icon: Int? = null,
 }
 
 @Composable
-fun SelectableTile(title: String, icon: Int = R.drawable.scanner_icon, onClick: () -> Unit = {}) {
+fun SelectableTile(title: String, icon: Int = R.drawable.scanner_icon, isSelected: MutableState<Boolean>,
+                   onClick: () -> Unit = {}) {
+    val backgroundColor = if (isSelected.value) Color.Cyan else Color.White
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,7 +232,7 @@ fun SelectableTile(title: String, icon: Int = R.drawable.scanner_icon, onClick: 
             .clickable(onClick = onClick),
         elevation = ELEVATION.dp,
         shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = Color.White
+        backgroundColor = backgroundColor
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
