@@ -2,6 +2,8 @@ package com.clementcorporation.levosonusii.screens.home
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
@@ -28,6 +30,8 @@ class HomeScreenViewModel @Inject constructor(
     private val voiceProfileDataStore: DataStore<VoiceProfile>
     ): ViewModel()
 {
+    private val _operatorTypeLiveData: MutableLiveData<String> = MutableLiveData()
+    val operatorTypeLiveData: LiveData<String> get() = _operatorTypeLiveData
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
     val expandMenu = mutableStateOf(false)
     val showProgressBar = mutableStateOf(false)
@@ -49,21 +53,44 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun updateOperatorType(dataStore: DataStore<LSUserInfo>, userInfo: LSUserInfo, voiceProfile: VoiceProfile, operatorType: String) {
-        updateUserInfo(userInfo, dataStore, operatorType)
-        with(collection) {
-            document(USERS).update(
-                userInfo.employeeId,
-                mapOf(
-                    DEPARTMENT_ID to userInfo.departmentId,
-                    EQUIPMENT_ID to userInfo.equipmentId,
-                    NAME to userInfo.name,
-                    EMAIL to userInfo.emailAddress,
-                    PIC_URL to userInfo.profilePicUrl,
-                    USER_ID to userInfo.firebaseId,
-                    VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                    OP_TYPE to operatorType
+        viewModelScope.launch {
+            updateUserInfo(userInfo, dataStore, operatorType)
+            with(collection) {
+                document(USERS).update(
+                    userInfo.employeeId,
+                    mapOf(
+                        DEPARTMENT_ID to userInfo.departmentId,
+                        EQUIPMENT_ID to userInfo.equipmentId,
+                        NAME to userInfo.name,
+                        EMAIL to userInfo.emailAddress,
+                        PIC_URL to userInfo.profilePicUrl,
+                        USER_ID to userInfo.firebaseId,
+                        VOICE_PROFILE to voiceProfile.voiceProfileMap,
+                        OP_TYPE to operatorType
+                    )
                 )
-            )
+            }
+        }
+    }
+
+    fun retrieveOperatorType(userInfo: LSUserInfo) {
+        viewModelScope.launch {
+            var operatorType = ""
+            with(collection) {
+                document(USERS).get().addOnSuccessListener { task ->
+                    task.data?.forEach {
+                        if (it.key == userInfo.employeeId) {
+                            val userDetails = it.value as Map<*, *>
+                            userDetails.forEach { detail ->
+                                when(detail.key) {
+                                    OP_TYPE -> operatorType = detail.value as String
+                                }
+                            }
+                        }
+                    }
+                    _operatorTypeLiveData.postValue(operatorType)
+                }
+            }
         }
     }
 

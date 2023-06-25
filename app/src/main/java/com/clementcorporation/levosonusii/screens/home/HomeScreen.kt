@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.datastore.core.DataStore
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -44,20 +45,19 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val dataStore = viewModel.getUserInfo()
     val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
     val voiceProfile = viewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
     val profilePicUrl = userInfo.profilePicUrl
-    val isOperatorTypeEmpty = userInfo.operatorType.isEmpty()
-    val showOperatorTypeWindow = remember{
-        mutableStateOf(isOperatorTypeEmpty)
-    }
-    val inflateProfilePic = remember{
-        mutableStateOf(false)
-    }
+    val showOperatorTypeWindow = remember { mutableStateOf(false) }
+    val inflateProfilePic = remember { mutableStateOf(false) }
     val operatorType = remember { mutableStateOf("")}
+    viewModel.retrieveOperatorType(userInfo)
+    viewModel.operatorTypeLiveData.observe(lifecycleOwner) {
+        showOperatorTypeWindow.value = it.isEmpty()
+    }
     BackHandler {
         viewModel.signOut()
         navController.popBackStack()
