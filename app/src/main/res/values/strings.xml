@@ -25,6 +25,7 @@
     <string name="menu_item_account_label">Account</string>
     <string name="menu_item_settings_label">Settings</string>
     <string name="menu_item_sign_out_label">Sign Out</string>
+    <string name="operator_type_toast_message">Select Operator Type</string>
     <string name="operator_type_title_text">Choose Operator Type</string>
     <string name="operator_type_forklift_tile_text">Forklift</string>
     <string name="operator_type_order_picker_tile_text">Order Picker</string>

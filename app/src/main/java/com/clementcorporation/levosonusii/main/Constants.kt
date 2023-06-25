@@ -12,6 +12,21 @@ object Constants {
     const val BTN_HEIGHT = 50
     const val BTN_WIDTH = 200
     val LS_BLUE = Color(0xFF32527B)
+    const val USERS = "users"
+    const val DEPARTMENT_ID = "departmentId"
+    const val EQUIPMENT_ID = "equipmentId"
+    const val NAME = "name"
+    const val EMAIL = "emailAddress"
+    const val PIC_URL = "profilePicUrl"
+    const val USER_ID = "userId"
+    const val VOICE_PROFILE = "voiceProfile"
+    const val OP_TYPE = "operatorType"
+    const val DEPARTMENTS = "departments"
+    const val FORKLIFT_COUNT = "forkliftCount"
+    const val OP_COUNT = "orderPickerCount"
+    const val TITLE = "title"
+    const val REMAINING_ORDERS = "remainingOrders"
+    const val ICON_URL = "icon"
 }
 
 enum class VoiceProfileConstants {

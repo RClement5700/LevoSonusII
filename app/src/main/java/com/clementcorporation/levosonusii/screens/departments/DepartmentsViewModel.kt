@@ -3,25 +3,25 @@ package com.clementcorporation.levosonusii.screens.departments
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.*
+import com.clementcorporation.levosonusii.main.Constants.DEPARTMENTS
+import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
+import com.clementcorporation.levosonusii.main.Constants.EMAIL
+import com.clementcorporation.levosonusii.main.Constants.EQUIPMENT_ID
+import com.clementcorporation.levosonusii.main.Constants.FORKLIFT_COUNT
+import com.clementcorporation.levosonusii.main.Constants.ICON_URL
+import com.clementcorporation.levosonusii.main.Constants.NAME
+import com.clementcorporation.levosonusii.main.Constants.OP_COUNT
+import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
+import com.clementcorporation.levosonusii.main.Constants.PIC_URL
+import com.clementcorporation.levosonusii.main.Constants.REMAINING_ORDERS
+import com.clementcorporation.levosonusii.main.Constants.TITLE
+import com.clementcorporation.levosonusii.main.Constants.USERS
+import com.clementcorporation.levosonusii.main.Constants.USER_ID
+import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-
-private const val USERS = "users"
-private const val DEPARTMENTS = "departments"
-private const val DEPARTMENT_ID = "departmentId"
-private const val EQUIPMENT_ID = "equipmentId"
-private const val FORKLIFT_COUNT = "forkliftCount"
-private const val OP_COUNT = "orderPickerCount"
-private const val TITLE = "title"
-private const val REMAINING_ORDERS = "remainingOrders"
-private const val ICON_URL = "icon"
-private const val NAME = "name"
-private const val EMAIL = "emailAddress"
-private const val PIC_URL = "profilePicUrl"
-private const val USER_ID = "userId"
-private const val VOICE_PROFILE = "voiceProfile"
 
 class DepartmentsViewModel: ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
@@ -103,6 +103,7 @@ class DepartmentsViewModel: ViewModel() {
                     equipmentId = userInfo.equipmentId,
                     emailAddress = userInfo.emailAddress,
                     profilePicUrl = userInfo.profilePicUrl,
+                    operatorType = userInfo.operatorType
                 )
             }
         }
@@ -190,7 +191,8 @@ class DepartmentsViewModel: ViewModel() {
                 EMAIL to userInfo.emailAddress,
                 PIC_URL to userInfo.profilePicUrl,
                 USER_ID to userInfo.firebaseId,
-                VOICE_PROFILE to voiceProfile.voiceProfileMap
+                VOICE_PROFILE to voiceProfile.voiceProfileMap,
+                OP_TYPE to userInfo.operatorType
             )
         )
     }

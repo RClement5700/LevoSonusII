@@ -2,6 +2,7 @@ package com.clementcorporation.levosonusii.screens.home
 
 import android.content.res.Configuration
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -20,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.datastore.core.DataStore
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
@@ -36,20 +39,25 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
+import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val profilePicUrl = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.profilePicUrl
-    val isOperatorTypeEmpty = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.operatorType.isEmpty()
+    val dataStore = viewModel.getUserInfo()
+    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
+    val voiceProfile = viewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
+    val profilePicUrl = userInfo.profilePicUrl
+    val isOperatorTypeEmpty = userInfo.operatorType.isEmpty()
     val showOperatorTypeWindow = remember{
         mutableStateOf(isOperatorTypeEmpty)
     }
     val inflateProfilePic = remember{
         mutableStateOf(false)
     }
+    val operatorType = remember { mutableStateOf("")}
     BackHandler {
         viewModel.signOut()
         navController.popBackStack()
@@ -66,7 +74,7 @@ fun HomeScreen(navController: NavController) {
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
-                    title = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
+                    title = dataStore.data.collectAsState(initial = LSUserInfo()).value.name,
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
                         viewModel.signOut()
@@ -80,7 +88,9 @@ fun HomeScreen(navController: NavController) {
             }
         ) { paddingValues ->
             Log.e(TAG, paddingValues.toString())
-            if (showOperatorTypeWindow.value) ChooseOperatorTypeWindow(viewModel, showOperatorTypeWindow)
+            if (showOperatorTypeWindow.value) ChooseOperatorTypeWindow(viewModel, showOperatorTypeWindow,
+                dataStore, voiceProfile, userInfo, operatorType
+            )
             InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = profilePicUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
@@ -88,7 +98,10 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel, showWindow: MutableState<Boolean>) {
+fun ChooseOperatorTypeWindow(
+    viewModel: HomeScreenViewModel, showWindow: MutableState<Boolean>, dataStore: DataStore<LSUserInfo>,
+    voiceProfile: VoiceProfile, userInfo: LSUserInfo, operatorType: MutableState<String>
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -112,6 +125,7 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel, showWindow: Mutable
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val context = LocalContext.current
                 val operatorTypes = listOf(
                     OperatorType(title = stringResource(id = R.string.operator_type_order_picker_tile_text),
                         icon = R.drawable.electric_pallet_jack_icon, isSelected = remember { mutableStateOf(false) }),
@@ -130,13 +144,16 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel, showWindow: Mutable
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f)) {
+                LazyColumn(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f)) {
                     items(operatorTypes) { type ->
                         SelectableTile(type.title, type.icon, type.isSelected) {
                             operatorTypes.forEach {
                                 it.isSelected.value = false
                             }
                             type.isSelected.value = !type.isSelected.value
+                            operatorType.value = type.title
                         }
                     }
                 }
@@ -152,7 +169,17 @@ fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel, showWindow: Mutable
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-
+                        if (operatorType.value.isNotEmpty()) {
+                            viewModel.updateOperatorType(
+                                dataStore,
+                                userInfo,
+                                voiceProfile,
+                                operatorType.value
+                            )
+                            showWindow.value = false
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.operator_type_toast_message), Toast.LENGTH_SHORT).show()
+                        }
                     }) {
                     if(viewModel.showProgressBar.value) {
                         CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
