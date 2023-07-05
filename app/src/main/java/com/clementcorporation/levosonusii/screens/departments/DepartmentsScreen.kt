@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -45,8 +44,6 @@ import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
@@ -65,10 +62,8 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
     }
 
     BackHandler {
-        hsViewModel.viewModelScope.launch {
-            navController.popBackStack()
-            navController.navigate(LevoSonusScreens.HomeScreen.name)
-        }
+        navController.popBackStack()
+        navController.navigate(LevoSonusScreens.HomeScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -84,18 +79,14 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     title = "Departments",
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.viewModelScope.launch {
-                            hsViewModel.signOut()
-                            delay(2000L)
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        }
+                        hsViewModel.signOut()
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+
                     },
                     onClickLeftIcon = {
-                        hsViewModel.viewModelScope.launch {
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        }
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }

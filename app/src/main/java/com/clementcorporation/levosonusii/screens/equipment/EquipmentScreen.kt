@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,8 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
@@ -23,21 +23,15 @@ import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun EquipmentScreen(navController: NavController) {
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val equipmentScreenViewModel: EquipmentScreenViewModel = viewModel()
 
     BackHandler {
-        hsViewModel.viewModelScope.launch {
-            navController.popBackStack()
-            navController.navigate(LevoSonusScreens.HomeScreen.name)
-        }
+        navController.popBackStack()
+        navController.navigate(LevoSonusScreens.HomeScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -53,18 +47,13 @@ fun EquipmentScreen(navController: NavController) {
                     title = "Equipment",
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.viewModelScope.launch {
-                            hsViewModel.signOut()
-                            delay(2000L)
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        }
+                        hsViewModel.signOut()
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
                     onClickLeftIcon = {
-                        hsViewModel.viewModelScope.launch {
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        }
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }
