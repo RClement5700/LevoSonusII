@@ -54,7 +54,7 @@ fun HomeScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val showOperatorTypeWindow = remember { mutableStateOf(false) }
     val inflateProfilePic = remember { mutableStateOf(false) }
     val operatorType = remember { mutableStateOf("")}
-    viewModel.retrieveOperatorType(userInfo)
+    viewModel.retrieveOperatorType(userInfo, dataStore)
     viewModel.operatorTypeLiveData.observe(lifecycleOwner) {
         showOperatorTypeWindow.value = it.isEmpty()
     }

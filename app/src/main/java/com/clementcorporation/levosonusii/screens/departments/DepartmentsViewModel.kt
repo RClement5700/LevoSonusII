@@ -1,8 +1,10 @@
 package com.clementcorporation.levosonusii.screens.departments
 
+import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.*
+import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENTS
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.EMAIL
@@ -23,7 +25,7 @@ import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
-class DepartmentsViewModel: ViewModel() {
+class DepartmentsViewModel(private val resources: Resources): ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
     private val document = collection.document(DEPARTMENTS)
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
@@ -91,25 +93,13 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    fun setSelectedDepartment(departmentId: String, userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>) {
+    fun setSelectedDepartment(departmentId: String) {
         viewModelScope.launch {
             selectedDepartmentId.value = departmentId
-            dataStore.updateData {
-                it.copy(
-                    name = userInfo.name,
-                    employeeId = userInfo.employeeId,
-                    firebaseId = userInfo.firebaseId,
-                    departmentId = selectedDepartmentId.value,
-                    equipmentId = userInfo.equipmentId,
-                    emailAddress = userInfo.emailAddress,
-                    profilePicUrl = userInfo.profilePicUrl,
-                    operatorType = userInfo.operatorType
-                )
-            }
         }
     }
 
-    private fun subtractOrderPickerFromDepartment(currentDepartmentId: String) {
+    private fun subtractOrderPickerFromDepartment(currentDepartmentId: String, userInfo: LSUserInfo) {
         document.get().addOnSuccessListener { task ->
             var currentTitle = ""
             var currentForkliftCount = ""
@@ -134,8 +124,12 @@ class DepartmentsViewModel: ViewModel() {
             document.update(
                 currentDepartmentId,
                 mapOf(
-                    FORKLIFT_COUNT to currentForkliftCount,
-                    OP_COUNT to currentOrderPickerCount.toInt().minus(1).toString(),
+                    FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
+                        currentForkliftCount.toInt().minus(1).toString()
+                    else currentForkliftCount,
+                    OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
+                        currentOrderPickerCount.toInt().minus(1).toString()
+                    else currentOrderPickerCount,
                     REMAINING_ORDERS to currentRemainingOrders,
                     TITLE to currentTitle,
                     ICON_URL to currentIconUrl
@@ -144,7 +138,7 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    private fun addOrderPickerToDepartment() {
+    private fun addOrderPickerToDepartment(userInfo: LSUserInfo) {
         if (selectedDepartmentId.value.isNotEmpty()) {
             document.get().addOnSuccessListener { task ->
                 var title = ""
@@ -170,8 +164,12 @@ class DepartmentsViewModel: ViewModel() {
                 document.update(
                     selectedDepartmentId.value,
                     mapOf(
-                        FORKLIFT_COUNT to forkliftCount,
-                        OP_COUNT to orderPickerCount.toInt().plus(1).toString(),
+                        FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
+                            forkliftCount.toInt().plus(1).toString()
+                        else forkliftCount,
+                        OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
+                            orderPickerCount.toInt().plus(1).toString()
+                        else orderPickerCount,
                         REMAINING_ORDERS to remainingOrders,
                         TITLE to title,
                         ICON_URL to iconUrl
@@ -181,35 +179,49 @@ class DepartmentsViewModel: ViewModel() {
         }
     }
 
-    private fun updateUserInfo(userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
-        collection.document(USERS).update(
-            userInfo.employeeId,
-            mapOf(
-                DEPARTMENT_ID to selectedDepartmentId.value,
-                EQUIPMENT_ID to userInfo.equipmentId,
-                NAME to userInfo.name,
-                EMAIL to userInfo.emailAddress,
-                PIC_URL to userInfo.profilePicUrl,
-                USER_ID to userInfo.firebaseId,
-                VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                OP_TYPE to userInfo.operatorType
+    private fun updateUserInfo(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+        viewModelScope.launch {
+            collection.document(USERS).update(
+                userInfo.employeeId,
+                mapOf(
+                    DEPARTMENT_ID to selectedDepartmentId.value,
+                    EQUIPMENT_ID to userInfo.equipmentId,
+                    NAME to userInfo.name,
+                    EMAIL to userInfo.emailAddress,
+                    PIC_URL to userInfo.profilePicUrl,
+                    USER_ID to userInfo.firebaseId,
+                    VOICE_PROFILE to voiceProfile.voiceProfileMap,
+                    OP_TYPE to userInfo.operatorType
+                )
             )
-        )
+            dataStore.updateData {
+                it.copy(
+                    name = userInfo.name,
+                    employeeId = userInfo.employeeId,
+                    firebaseId = userInfo.firebaseId,
+                    departmentId = selectedDepartmentId.value,
+                    equipmentId = userInfo.equipmentId,
+                    emailAddress = userInfo.emailAddress,
+                    profilePicUrl = userInfo.profilePicUrl,
+                    operatorType = userInfo.operatorType
+                )
+            }
+        }
     }
 
-    fun updateUserDepartment(currentDepartmentId: String, userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+    fun updateUserDepartment(currentDepartmentId: String, dataStore: DataStore<LSUserInfo>, userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
         viewModelScope.launch {
             showProgressBar.value = true
-            updateUserInfo(userInfo, voiceProfile)
-            addOrderPickerToDepartment()
-            subtractOrderPickerFromDepartment(currentDepartmentId)
+            updateUserInfo(userInfo, dataStore, voiceProfile)
+            addOrderPickerToDepartment(userInfo)
+            subtractOrderPickerFromDepartment(currentDepartmentId, userInfo)
             showProgressBar.value = false
         }
     }
 }
 
-class DepartmentsViewModelFactory: ViewModelProvider.Factory {
+class DepartmentsViewModelFactory(private val resources: Resources): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return DepartmentsViewModel() as T
+        return DepartmentsViewModel(resources) as T
     }
 }

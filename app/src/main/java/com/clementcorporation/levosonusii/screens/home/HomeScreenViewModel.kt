@@ -73,7 +73,7 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    fun retrieveOperatorType(userInfo: LSUserInfo) {
+    fun retrieveOperatorType(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>) {
         viewModelScope.launch {
             var operatorType = ""
             with(collection) {
@@ -88,8 +88,11 @@ class HomeScreenViewModel @Inject constructor(
                             }
                         }
                     }
-                    _operatorTypeLiveData.postValue(operatorType)
                 }
+            }
+            if (operatorType.isNotEmpty()) {
+                updateUserInfo(userInfo, dataStore, operatorType)
+                _operatorTypeLiveData.postValue(operatorType)
             }
         }
     }

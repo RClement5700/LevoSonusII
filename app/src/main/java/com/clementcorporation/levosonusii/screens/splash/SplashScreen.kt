@@ -61,10 +61,10 @@ fun SplashScreen(navController: NavController) {
         val configuration = LocalConfiguration.current
         when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
-                SplashScreenContent(scale = scale, paddingStartEnd = 175, paddingTopBottom = 16)
+                SplashScreenContent(scale = scale, paddingStartEnd = 204, paddingTopBottom = 16)
             }
             else -> {
-                SplashScreenContent(scale = scale, paddingStartEnd = 16, paddingTopBottom = 175)
+                SplashScreenContent(scale = scale, paddingStartEnd = 16, paddingTopBottom = 196)
             }
         }
     }
