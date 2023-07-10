@@ -11,6 +11,7 @@ import com.clementcorporation.levosonusii.screens.departments.DepartmentsScreen
 import com.clementcorporation.levosonusii.screens.equipment.EquipmentScreen
 import com.clementcorporation.levosonusii.screens.equipment.HeadsetsScreen
 import com.clementcorporation.levosonusii.screens.equipment.MachinesScreen
+import com.clementcorporation.levosonusii.screens.equipment.ScannersScreen
 import com.clementcorporation.levosonusii.screens.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.screens.home.HomeScreen
 import com.clementcorporation.levosonusii.screens.login.LoginScreen
@@ -81,10 +82,11 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.HeadsetsScreen.name){
-            HeadsetsScreen(navController = navController)
+            HeadsetsScreen(navController = navController, lifecycleOwner)
             showFab.value = true
         }
         composable(LevoSonusScreens.ProductScannersScreen.name){
+            ScannersScreen(navController = navController, lifecycleOwner = lifecycleOwner)
             showFab.value = true
         }
     }

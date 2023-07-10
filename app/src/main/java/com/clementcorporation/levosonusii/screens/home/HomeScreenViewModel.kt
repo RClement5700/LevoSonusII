@@ -6,9 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.EMAIL
-import com.clementcorporation.levosonusii.main.Constants.EQUIPMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.NAME
 import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
 import com.clementcorporation.levosonusii.main.Constants.PIC_URL
@@ -60,7 +60,9 @@ class HomeScreenViewModel @Inject constructor(
                     userInfo.employeeId,
                     mapOf(
                         DEPARTMENT_ID to userInfo.departmentId,
-                        EQUIPMENT_ID to userInfo.equipmentId,
+                        Constants.MACHINE_ID to userInfo.machineId,
+                        Constants.HEADSET_ID to userInfo.headsetId,
+                        Constants.SCANNER_ID to userInfo.scannerId,
                         NAME to userInfo.name,
                         EMAIL to userInfo.emailAddress,
                         PIC_URL to userInfo.profilePicUrl,
@@ -105,7 +107,9 @@ class HomeScreenViewModel @Inject constructor(
                     employeeId = userInfo.employeeId,
                     firebaseId = userInfo.firebaseId,
                     departmentId = userInfo.departmentId,
-                    equipmentId = userInfo.equipmentId,
+                    machineId = userInfo.machineId,
+                    headsetId = userInfo.headsetId,
+                    scannerId = userInfo.scannerId,
                     emailAddress = userInfo.emailAddress,
                     profilePicUrl = userInfo.profilePicUrl,
                     operatorType = operatorType

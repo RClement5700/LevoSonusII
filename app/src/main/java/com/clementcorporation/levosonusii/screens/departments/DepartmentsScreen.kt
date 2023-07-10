@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
+import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
@@ -47,8 +48,9 @@ import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
 @Composable
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
+    val context = LocalContext.current
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val departmentsViewModel: DepartmentsViewModel = DepartmentsViewModelFactory(LocalContext.current.resources)
+    val departmentsViewModel: DepartmentsViewModel = DepartmentsViewModelFactory(context.resources)
             .create(DepartmentsViewModel::class.java)
     val currentDepartmentId = remember {
          mutableStateOf("")
@@ -120,7 +122,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
                             department.isSelected.value = userInfo.departmentId == department.id
@@ -135,7 +137,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     }
                 }
                 Button(
-                    modifier = Modifier.padding(PADDING.dp).fillMaxWidth().fillMaxHeight(),
+                    modifier = Modifier.padding(PADDING.dp).fillMaxWidth().height(BTN_HEIGHT.dp),
                     shape = RoundedCornerShape(CURVATURE),
                     elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
                     colors = ButtonDefaults.buttonColors(

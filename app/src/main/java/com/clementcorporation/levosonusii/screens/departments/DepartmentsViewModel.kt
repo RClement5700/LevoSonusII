@@ -8,14 +8,16 @@ import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENTS
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.EMAIL
-import com.clementcorporation.levosonusii.main.Constants.EQUIPMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.FORKLIFT_COUNT
+import com.clementcorporation.levosonusii.main.Constants.HEADSET_ID
 import com.clementcorporation.levosonusii.main.Constants.ICON_URL
+import com.clementcorporation.levosonusii.main.Constants.MACHINE_ID
 import com.clementcorporation.levosonusii.main.Constants.NAME
 import com.clementcorporation.levosonusii.main.Constants.OP_COUNT
 import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
 import com.clementcorporation.levosonusii.main.Constants.PIC_URL
 import com.clementcorporation.levosonusii.main.Constants.REMAINING_ORDERS
+import com.clementcorporation.levosonusii.main.Constants.SCANNER_ID
 import com.clementcorporation.levosonusii.main.Constants.TITLE
 import com.clementcorporation.levosonusii.main.Constants.USERS
 import com.clementcorporation.levosonusii.main.Constants.USER_ID
@@ -185,7 +187,9 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                 userInfo.employeeId,
                 mapOf(
                     DEPARTMENT_ID to selectedDepartmentId.value,
-                    EQUIPMENT_ID to userInfo.equipmentId,
+                    MACHINE_ID to userInfo.machineId,
+                    HEADSET_ID to userInfo.headsetId,
+                    SCANNER_ID to userInfo.scannerId,
                     NAME to userInfo.name,
                     EMAIL to userInfo.emailAddress,
                     PIC_URL to userInfo.profilePicUrl,
@@ -200,7 +204,9 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                     employeeId = userInfo.employeeId,
                     firebaseId = userInfo.firebaseId,
                     departmentId = selectedDepartmentId.value,
-                    equipmentId = userInfo.equipmentId,
+                    machineId = userInfo.machineId,
+                    headsetId = userInfo.headsetId,
+                    scannerId = userInfo.scannerId,
                     emailAddress = userInfo.emailAddress,
                     profilePicUrl = userInfo.profilePicUrl,
                     operatorType = userInfo.operatorType

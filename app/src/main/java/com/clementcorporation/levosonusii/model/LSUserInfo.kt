@@ -9,7 +9,9 @@ data class LSUserInfo(
     val name: String = "",
     val emailAddress: String = "",
     val profilePicUrl: String = "",
-    val equipmentId: String = "",
+    val machineId: String = "",
+    val scannerId: String = "",
+    val headsetId: String = "",
     val departmentId: String = "",
     val operatorType: String = ""
 )

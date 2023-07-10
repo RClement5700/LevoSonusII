@@ -13,6 +13,17 @@ import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
+import com.clementcorporation.levosonusii.main.Constants.EMAIL
+import com.clementcorporation.levosonusii.main.Constants.HEADSET_ID
+import com.clementcorporation.levosonusii.main.Constants.MACHINE_ID
+import com.clementcorporation.levosonusii.main.Constants.NAME
+import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
+import com.clementcorporation.levosonusii.main.Constants.PIC_URL
+import com.clementcorporation.levosonusii.main.Constants.SCANNER_ID
+import com.clementcorporation.levosonusii.main.Constants.USERS
+import com.clementcorporation.levosonusii.main.Constants.USER_ID
+import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.auth.FirebaseAuth
@@ -40,22 +51,26 @@ class LoginViewModel @Inject constructor(
         var profilePicUrl: String? = ""
         var firebaseId: String? = ""
         var departmentId: String? = ""
-        var equipmentId: String? = ""
+        var machineId: String? = ""
+        var scannerId: String? = ""
+        var headsetId: String? = ""
         var operatorType: String? = ""
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
             try {
                 FirebaseFirestore.getInstance().collection("HannafordFoods")
-                    .document("users").get().addOnCompleteListener { document ->
+                    .document(USERS).get().addOnCompleteListener { document ->
                         document.result?.get(userId)?.let {
-                            name = (it as HashMap<*,*>)["name"] as String
-                            email = it["emailAddress"] as String
-                            firebaseId = it["userId"] as String
-                            departmentId = it["departmentId"] as String
-                            equipmentId = it["equipmentId"] as String
-                            operatorType = it["operatorType"] as String
-                            profilePicUrl = it["profilePicUrl"] as String
-                            voiceProfile = it["voiceProfile"] as HashMap<*, *>
+                            name = (it as HashMap<*,*>)[NAME] as String
+                            email = it[EMAIL] as String
+                            firebaseId = it[USER_ID] as String
+                            departmentId = it[DEPARTMENT_ID] as String
+                            machineId = it[MACHINE_ID] as String
+                            scannerId = it[SCANNER_ID] as String
+                            headsetId = it[HEADSET_ID] as String
+                            operatorType = it[OP_TYPE] as String
+                            profilePicUrl = it[PIC_URL] as String
+                            voiceProfile = it[VOICE_PROFILE] as HashMap<*, *>
                             email?.let { email ->
                                 auth.signInWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener { task ->
@@ -65,25 +80,33 @@ class LoginViewModel @Inject constructor(
                                                 voiceProfile?.let { voiceProfile ->
                                                     firebaseId?.let { firebaseId ->
                                                         departmentId?.let { departmentId ->
-                                                            equipmentId?.let { equipmentId ->
-                                                                operatorType?.let { operatorType ->
-                                                                    viewModelScope.launch {
-                                                                        sessionDataStore.updateData { userInfo ->
-                                                                            userInfo.copy(
-                                                                                employeeId = userId,
-                                                                                firebaseId = firebaseId,
-                                                                                emailAddress = email,
-                                                                                name = name,
-                                                                                profilePicUrl = url,
-                                                                                departmentId = departmentId,
-                                                                                equipmentId = equipmentId,
-                                                                                operatorType = operatorType
-                                                                            )
+                                                            machineId?.let { machineId ->
+                                                                scannerId?.let { scannerId ->
+                                                                    headsetId?.let { headsetId ->
+                                                                        operatorType?.let { operatorType ->
+                                                                            viewModelScope.launch {
+                                                                                sessionDataStore.updateData { userInfo ->
+                                                                                    userInfo.copy(
+                                                                                        employeeId = userId,
+                                                                                        firebaseId = firebaseId,
+                                                                                        emailAddress = email,
+                                                                                        name = name,
+                                                                                        profilePicUrl = url,
+                                                                                        departmentId = departmentId,
+                                                                                        machineId = machineId,
+                                                                                        scannerId = scannerId,
+                                                                                        headsetId = headsetId,
+                                                                                        operatorType = operatorType
+                                                                                    )
+                                                                                }
+                                                                                voiceProfileDataStore.updateData { vp ->
+                                                                                    vp.copy(
+                                                                                        voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>
+                                                                                    )
+                                                                                }
+                                                                                home()
+                                                                            }
                                                                         }
-                                                                        voiceProfileDataStore.updateData { vp ->
-                                                                            vp.copy(voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>)
-                                                                        }
-                                                                        home()
                                                                     }
                                                                 }
                                                             }

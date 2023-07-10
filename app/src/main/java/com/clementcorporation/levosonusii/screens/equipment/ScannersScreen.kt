@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -22,30 +23,25 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
-import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentViewModelFactory
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
-const val TAG = "Machines Screen"
-
 @Composable
-fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
+fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val context = LocalContext.current
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val equipmentScreenViewModel: EquipmentScreenViewModel = EquipmentViewModelFactory(context.resources
-        ).create(EquipmentScreenViewModel::class.java)
+    val equipmentScreenViewModel: EquipmentScreenViewModel =
+        EquipmentViewModelFactory(context.resources).create(EquipmentScreenViewModel::class.java)
     val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
     val dataStore = hsViewModel.getUserInfo()
     val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-    if (equipmentScreenViewModel.isForkliftOperator(userInfo)) equipmentScreenViewModel.retrieveForkliftsData(userInfo)
-    else equipmentScreenViewModel.retrieveElectricPalletJacksData(userInfo)
+    equipmentScreenViewModel.retrieveScannersData(userInfo)
 
     BackHandler {
         navController.popBackStack()
@@ -62,7 +58,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                    title = "Machines",
+                    title = "Scanners",
                     profilePicUrl = null,
                     onClickSignOut = {
                         hsViewModel.signOut()
@@ -75,8 +71,8 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                     }
                 )
             }
-        ) { padding ->
-            Log.e(TAG, padding.toString())
+        ) { paddingValues ->
+            Log.e(TAG, paddingValues.toString())
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -105,34 +101,24 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
-                            equipmentScreenViewModel.machineLiveData.observe(lifecycleOwner) { equipmentList ->
-                                items(equipmentList) { equipment ->
-                                    if (equipment is Equipment.Forklift) {
-                                        SelectableTile(
-                                            title = equipment.serialNumber,
-                                            icon = R.drawable.forklift_icon,
-                                            isSelected = equipment.isSelected
-                                        ) {
-                                            equipmentList.forEach {
-                                                (it as Equipment.Forklift).isSelected.value = false
-                                            }
-                                            equipment.isSelected.value = !equipment.isSelected.value
-                                            equipmentScreenViewModel.setSelectedMachineId(equipment.serialNumber)
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.9f),
+                            state = rememberLazyListState()
+                        ) {
+                            equipmentScreenViewModel.scannerLiveData.observe(lifecycleOwner) { scanners ->
+                                items(scanners, key = { it.id }) { scanner ->
+                                    SelectableTile(
+                                        title = scanner.serialNumber,
+                                        isSelected = scanner.isSelected,
+                                        icon = R.drawable.scanner_icon
+                                    ) {
+                                        scanners.forEach {
+                                            it.isSelected.value = false
                                         }
-                                    } else {
-                                        SelectableTile(
-                                            title = (equipment as Equipment.ElectricPalletJack).serialNumber,
-                                            icon = R.drawable.electric_pallet_jack_icon,
-                                            isSelected = equipment.isSelected
-                                        ) {
-                                            equipmentList.forEach {
-                                                (it as Equipment.ElectricPalletJack).isSelected.value =
-                                                    false
-                                            }
-                                            equipment.isSelected.value = !equipment.isSelected.value
-                                            equipmentScreenViewModel.setSelectedMachineId(equipment.serialNumber)
-                                        }
+                                        scanner.isSelected.value = !scanner.isSelected.value
+                                        equipmentScreenViewModel.setSelectedScannerId(scanner.id)
                                     }
                                 }
                             }
@@ -142,7 +128,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                             modifier = Modifier
                                 .padding(Constants.PADDING.dp)
                                 .fillMaxWidth()
-                                .height(BTN_HEIGHT.dp),
+                                .height(Constants.BTN_HEIGHT.dp),
                             shape = RoundedCornerShape(Constants.CURVATURE),
                             elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -150,7 +136,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                 disabledBackgroundColor = Color.LightGray
                             ),
                             onClick = {
-                                equipmentScreenViewModel.updateMachinesData(
+                                equipmentScreenViewModel.updateScannerData(
                                     dataStore = dataStore,
                                     userInfo = userInfo,
                                     voiceProfile = voiceProfile
