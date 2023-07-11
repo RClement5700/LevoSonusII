@@ -42,5 +42,8 @@
 
     <!-- Voice Profile Screen -->
     <string name="voice_profile_alert_dialog_title">Create Voice Profile?</string>
+    <string name="voice_profile_are_you_sure_dialog_title">Are You Sure You Want \nto Retrain This Word:</string>
+    <string name="voice_profile_dialog_btn_text_yes">Yes</string>
+    <string name="voice_profile_dialog_btn_text_no">No</string>
 
 </resources>

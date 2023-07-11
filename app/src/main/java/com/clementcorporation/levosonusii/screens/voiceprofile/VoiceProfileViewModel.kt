@@ -1,5 +1,6 @@
 package com.clementcorporation.levosonusii.screens.voiceprofile
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import com.clementcorporation.levosonusii.model.LSUserInfo
@@ -13,6 +14,7 @@ class VoiceProfileViewModel @Inject constructor(
     private val voiceProfileDataStore: DataStore<VoiceProfile>
     ): ViewModel()
 {
+    val showProgressBar = mutableStateOf(false)
     fun getDataStore() = sessionDataStore
     fun getVoiceProfileDataStore() = voiceProfileDataStore
 }
