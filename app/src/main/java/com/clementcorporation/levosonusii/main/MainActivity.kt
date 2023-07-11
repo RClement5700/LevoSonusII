@@ -34,15 +34,14 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
     private lateinit var navController: NavHostController
-    private val TAG = "MainActivity"
     private lateinit var viewModel: MainActivityViewModel
+    private val TAG = "MainActivity"
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -68,14 +67,19 @@ class MainActivity : ComponentActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            viewModel = hiltViewModel()
             val intentFilter = IntentFilter().apply {
                 addAction(Constants.USER_INPUT)
             }
+            viewModel = hiltViewModel()
             bManager = LocalBroadcastManager.getInstance(this).apply {
                 registerReceiver(bReceiver, intentFilter)
             }
             navController = rememberNavController()
+            viewModel.mainActivityEventsLiveData.observe(this@MainActivity) {
+                if (it is MainActivityEvents.OnShowVoiceCommandActivity) {
+                    onClickVoiceCommandBtn(it.title)
+                }
+            }
             LevoSonusIITheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -100,7 +104,8 @@ class MainActivity : ComponentActivity(){
                                 val showFAB = remember {
                                     mutableStateOf(false)
                                 }
-                                LevoSonusNavigation(navController, showFAB, this@MainActivity)
+                                LevoSonusNavigation(navController, showFAB,
+                                    this@MainActivity, viewModel::showVoiceCommandActivity)
                                 if (showFAB.value) {
                                     LSFAB {
                                         onClickVoiceCommandBtn()
@@ -148,7 +153,6 @@ class MainActivity : ComponentActivity(){
                 VoiceCommands.SIGN_OUT -> {
                     lifecycleScope.launch {
                         viewModel.signOut()
-                        delay(1000L)
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                     }
                 }

@@ -23,7 +23,8 @@ import com.clementcorporation.levosonusii.screens.splash.SplashScreen
 import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileScreen
 
 @Composable
-fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>, lifecycleOwner: LifecycleOwner) {
+fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>,
+                        lifecycleOwner: LifecycleOwner, showVoiceCommandActivity: (String) -> Unit) {
     NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
         composable(LevoSonusScreens.SplashScreen.name){
             SplashScreen(navController)
@@ -38,7 +39,7 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.VoiceProfileScreen.name){
-            VoiceProfileScreen(navController = navController)
+            VoiceProfileScreen(navController = navController, showVoiceCommandActivity)
             showFab.value = true
         }
         composable(LevoSonusScreens.HomeScreen.name){

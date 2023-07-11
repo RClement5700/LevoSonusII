@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
@@ -30,20 +29,16 @@ import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
-fun VoiceProfileScreen(navController: NavController) {
+fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (String) -> Unit) {
     val viewModel: VoiceProfileViewModel = hiltViewModel()
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
     val showWarningDialog = remember { mutableStateOf(false) }
     val warningDialogTitle = remember { mutableStateOf("") }
     BackHandler {
-        viewModel.viewModelScope.launch {
-            navController.popBackStack()
-            navController.navigate(LevoSonusScreens.HomeScreen.name)
-        }
+        navController.popBackStack()
+        navController.navigate(LevoSonusScreens.HomeScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -59,18 +54,13 @@ fun VoiceProfileScreen(navController: NavController) {
                     title = "Voice Profile",
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.viewModelScope.launch {
-                            hsViewModel.signOut()
-                            delay(2000L)
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        }
+                        hsViewModel.signOut()
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
                     onClickLeftIcon = {
-                        viewModel.viewModelScope.launch {
-                            navController.popBackStack()
-                            navController.navigate(LevoSonusScreens.HomeScreen.name)
-                        }
+                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }
@@ -90,7 +80,7 @@ fun VoiceProfileScreen(navController: NavController) {
                     )
                 }
                 if (showWarningDialog.value) {
-                    VoiceProfileWarningDialog(warningDialogTitle, showWarningDialog, viewModel)
+                    VoiceProfileWarningDialog(warningDialogTitle, showWarningDialog, viewModel, showVoiceCommandActivity)
                 }
                 Column(
                     modifier = Modifier.verticalScroll(
@@ -121,7 +111,7 @@ fun VoiceProfileScreen(navController: NavController) {
 
 @Composable
 fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarningDialog: MutableState<Boolean>,
-                              viewModel: VoiceProfileViewModel
+                              viewModel: VoiceProfileViewModel, showVoiceCommandActivity: (String) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -183,7 +173,7 @@ fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarn
                             disabledBackgroundColor = Color.LightGray
                         ),
                         onClick = {
-                            //TODO: open word training screen
+                            showVoiceCommandActivity(warningDialogTitle.value)
                             showWarningDialog.value = false
                         }) {
                         if(viewModel.showProgressBar.value) {

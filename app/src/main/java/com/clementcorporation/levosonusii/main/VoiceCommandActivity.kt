@@ -17,7 +17,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.runtime.Composable
@@ -62,9 +65,9 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
             contentAlignment = Alignment.TopEnd
         ) {
             IconButton(modifier = Modifier
-                .size(25.dp)
+                .size(36.dp)
                 .zIndex(1f), onClick = { finish() }) {
-                Icon(imageVector = Icons.Filled.Cancel, contentDescription = "Close", tint = Color.Red)
+                Icon(imageVector = Icons.Filled.Cancel, contentDescription = "Close", tint = Color.White)
             }
             Card(
                 modifier = Modifier
