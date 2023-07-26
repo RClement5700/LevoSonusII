@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
@@ -30,7 +31,6 @@ import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
-import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentViewModelFactory
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
 const val TAG = "Machines Screen"
@@ -39,8 +39,7 @@ const val TAG = "Machines Screen"
 fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val context = LocalContext.current
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val equipmentScreenViewModel: EquipmentScreenViewModel = EquipmentViewModelFactory(context.resources
-        ).create(EquipmentScreenViewModel::class.java)
+    val equipmentScreenViewModel: EquipmentScreenViewModel = viewModel{ EquipmentScreenViewModel(context.resources) }
     val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
     val dataStore = hsViewModel.getUserInfo()
     val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value

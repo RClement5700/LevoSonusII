@@ -22,8 +22,10 @@ object Constants {
     const val PIC_URL = "profilePicUrl"
     const val USER_ID = "userId"
     const val VOICE_PROFILE = "voiceProfile"
+    const val MESSENGER_IDS = "messengerIds"
     const val OP_TYPE = "operatorType"
     const val DEPARTMENTS = "departments"
+    const val MESSENGER = "messenger"
     const val EQUIPMENT = "equipment"
     const val ELECTRIC_PALLET_JACK = "ELECTRIC_PALLET_JACK"
     const val FORKLIFT = "FORKLIFT"
@@ -34,6 +36,15 @@ object Constants {
     const val TITLE = "title"
     const val REMAINING_ORDERS = "remainingOrders"
     const val ICON_URL = "icon"
+    const val USER_1 = "USER_1"
+    const val USER_2 = "USER_2"
+    const val USER_1_MESSAGES = "USER_1_MESSAGES"
+    const val USER_2_MESSAGES = "USER_2_MESSAGES"
+    const val DATE = "DATE"
+    const val TIME = "TIME"
+    const val BODY = "BODY"
+    const val TIME_FORMAT = "hh:mm aa"
+    const val DATE_FORMAT = "MM/dd/yyyy"
 }
 
 enum class VoiceProfileConstants {

@@ -11,6 +11,7 @@ enum class LevoSonusScreens {
     OrdersScreen,
     HealthAndWellnessScreen,
     PayAndBenefitsScreen,
+    MessengerScreen,
     MessagesScreen,
     AnnouncementsScreen,
     GameCenterScreen,

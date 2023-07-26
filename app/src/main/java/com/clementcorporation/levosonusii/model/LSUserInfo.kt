@@ -13,5 +13,6 @@ data class LSUserInfo(
     val scannerId: String = "",
     val headsetId: String = "",
     val departmentId: String = "",
-    val operatorType: String = ""
+    val operatorType: String = "",
+    val messengerIds: ArrayList<String> = arrayListOf()
 )

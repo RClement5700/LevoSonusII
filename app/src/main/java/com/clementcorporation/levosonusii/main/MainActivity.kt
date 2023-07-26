@@ -145,7 +145,7 @@ class MainActivity : ComponentActivity(){
                     navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
                 }
                 VoiceCommands.MESSAGES -> {
-                    navController.navigate(LevoSonusScreens.MessagesScreen.name)
+                    navController.navigate(LevoSonusScreens.MessengerScreen.name)
                 }
                 VoiceCommands.ORDERS -> {
                     navController.navigate(LevoSonusScreens.OrdersScreen.name)

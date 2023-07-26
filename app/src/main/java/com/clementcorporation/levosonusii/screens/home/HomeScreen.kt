@@ -315,7 +315,7 @@ fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewMod
                 navController.navigate(LevoSonusScreens.OrdersScreen.name)
             }
             NavTile(title = stringResource(id = R.string.homescreen_tile_messages_label)) {//in app text messaging
-                navController.navigate(LevoSonusScreens.MessagesScreen.name)
+                navController.navigate(LevoSonusScreens.MessengerScreen.name)
             }
             NavTile(title = stringResource(id = R.string.homescreen_tile_announcements_label)) {//company wide & local announcements
                 navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)

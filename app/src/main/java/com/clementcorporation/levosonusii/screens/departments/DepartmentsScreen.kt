@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -50,8 +51,7 @@ import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val context = LocalContext.current
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val departmentsViewModel: DepartmentsViewModel = DepartmentsViewModelFactory(context.resources)
-            .create(DepartmentsViewModel::class.java)
+    val departmentsViewModel: DepartmentsViewModel = viewModel{ DepartmentsViewModel(context.resources) }
     val currentDepartmentId = remember {
          mutableStateOf("")
     }
@@ -118,11 +118,15 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                 Spacer(modifier = Modifier.height(8.dp))
             }
             Column(
-                modifier = Modifier.fillMaxSize().padding(0.dp, 4.dp, 0.dp, 0.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(0.dp, 4.dp, 0.dp, 0.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
+                LazyColumn(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
                             department.isSelected.value = userInfo.departmentId == department.id
@@ -137,7 +141,10 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     }
                 }
                 Button(
-                    modifier = Modifier.padding(PADDING.dp).fillMaxWidth().height(BTN_HEIGHT.dp),
+                    modifier = Modifier
+                        .padding(PADDING.dp)
+                        .fillMaxWidth()
+                        .height(BTN_HEIGHT.dp),
                     shape = RoundedCornerShape(CURVATURE),
                     elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
                     colors = ButtonDefaults.buttonColors(

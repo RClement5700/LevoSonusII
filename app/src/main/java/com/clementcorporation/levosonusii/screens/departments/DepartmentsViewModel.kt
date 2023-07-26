@@ -3,7 +3,10 @@ package com.clementcorporation.levosonusii.screens.departments
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENTS
 import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
@@ -12,6 +15,7 @@ import com.clementcorporation.levosonusii.main.Constants.FORKLIFT_COUNT
 import com.clementcorporation.levosonusii.main.Constants.HEADSET_ID
 import com.clementcorporation.levosonusii.main.Constants.ICON_URL
 import com.clementcorporation.levosonusii.main.Constants.MACHINE_ID
+import com.clementcorporation.levosonusii.main.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.main.Constants.NAME
 import com.clementcorporation.levosonusii.main.Constants.OP_COUNT
 import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
@@ -195,7 +199,8 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                     PIC_URL to userInfo.profilePicUrl,
                     USER_ID to userInfo.firebaseId,
                     VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                    OP_TYPE to userInfo.operatorType
+                    OP_TYPE to userInfo.operatorType,
+                    MESSENGER_IDS to userInfo.messengerIds
                 )
             )
             dataStore.updateData {
@@ -209,7 +214,8 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                     scannerId = userInfo.scannerId,
                     emailAddress = userInfo.emailAddress,
                     profilePicUrl = userInfo.profilePicUrl,
-                    operatorType = userInfo.operatorType
+                    operatorType = userInfo.operatorType,
+                    messengerIds = userInfo.messengerIds
                 )
             }
         }
@@ -223,11 +229,5 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
             subtractOrderPickerFromDepartment(currentDepartmentId, userInfo)
             showProgressBar.value = false
         }
-    }
-}
-
-class DepartmentsViewModelFactory(private val resources: Resources): ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return DepartmentsViewModel(resources) as T
     }
 }

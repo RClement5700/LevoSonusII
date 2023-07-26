@@ -17,6 +17,7 @@ import com.clementcorporation.levosonusii.main.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.main.Constants.EMAIL
 import com.clementcorporation.levosonusii.main.Constants.HEADSET_ID
 import com.clementcorporation.levosonusii.main.Constants.MACHINE_ID
+import com.clementcorporation.levosonusii.main.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.main.Constants.NAME
 import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
 import com.clementcorporation.levosonusii.main.Constants.PIC_URL
@@ -55,6 +56,7 @@ class LoginViewModel @Inject constructor(
         var scannerId: String? = ""
         var headsetId: String? = ""
         var operatorType: String? = ""
+        var messengerIds: ArrayList<String>? = arrayListOf<String>()
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
             try {
@@ -70,6 +72,7 @@ class LoginViewModel @Inject constructor(
                             headsetId = it[HEADSET_ID] as String
                             operatorType = it[OP_TYPE] as String
                             profilePicUrl = it[PIC_URL] as String
+                            messengerIds = it[MESSENGER_IDS] as ArrayList<String>
                             voiceProfile = it[VOICE_PROFILE] as HashMap<*, *>
                             email?.let { email ->
                                 auth.signInWithEmailAndPassword(email.trim(), password.trim())
@@ -84,27 +87,30 @@ class LoginViewModel @Inject constructor(
                                                                 scannerId?.let { scannerId ->
                                                                     headsetId?.let { headsetId ->
                                                                         operatorType?.let { operatorType ->
-                                                                            viewModelScope.launch {
-                                                                                sessionDataStore.updateData { userInfo ->
-                                                                                    userInfo.copy(
-                                                                                        employeeId = userId,
-                                                                                        firebaseId = firebaseId,
-                                                                                        emailAddress = email,
-                                                                                        name = name,
-                                                                                        profilePicUrl = url,
-                                                                                        departmentId = departmentId,
-                                                                                        machineId = machineId,
-                                                                                        scannerId = scannerId,
-                                                                                        headsetId = headsetId,
-                                                                                        operatorType = operatorType
-                                                                                    )
+                                                                            messengerIds?.let { messengerIds ->
+                                                                                viewModelScope.launch {
+                                                                                    sessionDataStore.updateData { userInfo ->
+                                                                                        userInfo.copy(
+                                                                                            employeeId = userId,
+                                                                                            firebaseId = firebaseId,
+                                                                                            emailAddress = email,
+                                                                                            name = name,
+                                                                                            profilePicUrl = url,
+                                                                                            departmentId = departmentId,
+                                                                                            machineId = machineId,
+                                                                                            scannerId = scannerId,
+                                                                                            headsetId = headsetId,
+                                                                                            operatorType = operatorType,
+                                                                                            messengerIds = messengerIds
+                                                                                        )
+                                                                                    }
+                                                                                    voiceProfileDataStore.updateData { vp ->
+                                                                                        vp.copy(
+                                                                                            voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>
+                                                                                        )
+                                                                                    }
+                                                                                    home()
                                                                                 }
-                                                                                voiceProfileDataStore.updateData { vp ->
-                                                                                    vp.copy(
-                                                                                        voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>
-                                                                                    )
-                                                                                }
-                                                                                home()
                                                                             }
                                                                         }
                                                                     }

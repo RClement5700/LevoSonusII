@@ -3,12 +3,16 @@ package com.clementcorporation.levosonusii.screens.equipment.viewmodels
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.ELECTRIC_PALLET_JACK
 import com.clementcorporation.levosonusii.main.Constants.FORKLIFT
 import com.clementcorporation.levosonusii.main.Constants.HEADSET
+import com.clementcorporation.levosonusii.main.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.main.Constants.SCANNER
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
@@ -334,7 +338,8 @@ class EquipmentScreenViewModel(private val resources: Resources): ViewModel() {
                     Constants.PIC_URL to userInfo.profilePicUrl,
                     Constants.USER_ID to userInfo.firebaseId,
                     Constants.VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                    Constants.OP_TYPE to userInfo.operatorType
+                    Constants.OP_TYPE to userInfo.operatorType,
+                    MESSENGER_IDS to userInfo.messengerIds
                 )
             )
             dataStore.updateData {
@@ -348,15 +353,10 @@ class EquipmentScreenViewModel(private val resources: Resources): ViewModel() {
                     scannerId = selectedScannerId.value.ifEmpty { userInfo.scannerId },
                     emailAddress = userInfo.emailAddress,
                     profilePicUrl = userInfo.profilePicUrl,
-                    operatorType = userInfo.operatorType
+                    operatorType = userInfo.operatorType,
+                    messengerIds = userInfo.messengerIds
                 )
             }
         }
-    }
-}
-
-class EquipmentViewModelFactory(private val resources: Resources): ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return EquipmentScreenViewModel(resources) as T
     }
 }
