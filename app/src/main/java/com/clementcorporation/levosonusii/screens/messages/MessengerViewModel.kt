@@ -2,6 +2,8 @@ package com.clementcorporation.levosonusii.screens.messages
 
 import android.content.res.Resources
 import android.icu.text.SimpleDateFormat
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,7 +21,9 @@ import com.clementcorporation.levosonusii.main.Constants.USER_2
 import com.clementcorporation.levosonusii.main.Constants.USER_2_MESSAGES
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class MessengerViewModel(private val resources: Resources): ViewModel() {
@@ -27,8 +31,17 @@ class MessengerViewModel(private val resources: Resources): ViewModel() {
     private val document = collection.document(Constants.MESSENGER)
     val showProgressBar = mutableStateOf(false)
     val isInEditMode = mutableStateOf(false)
-    private val _messagesEventsLiveData = MutableLiveData<MessagesEvents>()
-    val messagesEventsLiveData: LiveData<MessagesEvents> get() = _messagesEventsLiveData
+    private val _messengerEventsLiveData = MutableLiveData<MessengerEvents>()
+    val messengerEventsLiveData: LiveData<MessengerEvents> get() = _messengerEventsLiveData
+
+    @OptIn(ExperimentalMaterialApi::class)
+    fun showBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
+        viewModelScope.launch {
+            withContext(coroutineScope.coroutineContext) {
+                bottomSheetState.show()
+            }
+        }
+    }
 
     fun retrieveMessages(userInfo: LSUserInfo) {
         viewModelScope.launch {
@@ -120,7 +133,7 @@ class MessengerViewModel(private val resources: Resources): ViewModel() {
                         }
                     }
                 }
-                _messagesEventsLiveData.postValue(MessagesEvents.OnMessagesRetrieved(messages))
+                _messengerEventsLiveData.postValue(MessengerEvents.OnMessagesRetrieved(messages))
                 showProgressBar.value = false
             }
         }
@@ -129,23 +142,17 @@ class MessengerViewModel(private val resources: Resources): ViewModel() {
     private fun onMessageReceived() {
         viewModelScope.launch {
             showProgressBar.value = true
-            _messagesEventsLiveData.postValue(MessagesEvents.OnMessageReceived(MessengerListItem(
+            _messengerEventsLiveData.postValue(MessengerEvents.OnMessageReceived(MessengerListItem(
                 "", "", "", "", "", "", ""
             )))
             showProgressBar.value = false
         }
     }
-
-    fun openMessageThread(messageThreadId: String) {
-        viewModelScope.launch {
-            _messagesEventsLiveData.postValue(MessagesEvents.OnMessageClicked(messageThreadId))
-        }
-    }
 }
 
-sealed class MessagesEvents {
-    class OnMessagesRetrieved(val messages: List<MessengerListItem>): MessagesEvents()
-    class OnMessageReceived(val message: MessengerListItem): MessagesEvents()
-    class OnMessageSent(): MessagesEvents()
-    class OnMessageClicked(val messageThreadId: String): MessagesEvents()
+sealed class MessengerEvents {
+    class OnMessagesRetrieved(val messages: List<MessengerListItem>): MessengerEvents()
+    class OnMessageReceived(val message: MessengerListItem): MessengerEvents()
+    class OnMessageSent(): MessengerEvents()
+    class OnMessageClicked(val message: MessengerListItem): MessengerEvents()
 }

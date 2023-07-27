@@ -11,13 +11,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,13 +37,20 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
     val context = LocalContext.current
     val viewModel: MessengerViewModel = viewModel { MessengerViewModel(context.resources) }
     val hsViewModel: HomeScreenViewModel = hiltViewModel()
     val userInfo = hsViewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value
+    val showProgressBar = remember { mutableStateOf(false) }
+    val bottomSheetScope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden
+    )
     viewModel.retrieveMessages(userInfo)
+
     BackHandler {
         navController.popBackStack()
         navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -54,72 +61,152 @@ fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner
         color = Color.White,
         shape = RoundedCornerShape(Constants.CURVATURE.dp)
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            backgroundColor = Color.White,
-            topBar = {
-                LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                    title = "Messages",
-                    profilePicUrl = null,
-                    onClickSignOut = {
-                        hsViewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+        ModalBottomSheetLayout(
+            sheetState = bottomSheetState,
+            sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            sheetContent = {
+                    ThreadBottomSheetContent(showProgressBar, lifecycleOwner)
+            },
+            content = {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    backgroundColor = Color.White,
+                    topBar = {
+                        LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
+                            title = "Messages",
+                            profilePicUrl = null,
+                            onClickSignOut = {
+                                hsViewModel.signOut()
+                                navController.popBackStack()
+                                navController.navigate(LevoSonusScreens.LoginScreen.name)
 
+                            },
+                            onClickLeftIcon = {
+                                navController.popBackStack()
+                                navController.navigate(LevoSonusScreens.HomeScreen.name)
+                            }
+                        )
                     },
-                    onClickLeftIcon = {
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                ) { paddingValues ->
+                    Log.e(TAG, paddingValues.toString())
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (viewModel.showProgressBar.value) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .zIndex(1f)
+                                    .size(50.dp),
+                                strokeWidth = 2.dp,
+                                color = Constants.LS_BLUE
+                            )
+                        }
                     }
-                )
-            }
-        ) { paddingValue ->
-            Log.e(TAG, paddingValue.toString())
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (viewModel.showProgressBar.value) {
-                    CircularProgressIndicator(
+                    Column {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Divider(
+                            color = Constants.LS_BLUE,
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    LazyColumn(
                         modifier = Modifier
-                            .zIndex(1f)
-                            .size(50.dp),
-                        strokeWidth = 2.dp,
-                        color = Constants.LS_BLUE
-                    )
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
+                        viewModel.messengerEventsLiveData.observe(lifecycleOwner) { event ->
+                            when (event) {
+                                is MessengerEvents.OnMessageSent -> {}
+                                is MessengerEvents.OnMessageReceived -> {}
+                                is MessengerEvents.OnMessagesRetrieved -> {
+                                    items(event.messages) { message ->
+                                        MessageListItemTile(
+                                            viewModel = viewModel,
+                                            messengerListItem = message
+                                        ) {
+                                            viewModel.showBottomSheet(bottomSheetScope, bottomSheetState)
+                                        }
+                                    }
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
                 }
+
             }
-            Column {
-                Spacer(modifier = Modifier.height(4.dp))
-                Divider(
-                    color = Constants.LS_BLUE,
-                    thickness = 2.dp,
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+        )
+    }
+}
+
+@Composable
+fun ThreadBottomSheetContent(
+    showProgressBar: MutableState<Boolean>,
+    lifecycleOwner: LifecycleOwner
+) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (showProgressBar.value) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .size(50.dp),
+                strokeWidth = 2.dp,
+                color = Constants.LS_BLUE
+            )
+        }
+
+        Column {
+            Spacer(modifier = Modifier.height(4.dp))
+            Divider(
+                color = Constants.LS_BLUE,
+                thickness = 2.dp,
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(0.dp, 4.dp, 0.dp, 0.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight()
+                    .fillMaxHeight(0.75f)
             ) {
-                viewModel.messagesEventsLiveData.observe(lifecycleOwner) { event ->
-                    when (event) {
-                        is MessagesEvents.OnMessageSent -> {}
-                        is MessagesEvents.OnMessageReceived -> {}
-                        is MessagesEvents.OnMessagesRetrieved -> {
-                            items(event.messages) { message ->
-                                MessageListItemTile(viewModel = viewModel, messengerListItem = message) {
-                                    viewModel.openMessageThread(message.threadId)
-                                }
-                            }
-                        }
-                        is MessagesEvents.OnMessageClicked -> {
-                            navController.navigate(LevoSonusScreens.MessagesScreen.name)
-                        }
-                        else -> { //do nothing}
-                        }
-                    }
+                //items will be messages from the thread
+
+            }
+            //add text input box
+            Button( //to be replace with IconButton containing send icon
+                modifier = Modifier
+                    .padding(Constants.PADDING.dp)
+                    .fillMaxWidth()
+                    .height(Constants.BTN_HEIGHT.dp),
+                shape = RoundedCornerShape(Constants.CURVATURE),
+                elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Constants.LS_BLUE,
+                    disabledBackgroundColor = Color.LightGray
+                ),
+                onClick = { }) {
+                if (showProgressBar.value) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.btn_text_send),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

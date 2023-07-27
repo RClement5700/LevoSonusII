@@ -46,4 +46,8 @@
     <string name="voice_profile_dialog_btn_text_yes">Yes</string>
     <string name="voice_profile_dialog_btn_text_no">No</string>
 
+    <!-- Messenger Screen -->
+    <string name="btn_text_send">Send</string>
+
+
 </resources>

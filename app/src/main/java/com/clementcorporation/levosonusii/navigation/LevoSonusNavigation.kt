@@ -15,7 +15,6 @@ import com.clementcorporation.levosonusii.screens.equipment.ScannersScreen
 import com.clementcorporation.levosonusii.screens.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.screens.home.HomeScreen
 import com.clementcorporation.levosonusii.screens.login.LoginScreen
-import com.clementcorporation.levosonusii.screens.messages.MessagesScreen
 import com.clementcorporation.levosonusii.screens.messages.MessengerScreen
 import com.clementcorporation.levosonusii.screens.orders.OrdersScreen
 import com.clementcorporation.levosonusii.screens.payandbenefits.PayAndBenefitsScreen
@@ -65,10 +64,6 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
         }
         composable(LevoSonusScreens.MessengerScreen.name){
             MessengerScreen(navController = navController, lifecycleOwner = lifecycleOwner)
-            showFab.value = true
-        }
-        composable(LevoSonusScreens.MessagesScreen.name){
-            MessagesScreen(navController = navController, lifecycleOwner = lifecycleOwner)
             showFab.value = true
         }
         composable(LevoSonusScreens.OrdersScreen.name){
