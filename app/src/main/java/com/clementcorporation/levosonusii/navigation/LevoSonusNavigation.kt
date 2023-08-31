@@ -15,7 +15,7 @@ import com.clementcorporation.levosonusii.screens.equipment.ScannersScreen
 import com.clementcorporation.levosonusii.screens.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.screens.home.HomeScreen
 import com.clementcorporation.levosonusii.screens.login.LoginScreen
-import com.clementcorporation.levosonusii.screens.messages.MessengerScreen
+import com.clementcorporation.levosonusii.screens.messenger.MessengerScreen
 import com.clementcorporation.levosonusii.screens.orders.OrdersScreen
 import com.clementcorporation.levosonusii.screens.payandbenefits.PayAndBenefitsScreen
 import com.clementcorporation.levosonusii.screens.register.RegisterScreen

@@ -1,12 +1,14 @@
-package com.clementcorporation.levosonusii.screens.messages
+package com.clementcorporation.levosonusii.screens.messenger
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,9 +16,11 @@ import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -31,11 +35,14 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
+import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
+import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -65,7 +72,14 @@ fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner
             sheetState = bottomSheetState,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
-                    ThreadBottomSheetContent(showProgressBar, lifecycleOwner)
+                    ThreadBottomSheetContent(
+                        showProgressBar,
+                        lifecycleOwner,
+                        viewModel,
+                        bottomSheetScope,
+                        bottomSheetState,
+                        ""
+                    )
             },
             content = {
                 Scaffold(
@@ -142,11 +156,49 @@ fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ThreadBottomSheetContent(
     showProgressBar: MutableState<Boolean>,
-    lifecycleOwner: LifecycleOwner
+    lifecycleOwner: LifecycleOwner,
+    viewModel: MessengerViewModel,
+    bottomSheetScope: CoroutineScope,
+    bottomSheetState: ModalBottomSheetState,
+    receiverPicUrl: String
 ) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(PADDING.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            modifier = Modifier
+                .zIndex(1f)
+                .size(35.dp)
+                .clip(CircleShape)
+                .border(2.dp, LS_BLUE, CircleShape),
+            painter = if (receiverPicUrl.isNullOrEmpty()) {
+                painterResource(id = R.drawable.levosonus_rocket_logo)
+            } else {
+                rememberImagePainter(data = receiverPicUrl, builder = {
+                    crossfade(false)
+                    placeholder(R.drawable.levosonus_rocket_logo)
+                })
+            },
+            contentDescription = "Receiver Picture",
+            contentScale = ContentScale.Crop,
+        )
+        Text(
+            text = "Rohan",
+            color = LS_BLUE,
+            fontWeight = FontWeight.Bold,
+        )
+        Divider(
+            color = LS_BLUE,
+            thickness = 2.dp,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+        )
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -160,16 +212,6 @@ fun ThreadBottomSheetContent(
                 strokeWidth = 2.dp,
                 color = Constants.LS_BLUE
             )
-        }
-
-        Column {
-            Spacer(modifier = Modifier.height(4.dp))
-            Divider(
-                color = Constants.LS_BLUE,
-                thickness = 2.dp,
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
         }
         Column(
             modifier = Modifier
@@ -195,7 +237,7 @@ fun ThreadBottomSheetContent(
                 shape = RoundedCornerShape(Constants.CURVATURE),
                 elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Constants.LS_BLUE,
+                    backgroundColor = LS_BLUE,
                     disabledBackgroundColor = Color.LightGray
                 ),
                 onClick = { }) {
@@ -210,6 +252,7 @@ fun ThreadBottomSheetContent(
                 }
             }
         }
+        //put message box and send button here
     }
 }
 

@@ -1,4 +1,4 @@
-package com.clementcorporation.levosonusii.screens.messages
+package com.clementcorporation.levosonusii.screens.messenger
 
 import android.content.res.Resources
 import android.icu.text.SimpleDateFormat
@@ -39,6 +39,15 @@ class MessengerViewModel(private val resources: Resources): ViewModel() {
         viewModelScope.launch {
             withContext(coroutineScope.coroutineContext) {
                 bottomSheetState.show()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    fun hideBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
+        viewModelScope.launch {
+            withContext(coroutineScope.coroutineContext) {
+                bottomSheetState.hide()
             }
         }
     }
