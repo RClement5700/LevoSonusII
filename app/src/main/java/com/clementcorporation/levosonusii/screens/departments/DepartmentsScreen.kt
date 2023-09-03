@@ -13,13 +13,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -30,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -42,26 +38,12 @@ import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.model.LSUserInfo
-import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
-import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
 @Composable
 fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
-    val context = LocalContext.current
-    val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val departmentsViewModel: DepartmentsViewModel = viewModel{ DepartmentsViewModel(context.resources) }
-    val currentDepartmentId = remember {
-         mutableStateOf("")
-    }
-    val dataStore = hsViewModel.getUserInfo()
-    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-    val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
-    departmentsViewModel.fetchCurrentDepartmentId(userInfo)
-    departmentsViewModel.currentDepartmentIdLiveData.observe(lifecycleOwner) {
-        currentDepartmentId.value = it
-    }
+    val departmentsViewModel: DepartmentsViewModel = hiltViewModel()
 
     BackHandler {
         navController.popBackStack()
@@ -77,11 +59,11 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
+                LSAppBar(navController = navController, expandMenu = departmentsViewModel.expandMenu,
                     title = "Departments",
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.signOut()
+                        departmentsViewModel.signOut()
                         navController.popBackStack()
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
 
@@ -129,7 +111,10 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                     .fillMaxHeight(0.9f)) {
                     departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
                         items(departments) { department ->
-                            department.isSelected.value = userInfo.departmentId == department.id
+                            department.isSelected.value =
+                                departmentsViewModel.getSessionDataStore().data.collectAsState(
+                                    initial = LSUserInfo()
+                                ).value.departmentId == department.id
                             DepartmentTile(department) {
                                 departments.forEach {
                                     it.isSelected.value = false
@@ -152,7 +137,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-                        departmentsViewModel.updateUserDepartment(currentDepartmentId.value, dataStore, userInfo, voiceProfile)
+                        departmentsViewModel.updateUserDepartment()
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if(departmentsViewModel.showProgressBar.value) {

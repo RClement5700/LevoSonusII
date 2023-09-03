@@ -27,7 +27,6 @@ import com.clementcorporation.levosonusii.main.Constants.USER_ID
 import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -36,17 +35,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-//MOVE SIGN-IN FUNCTIONALITY TO MAIN VIEW MODEL
-
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
     ): ViewModel()
 {
-    private val auth: FirebaseAuth = Firebase.auth
 
-    fun signInWithEmailAndPassword(context: Context, userId: String, password: String, home: () -> Unit = {}) {
+    fun signInWithEmailAndPassword(userId: String, password: String, home: () -> Unit = {}) {
         var name: String? = ""
         var email: String? = ""
         var profilePicUrl: String? = ""
@@ -75,7 +71,7 @@ class LoginViewModel @Inject constructor(
                             messengerIds = it[MESSENGER_IDS] as ArrayList<String>
                             voiceProfile = it[VOICE_PROFILE] as HashMap<*, *>
                             email?.let { email ->
-                                auth.signInWithEmailAndPassword(email.trim(), password.trim())
+                                Firebase.auth.signInWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener { task ->
                                         Log.d("Sign In: ", "SUCCESS")
                                         name?.let { name ->

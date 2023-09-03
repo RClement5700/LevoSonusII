@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.di
 
 import android.content.Context
+import android.content.res.Resources
 import androidx.datastore.dataStore
 import com.clementcorporation.levosonusii.model.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.model.VoiceProfileSerializer
@@ -11,12 +12,18 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+private const val SESSION_FILE_NAME = "user-info.json"
+private const val VOICE_PROFILE_FILE_NAME = "voice-profile.json"
+
 @Module
 @InstallIn(SingletonComponent::class)
 class LevoSonusModule {
 
-    private val Context.sessionDataStore by dataStore(fileName = "user-info.json", serializer = LSUserInfoSerializer)
-    private val Context.voiceProfileDataStore by dataStore(fileName = "voice-profile.json", serializer = VoiceProfileSerializer)
+    private val Context.sessionDataStore by dataStore(fileName = SESSION_FILE_NAME, serializer = LSUserInfoSerializer)
+    private val Context.voiceProfileDataStore by dataStore(fileName = VOICE_PROFILE_FILE_NAME, serializer = VoiceProfileSerializer)
+
+    @Provides
+    fun providesResources(@ApplicationContext context: Context): Resources = context.resources
 
     @Provides
     @Singleton

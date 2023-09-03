@@ -7,13 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-//MOVE SIGN-IN AND SIGN-OUT FUNCTIONALITY HERE
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
@@ -21,6 +20,24 @@ class MainActivityViewModel @Inject constructor(
     private val voiceProfileDataStore: DataStore<VoiceProfile>): ViewModel() {
     private val _mainActivityEventsLiveData = MutableLiveData<MainActivityEvents>()
     val mainActivityEventsLiveData: LiveData<MainActivityEvents> get() = _mainActivityEventsLiveData
+
+    init {
+        fetchUserOrganization()
+    }
+
+    private fun fetchUserOrganization() {
+        viewModelScope.launch {
+            val organizations = arrayListOf<String>()
+            FirebaseFirestore.getInstance().collection("Organizations")
+                .document("businesses").get().addOnSuccessListener { businesses ->
+                    businesses.data?.forEach { business ->
+                        when (business.key) {
+                            "name" -> organizations.add(business.value as String)
+                        }
+                    }
+                }
+        }
+    }
 
     fun showVoiceCommandActivity(title: String) {
         viewModelScope.launch {
@@ -30,14 +47,9 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun getUserInfo() = sessionDataStore
-    suspend fun signOut() {
-        Firebase.auth.signOut()
-        sessionDataStore.updateData {
-            LSUserInfo()
-        }
-        voiceProfileDataStore.updateData {
-            VoiceProfile()
+    fun signOut() {
+        viewModelScope.launch {
+            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
         }
     }
 }

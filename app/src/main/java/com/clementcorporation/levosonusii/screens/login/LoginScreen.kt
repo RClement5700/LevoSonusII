@@ -29,8 +29,8 @@ import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSPasswordTextField
 import com.clementcorporation.levosonusii.main.LSTextField
@@ -90,7 +90,7 @@ fun LoginScreen(navController: NavController) {
                 label = stringResource(id = R.string.label_password),
                 onAction = KeyboardActions {
                     showProgressBar.value = true
-                    viewModel.signInWithEmailAndPassword(context = navController.context, userId = employeeId.value, password = password.value, home = {
+                    viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     })
                     viewModel.viewModelScope.launch {
@@ -146,7 +146,7 @@ fun PortraitButtonAndRegistrationContent(
         ),
         onClick = {
             showProgressBar.value = true
-            viewModel.signInWithEmailAndPassword(context = navController.context, userId = employeeId.value, password = password.value, home = {
+            viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
                 navController.navigate(LevoSonusScreens.HomeScreen.name)
             })
             viewModel.viewModelScope.launch {
@@ -216,7 +216,6 @@ fun LandscapeButtonAndRegistrationContent(
             onClick = {
                 showProgressBar.value = true
                 viewModel.signInWithEmailAndPassword(
-                    context = navController.context,
                     userId = employeeId.value,
                     password = password.value,
                     home = {

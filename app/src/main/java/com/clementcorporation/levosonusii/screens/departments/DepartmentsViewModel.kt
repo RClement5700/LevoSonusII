@@ -28,44 +28,34 @@ import com.clementcorporation.levosonusii.main.Constants.USER_ID
 import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
+import com.clementcorporation.levosonusii.util.AuthenticationUtil
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DepartmentsViewModel(private val resources: Resources): ViewModel() {
+@HiltViewModel
+class DepartmentsViewModel @Inject constructor(
+    private val sessionDataStore: DataStore<LSUserInfo>,
+    private val voiceProfileDataStore: DataStore<VoiceProfile>,
+    private val resources: Resources
+): ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
     private val document = collection.document(DEPARTMENTS)
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
-    private val _currentDepartmentIdLiveData = MutableLiveData<String>()
-    val currentDepartmentIdLiveData: LiveData<String> get() = _currentDepartmentIdLiveData
-    val showProgressBar = mutableStateOf(true)
     private val selectedDepartmentId = mutableStateOf("")
+    val showProgressBar = mutableStateOf(true)
+    val expandMenu = mutableStateOf(false)
 
     init {
         fetchDepartmentsData()
     }
 
-    fun fetchCurrentDepartmentId(userInfo: LSUserInfo) {
-        viewModelScope.launch {
-            collection.document(USERS).get().addOnSuccessListener { task ->
-                task.data?.forEach {
-                    if (it.key == userInfo.employeeId) {
-                        val userDetails = it.value as Map<*, *>
-                        userDetails.forEach { details ->
-                            when (details.key) {
-                                DEPARTMENT_ID -> _currentDepartmentIdLiveData.postValue(details.value as String)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
     private fun fetchDepartmentsData() {
         viewModelScope.launch {
             showProgressBar.value = true
             document.get().addOnSuccessListener { task ->
-                showProgressBar.value = false
                 val departments = arrayListOf<Department>()
                 task.data?.forEach {
                     val id = it.key
@@ -94,57 +84,56 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                     ))
                 }
                 _departmentsLiveData.postValue(departments.toList())
-                showProgressBar.value = false
             }
+            showProgressBar.value = false
         }
     }
 
-    fun setSelectedDepartment(departmentId: String) {
+    private fun subtractOrderPickerFromDepartment() {
         viewModelScope.launch {
-            selectedDepartmentId.value = departmentId
-        }
-    }
-
-    private fun subtractOrderPickerFromDepartment(currentDepartmentId: String, userInfo: LSUserInfo) {
-        document.get().addOnSuccessListener { task ->
-            var currentTitle = ""
-            var currentForkliftCount = ""
-            var currentOrderPickerCount = ""
-            var currentRemainingOrders = ""
-            var currentIconUrl = ""
-            task.data?.forEach {
-                val id = it.key
-                val departmentDetails = (it.value as Map<*, *>)
-                if (currentDepartmentId == id) {
-                    departmentDetails.forEach { details ->
-                        when (details.key) {
-                            TITLE -> currentTitle = details.value as String
-                            FORKLIFT_COUNT -> currentForkliftCount = details.value as String
-                            OP_COUNT -> currentOrderPickerCount = details.value as String
-                            REMAINING_ORDERS -> currentRemainingOrders = details.value as String
-                            ICON_URL -> currentIconUrl = details.value as String
+            sessionDataStore.data.collect { userInfo ->
+                document.get().addOnSuccessListener { task ->
+                    var currentTitle = ""
+                    var currentForkliftCount = ""
+                    var currentOrderPickerCount = ""
+                    var currentRemainingOrders = ""
+                    var currentIconUrl = ""
+                    task.data?.forEach {
+                        val id = it.key
+                        val departmentDetails = (it.value as Map<*, *>)
+                        if (userInfo.departmentId == id) {
+                            departmentDetails.forEach { details ->
+                                when (details.key) {
+                                    TITLE -> currentTitle = details.value as String
+                                    FORKLIFT_COUNT -> currentForkliftCount = details.value as String
+                                    OP_COUNT -> currentOrderPickerCount = details.value as String
+                                    REMAINING_ORDERS -> currentRemainingOrders = details.value as String
+                                    ICON_URL -> currentIconUrl = details.value as String
+                                }
+                            }
                         }
                     }
+
+                    document.update(
+                        userInfo.departmentId,
+                        mapOf(
+                            FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
+                                currentForkliftCount.toInt().minus(1).toString()
+                            else currentForkliftCount,
+                            OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
+                                currentOrderPickerCount.toInt().minus(1).toString()
+                            else currentOrderPickerCount,
+                            REMAINING_ORDERS to currentRemainingOrders,
+                            TITLE to currentTitle,
+                            ICON_URL to currentIconUrl
+                        )
+                    )
                 }
             }
-            document.update(
-                currentDepartmentId,
-                mapOf(
-                    FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
-                        currentForkliftCount.toInt().minus(1).toString()
-                    else currentForkliftCount,
-                    OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
-                        currentOrderPickerCount.toInt().minus(1).toString()
-                    else currentOrderPickerCount,
-                    REMAINING_ORDERS to currentRemainingOrders,
-                    TITLE to currentTitle,
-                    ICON_URL to currentIconUrl
-                )
-            )
         }
     }
 
-    private fun addOrderPickerToDepartment(userInfo: LSUserInfo) {
+    private fun addOrderPickerToDepartment() {
         if (selectedDepartmentId.value.isNotEmpty()) {
             document.get().addOnSuccessListener { task ->
                 var title = ""
@@ -167,67 +156,93 @@ class DepartmentsViewModel(private val resources: Resources): ViewModel() {
                         }
                     }
                 }
-                document.update(
-                    selectedDepartmentId.value,
-                    mapOf(
-                        FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
-                            forkliftCount.toInt().plus(1).toString()
-                        else forkliftCount,
-                        OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
-                            orderPickerCount.toInt().plus(1).toString()
-                        else orderPickerCount,
-                        REMAINING_ORDERS to remainingOrders,
-                        TITLE to title,
-                        ICON_URL to iconUrl
-                    )
-                )
+                viewModelScope.launch {
+                    sessionDataStore.data.collect { userInfo ->
+                        document.update(
+                            selectedDepartmentId.value,
+                            mapOf(
+                                FORKLIFT_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text))
+                                    forkliftCount.toInt().plus(1).toString()
+                                else forkliftCount,
+                                OP_COUNT to if (userInfo.operatorType == resources.getString(R.string.operator_type_order_picker_tile_text))
+                                    orderPickerCount.toInt().plus(1).toString()
+                                else orderPickerCount,
+                                REMAINING_ORDERS to remainingOrders,
+                                TITLE to title,
+                                ICON_URL to iconUrl
+                            )
+                        )
+                    }
+                }
             }
         }
     }
 
-    private fun updateUserInfo(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+    private fun updateUserInfo() {
         viewModelScope.launch {
-            collection.document(USERS).update(
-                userInfo.employeeId,
-                mapOf(
-                    DEPARTMENT_ID to selectedDepartmentId.value,
-                    MACHINE_ID to userInfo.machineId,
-                    HEADSET_ID to userInfo.headsetId,
-                    SCANNER_ID to userInfo.scannerId,
-                    NAME to userInfo.name,
-                    EMAIL to userInfo.emailAddress,
-                    PIC_URL to userInfo.profilePicUrl,
-                    USER_ID to userInfo.firebaseId,
-                    VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                    OP_TYPE to userInfo.operatorType,
-                    MESSENGER_IDS to userInfo.messengerIds
-                )
-            )
-            dataStore.updateData {
-                it.copy(
-                    name = userInfo.name,
-                    employeeId = userInfo.employeeId,
-                    firebaseId = userInfo.firebaseId,
-                    departmentId = selectedDepartmentId.value,
-                    machineId = userInfo.machineId,
-                    headsetId = userInfo.headsetId,
-                    scannerId = userInfo.scannerId,
-                    emailAddress = userInfo.emailAddress,
-                    profilePicUrl = userInfo.profilePicUrl,
-                    operatorType = userInfo.operatorType,
-                    messengerIds = userInfo.messengerIds
-                )
+            sessionDataStore.data.collect { userInfo ->
+                voiceProfileDataStore.data.collect { voiceProfile ->
+                    collection.document(USERS).update(
+                        userInfo.employeeId,
+                        mapOf(
+                            DEPARTMENT_ID to selectedDepartmentId.value,
+                            MACHINE_ID to userInfo.machineId,
+                            HEADSET_ID to userInfo.headsetId,
+                            SCANNER_ID to userInfo.scannerId,
+                            NAME to userInfo.name,
+                            EMAIL to userInfo.emailAddress,
+                            PIC_URL to userInfo.profilePicUrl,
+                            USER_ID to userInfo.firebaseId,
+                            VOICE_PROFILE to voiceProfile.voiceProfileMap,
+                            OP_TYPE to userInfo.operatorType,
+                            MESSENGER_IDS to userInfo.messengerIds
+                        )
+                    )
+                    sessionDataStore.updateData {
+                        it.copy(
+                            name = userInfo.name,
+                            employeeId = userInfo.employeeId,
+                            firebaseId = userInfo.firebaseId,
+                            departmentId = selectedDepartmentId.value,
+                            machineId = userInfo.machineId,
+                            headsetId = userInfo.headsetId,
+                            scannerId = userInfo.scannerId,
+                            emailAddress = userInfo.emailAddress,
+                            profilePicUrl = userInfo.profilePicUrl,
+                            operatorType = userInfo.operatorType,
+                            messengerIds = userInfo.messengerIds
+                        )
+                    }
+                }
             }
         }
     }
 
-    fun updateUserDepartment(currentDepartmentId: String, dataStore: DataStore<LSUserInfo>, userInfo: LSUserInfo, voiceProfile: VoiceProfile) {
+    fun getSessionDataStore(): DataStore<LSUserInfo> {
+        return sessionDataStore
+    }
+
+    fun setSelectedDepartment(departmentId: String) {
+        viewModelScope.launch {
+            selectedDepartmentId.value = departmentId
+        }
+    }
+
+    fun updateUserDepartment() {
         viewModelScope.launch {
             showProgressBar.value = true
-            updateUserInfo(userInfo, dataStore, voiceProfile)
-            addOrderPickerToDepartment(userInfo)
-            subtractOrderPickerFromDepartment(currentDepartmentId, userInfo)
+            updateUserInfo()
+            addOrderPickerToDepartment()
+            subtractOrderPickerFromDepartment()
             showProgressBar.value = false
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            showProgressBar.value = true
+            expandMenu.value = false
+            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
         }
     }
 }

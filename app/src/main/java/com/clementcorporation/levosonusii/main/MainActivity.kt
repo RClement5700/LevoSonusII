@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
@@ -21,9 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -32,16 +34,36 @@ import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import java.util.*
 
+
+private const val TAG = "MainActivity"
+private const val DEFAULT_PROMPT = "How Can I Help?"
+private const val VOICE_COMMAND_KEY = "USER_INPUT"
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
     private lateinit var navController: NavHostController
     private lateinit var viewModel: MainActivityViewModel
-    private val TAG = "MainActivity"
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                getCurrentLocation()
+            }
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                getCurrentLocation()
+            } else -> {
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+        }
+    }
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -56,7 +78,7 @@ class MainActivity : ComponentActivity(){
     private val bReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             if (intent.action == Constants.USER_INPUT) {
-                val userInput = intent.getStringExtra("USER_INPUT")
+                val userInput = intent.getStringExtra(VOICE_COMMAND_KEY)
                 userInput?.let {
                     executeVoiceCommand(it)
                 }
@@ -75,6 +97,11 @@ class MainActivity : ComponentActivity(){
                 registerReceiver(bReceiver, intentFilter)
             }
             navController = rememberNavController()
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
+            locationPermissionRequest.launch(arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ))
             viewModel.mainActivityEventsLiveData.observe(this@MainActivity) {
                 if (it is MainActivityEvents.OnShowVoiceCommandActivity) {
                     onClickVoiceCommandBtn(it.title)
@@ -96,11 +123,6 @@ class MainActivity : ComponentActivity(){
                                 modifier = Modifier.padding(8.dp),
                                 contentAlignment = Alignment.BottomEnd
                             ) {
-                                /*
-                                    TODO:
-                                        -hide FAB on SplashScreen
-                                        -build UI for VoiceCommandWindow below
-                                 */
                                 val showFAB = remember {
                                     mutableStateOf(false)
                                 }
@@ -117,7 +139,6 @@ class MainActivity : ComponentActivity(){
                 }
             }
         }
-        startService()
     }
 
     private fun executeVoiceCommand(command: String) {
@@ -151,21 +172,14 @@ class MainActivity : ComponentActivity(){
                     navController.navigate(LevoSonusScreens.OrdersScreen.name)
                 }
                 VoiceCommands.SIGN_OUT -> {
-                    lifecycleScope.launch {
-                        viewModel.signOut()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
-                    }
+                    viewModel.signOut()
+                    navController.navigate(LevoSonusScreens.LoginScreen.name)
                 }
                 VoiceCommands.VOICE_PROFILE -> {
                     navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        startService()
     }
 
     override fun onStop() {
@@ -187,11 +201,41 @@ class MainActivity : ComponentActivity(){
         }
     }
 
-    private fun startService() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this@MainActivity, Manifest.permission.RECORD_AUDIO) ==
-                    PackageManager.PERMISSION_GRANTED -> {
+    private fun getCurrentLocation() {
+        val address = mutableStateOf("")
+        when (
+            ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
+        ) {
+            PackageManager.PERMISSION_GRANTED -> {
+                try {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location : Location? ->
+                        var latitude = 0.0
+                        var longitude = 0.0
+                        location?.latitude?.let { latitude = it }
+                        location?.longitude?.let { longitude = it }
+                        val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+                        val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
+                        address.value = addressFromGeocoder?.getAddressLine(0).toString()
+                        //TODO: -fetch the organization details and compare them with $address.value
+                        //      -hook the app to the matching Firestore collection
+                        //      --see MainActivityViewModel line 28
+                        startVoiceCommandService()
+                    }
+                } catch(e: Exception) {
+                    e.localizedMessage?.let { Log.d(TAG, it) }
+                }
+            }
+            else -> {
+                requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 0)
+            }
+        }
+    }
+
+    private fun startVoiceCommandService() {
+        when (
+            ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECORD_AUDIO)
+        ) {
+            PackageManager.PERMISSION_GRANTED -> {
                 try {
                     startService(Intent(this, LevoSonusService::class.java))
                 } catch(e: Exception) {
@@ -199,12 +243,7 @@ class MainActivity : ComponentActivity(){
                 }
             }
             else -> {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission_group.MICROPHONE),
-                    0
-                )
+                requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 1)
             }
         }
     }

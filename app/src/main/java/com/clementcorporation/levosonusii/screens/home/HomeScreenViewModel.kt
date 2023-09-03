@@ -17,9 +17,8 @@ import com.clementcorporation.levosonusii.main.Constants.USER_ID
 import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
-import com.google.firebase.auth.ktx.auth
+import com.clementcorporation.levosonusii.util.AuthenticationUtil
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,15 +39,9 @@ class HomeScreenViewModel @Inject constructor(
     fun getUserInfo() = sessionDataStore
     fun signOut() {
         viewModelScope.launch {
-            Firebase.auth.signOut()
-            sessionDataStore.updateData {
-                LSUserInfo()
-            }
-            voiceProfileDataStore.updateData {
-                VoiceProfile()
-            }
             showProgressBar.value = true
             expandMenu.value = false
+            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
         }
     }
 
