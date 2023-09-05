@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 
 object Constants {
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"
+    const val VOICE_COMMAND_KEY = "USER_INPUT"
+    const val DEFAULT_VOICE_COMMAND_PROMPT = "How Can I Help?"
     const val PROMPT_KEYWORD = "prompt"
     const val ELEVATION = 8
     const val CURVATURE = 16

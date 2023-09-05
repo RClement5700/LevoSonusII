@@ -51,7 +51,7 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.DepartmentsScreen.name){
-            DepartmentsScreen(navController = navController, lifecycleOwner)
+            DepartmentsScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.HealthAndWellnessScreen.name){

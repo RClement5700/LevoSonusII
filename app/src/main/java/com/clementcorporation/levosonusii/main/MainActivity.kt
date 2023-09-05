@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
@@ -17,6 +18,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,7 +31,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.clementcorporation.levosonusii.main.Constants.DEFAULT_VOICE_COMMAND_PROMPT
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
+import com.clementcorporation.levosonusii.main.Constants.VOICE_COMMAND_KEY
 import com.clementcorporation.levosonusii.main.ui.theme.LevoSonusIITheme
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
@@ -42,8 +46,6 @@ import java.util.*
 
 
 private const val TAG = "MainActivity"
-private const val DEFAULT_PROMPT = "How Can I Help?"
-private const val VOICE_COMMAND_KEY = "USER_INPUT"
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity(){
@@ -54,10 +56,9 @@ class MainActivity : ComponentActivity(){
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         when {
-            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                getCurrentLocation()
-            }
-            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION,
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false
+                )) -> {
                 getCurrentLocation()
             } else -> {
                 shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -102,9 +103,15 @@ class MainActivity : ComponentActivity(){
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ))
-            viewModel.mainActivityEventsLiveData.observe(this@MainActivity) {
-                if (it is MainActivityEvents.OnShowVoiceCommandActivity) {
-                    onClickVoiceCommandBtn(it.title)
+            LaunchedEffect(key1 = null) {
+                viewModel.mainActivityEventsState.collect { event ->
+                    if (event is MainActivityEvents.OnShowVoiceCommandActivity) {
+                        val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
+                            putExtra(PROMPT_KEYWORD, event.title)
+                            putExtra(VoiceCommandActivity.IS_TRAINING_MODE, event.isTrainingMode)
+                        }
+                        resultLauncher.launch(i)
+                    }
                 }
             }
             LevoSonusIITheme {
@@ -130,7 +137,7 @@ class MainActivity : ComponentActivity(){
                                     this@MainActivity, viewModel::showVoiceCommandActivity)
                                 if (showFAB.value) {
                                     LSFAB {
-                                        onClickVoiceCommandBtn()
+                                        viewModel.showVoiceCommandActivity(DEFAULT_VOICE_COMMAND_PROMPT)
                                     }
                                 }
                             }
@@ -190,7 +197,7 @@ class MainActivity : ComponentActivity(){
     override fun onDestroy() {
         super.onDestroy()
         stopService()
-        bManager.unregisterReceiver(bReceiver);
+        bManager.unregisterReceiver(bReceiver)
     }
 
     private fun stopService() {
@@ -214,11 +221,19 @@ class MainActivity : ComponentActivity(){
                         location?.latitude?.let { latitude = it }
                         location?.longitude?.let { longitude = it }
                         val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
-                        val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
-                        address.value = addressFromGeocoder?.getAddressLine(0).toString()
-                        //TODO: -fetch the organization details and compare them with $address.value
-                        //      -hook the app to the matching Firestore collection
-                        //      --see MainActivityViewModel line 28
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            geocoder.getFromLocation(
+                                latitude,
+                                longitude,
+                                1) { addresses ->
+                                address.value = addresses.first().getAddressLine(0)
+                            }
+                        } else {
+                            val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
+                            address.value = addressFromGeocoder?.getAddressLine(0).toString()
+                        }
+                        //TODO: Why is address.value null?
+                        viewModel.fetchUserOrganization(address.value)
                         startVoiceCommandService()
                     }
                 } catch(e: Exception) {

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
-import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
@@ -29,20 +28,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import com.clementcorporation.levosonusii.main.Constants.USER_INPUT
+import com.clementcorporation.levosonusii.main.Constants.VOICE_COMMAND_KEY
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 
-class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
+class VoiceCommandActivity: ComponentActivity(), VoiceCommandRecognitionListener {
     private val TAG = "VoiceCommandActivity"
     private val wordsSpoken = mutableStateOf("")
     private lateinit var intentRecognizer: Intent
@@ -67,7 +70,11 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
             IconButton(modifier = Modifier
                 .size(36.dp)
                 .zIndex(1f), onClick = { finish() }) {
-                Icon(imageVector = Icons.Filled.Cancel, contentDescription = "Close", tint = Color.White)
+                Icon(
+                    imageVector = Icons.Filled.Cancel, 
+                    contentDescription = stringResource(id = R.string.voice_command_close_button_content_description), 
+                    tint = Color.White
+                )
             }
             Card(
                 modifier = Modifier
@@ -147,32 +154,13 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                     }
                 } catch(e: Exception) {
                     Log.e(TAG, "Error: ${e.localizedMessage}")
-                    Toast.makeText(this@VoiceCommandActivity, "Start Listening Failed", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@VoiceCommandActivity, getString(R.string.ls_service_failed_toast_message), Toast.LENGTH_LONG).show()
                 }
             }
             else -> {
                 requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission_group.MICROPHONE), 0)
             }
         }
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        Log.e(TAG, "Ready for Speech Input")
-    }
-
-    override fun onBeginningOfSpeech() {
-        Log.e(TAG, "Speech Beginning")
-    }
-
-    override fun onRmsChanged(rmsdB: Float) {
-    }
-
-    override fun onBufferReceived(buffer: ByteArray?) {
-        Log.e(TAG,"Buffer Received: $buffer")
-    }
-
-    override fun onEndOfSpeech() {
-        Log.e(TAG, "End of Speech")
     }
 
     override fun onError(error: Int) {
@@ -185,7 +173,7 @@ class VoiceCommandActivity: ComponentActivity(), RecognitionListener {
                 wordsSpoken.value = result.trim()
                 setResult(RESULT_OK, Intent().apply {
                     putExtra(RecognizerIntent.EXTRA_RESULTS, result)
-                    Log.e(TAG, "Result: $result")
+                    Log.e(TAG, "Voice Command Result: $result")
                 })
                 val userInput = Intent(USER_INPUT)
                 userInput.putExtra("USER_INPUT", wordsSpoken.value)

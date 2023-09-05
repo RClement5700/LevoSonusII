@@ -8,17 +8,18 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.IBinder
-import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
+import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.main.Constants.DEFAULT_VOICE_COMMAND_PROMPT
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import java.util.*
 
-class LevoSonusService: Service(), RecognitionListener {
+class LevoSonusService: Service(), VoiceCommandRecognitionListener {
     private val TAG = "LevoSonusService"
     private val wordsSpoken = mutableStateOf("")
     private lateinit var aManager: AudioManager
@@ -46,43 +47,25 @@ class LevoSonusService: Service(), RecognitionListener {
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error: ${e.localizedMessage}")
-                    Toast.makeText(this@LevoSonusService, "Start Listening Failed", Toast.LENGTH_LONG
+                    Toast.makeText(this@LevoSonusService, getString(R.string.ls_service_offline_toast_message), Toast.LENGTH_LONG
                     ).show()
                 }
             }
             else -> {
-                Toast.makeText(this, "Voice Command Offline", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.ls_service_failed_toast_message), Toast.LENGTH_LONG).show()
             }
         }
         muteSystem()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
+        Log.e(TAG, "onBind")
+        return null
     }
 
     override fun onDestroy() {
         super.onDestroy()
         speechRecognizer.destroy()
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        Log.e(TAG, "Ready for Speech Input")
-    }
-
-    override fun onBeginningOfSpeech() {
-        Log.e(TAG, "Speech Beginning")
-    }
-
-    override fun onRmsChanged(rmsdB: Float) {
-    }
-
-    override fun onBufferReceived(buffer: ByteArray?) {
-        Log.e(TAG,"Buffer Received: $buffer")
-    }
-
-    override fun onEndOfSpeech() {
-        Log.e(TAG, "End of Speech")
     }
 
     override fun onError(error: Int) {
@@ -94,24 +77,17 @@ class LevoSonusService: Service(), RecognitionListener {
         results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).let {
             it?.first()?.let { result ->
                 wordsSpoken.value = result.trim()
-                if (wordsSpoken.value.contentEquals("JARVIS", true)) {
+                if (wordsSpoken.value.contentEquals(VoiceProfileConstants.JARVIS.name, true)) {
                     unmuteSystem()
                     startActivity(Intent(this, VoiceCommandActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .putExtra(PROMPT_KEYWORD, "How Can I Help?")
+                        .putExtra(PROMPT_KEYWORD, DEFAULT_VOICE_COMMAND_PROMPT)
                     )
                 } else {
                     speechRecognizer.startListening(intentRecognizer)
                 }
             }
         }
-    }
-
-    override fun onPartialResults(partialResults: Bundle?) {
-    }
-
-    override fun onEvent(eventType: Int, params: Bundle?) {
-        Log.e(TAG, "Event Type: $eventType")
     }
 
     private fun muteSystem() {

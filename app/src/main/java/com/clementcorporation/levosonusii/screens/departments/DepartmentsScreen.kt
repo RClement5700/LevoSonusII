@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -42,9 +42,9 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.TAG
 
 @Composable
-fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
+fun DepartmentsScreen(navController: NavController) {
     val departmentsViewModel: DepartmentsViewModel = hiltViewModel()
-
+    val lifecycleOwner = LocalLifecycleOwner.current
     BackHandler {
         navController.popBackStack()
         navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -60,7 +60,7 @@ fun DepartmentsScreen(navController: NavController, lifecycleOwner: LifecycleOwn
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = departmentsViewModel.expandMenu,
-                    title = "Departments",
+                    title = stringResource(id = R.string.departments_screen_title_text),
                     profilePicUrl = null,
                     onClickSignOut = {
                         departmentsViewModel.signOut()
@@ -163,7 +163,7 @@ fun DepartmentIcon(modifier: Modifier, url: String) {
                 crossfade(false)
                 placeholder(R.drawable.levosonus_rocket_logo)
         }),
-        contentDescription = "Department Icon",
+        contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description),
         contentScale = ContentScale.Crop
     )
 }
@@ -221,11 +221,11 @@ fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(id = R.drawable.electric_pallet_jack_icon),
                         contentScale = ContentScale.Crop,
-                        contentDescription = "Electric Pallet Jack Icon"
+                        contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
                     )
                     Text(
                         modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = "Order Pickers:",
+                        text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label),
                         color = LS_BLUE,
                         fontFamily = FontFamily.SansSerif,
                         fontSize = 14.sp,
@@ -243,11 +243,11 @@ fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(id = R.drawable.forklift_icon),
                         contentScale = ContentScale.Crop,
-                        contentDescription = "Forklift Icon"
+                        contentDescription = stringResource(id = R.string.departments_screen_forklift_icon_content_description)
                     )
                     Text(
                         modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = "Forklifts:",
+                        text = stringResource(id = R.string.departments_screen_department_forklift_operator_label),
                         color = LS_BLUE,
                         fontFamily = FontFamily.SansSerif,
                         fontSize = 14.sp,
@@ -269,7 +269,7 @@ fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
                 ) {
                     Text(
                         modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = "Remaining Orders:",
+                        text = stringResource(id = R.string.departments_screen_department_remaining_orders_label),
                         color = LS_BLUE,
                         fontFamily = FontFamily.SansSerif,
                         fontSize = 14.sp,

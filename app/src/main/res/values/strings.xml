@@ -40,6 +40,18 @@
     <string name="homescreen_tile_announcements_label">ANNOUNCEMENTS</string>
     <string name="homescreen_tile_game_center_label">GAME CENTER</string>
 
+
+    <!-- Departments Screen -->
+    <string name="departments_screen_title_text">Departments</string>
+    <string name="departments_screen_department_icon_content_description">Department Icon</string>
+    <string name="departments_screen_electric_pallet_jack_icon_content_description">Electric Pallet Jack Icon</string>
+    <string name="departments_screen_forklift_icon_content_description">Forklift Icon</string>
+    <string name="departments_screen_department_forklift_operator_label">Forklifts:</string>
+    <string name="departments_screen_department_electric_pallet_jack_operator_label">Order Pickers:</string>
+    <string name="departments_screen_department_remaining_orders_label">Remaining Orders:</string>
+
+
+
     <!-- Voice Profile Screen -->
     <string name="voice_profile_alert_dialog_title">Create Voice Profile?</string>
     <string name="voice_profile_are_you_sure_dialog_title">Are You Sure You Want \nto Retrain This Word:</string>
@@ -49,5 +61,11 @@
     <!-- Messenger Screen -->
     <string name="btn_text_send">Send</string>
 
+    <!-- Levo Sonus Service -->
+    <string name="ls_service_failed_toast_message">Start Listening Failed</string>
+    <string name="ls_service_offline_toast_message">Voice Command Offline</string>
+
+    <!-- Voice Command Activity -->
+    <string name="voice_command_close_button_content_description">Close Voice Command</string>
 
 </resources>
