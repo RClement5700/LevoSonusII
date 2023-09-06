@@ -133,8 +133,7 @@ class MainActivity : ComponentActivity(){
                                 val showFAB = remember {
                                     mutableStateOf(false)
                                 }
-                                LevoSonusNavigation(navController, showFAB,
-                                    this@MainActivity, viewModel::showVoiceCommandActivity)
+                                LevoSonusNavigation(navController, showFAB, viewModel::showVoiceCommandActivity)
                                 if (showFAB.value) {
                                     LSFAB {
                                         viewModel.showVoiceCommandActivity(DEFAULT_VOICE_COMMAND_PROMPT)

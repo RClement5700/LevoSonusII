@@ -10,9 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
@@ -36,24 +32,11 @@ import com.clementcorporation.levosonusii.main.LSPasswordTextField
 import com.clementcorporation.levosonusii.main.LSTextField
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()
-    val employeeId = remember{
-        mutableStateOf("")
-    }
-    val password = remember{
-        mutableStateOf("")
-    }
-    val isLoginButtonEnabled = remember{
-        mutableStateOf(false)
-    }
-    val showProgressBar = remember{
-        mutableStateOf(false)
-    }
+
     Card(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -75,47 +58,34 @@ fun LoginScreen(navController: NavController) {
             LevoSonusLogo(LOGO_SIZE.dp)
             LSTextField(
                 modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
-                userInput = employeeId,
+                userInput = viewModel.employeeId,
                 label = stringResource(id = R.string.label_employee_id),
                 onAction = KeyboardActions {
                     defaultKeyboardAction(ImeAction.Next)
                 }
             ) {
-                employeeId.value = it
-                isLoginButtonEnabled.value = employeeId.value.isNotEmpty() && password.value.isNotEmpty()
+                viewModel.employeeId.value = it
+                viewModel.isLoginButtonEnabled.value = viewModel.employeeId.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
             }
             LSPasswordTextField(
                 modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
-                userInput = password,
+                userInput = viewModel.password,
                 label = stringResource(id = R.string.label_password),
                 onAction = KeyboardActions {
-                    showProgressBar.value = true
-                    viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
+                    viewModel.signInWithEmailAndPassword {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    })
-                    viewModel.viewModelScope.launch {
-                        delay(2000L)
-                        showProgressBar.value = false
                     }
                 }
             ) {
-                password.value = it
-                isLoginButtonEnabled.value = employeeId.value.isNotEmpty() && password.value.isNotEmpty()
+                viewModel.password.value = it
+                viewModel.isLoginButtonEnabled.value = viewModel.employeeId.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
             }
             when (configuration.orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
-                    employeeId = employeeId,
-                    password = password,
-                    isLoginButtonEnabled = isLoginButtonEnabled,
-                    showProgressBar = showProgressBar,
                     viewModel = viewModel,
                     navController = navController
                 )
                 else -> PortraitButtonAndRegistrationContent(
-                    employeeId = employeeId,
-                    password = password,
-                    isLoginButtonEnabled = isLoginButtonEnabled,
-                    showProgressBar = showProgressBar,
                     viewModel = viewModel,
                     navController = navController
                 )
@@ -126,10 +96,6 @@ fun LoginScreen(navController: NavController) {
 
 @Composable
 fun PortraitButtonAndRegistrationContent(
-    employeeId: MutableState<String>,
-    password: MutableState<String>,
-    isLoginButtonEnabled: MutableState<Boolean>,
-    showProgressBar: MutableState<Boolean>,
     viewModel: LoginViewModel,
     navController: NavController
 ) {
@@ -139,22 +105,17 @@ fun PortraitButtonAndRegistrationContent(
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE),
         elevation = elevation(defaultElevation = ELEVATION.dp),
-        enabled = isLoginButtonEnabled.value,
+        enabled = viewModel.isLoginButtonEnabled.value,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
-            showProgressBar.value = true
-            viewModel.signInWithEmailAndPassword(userId = employeeId.value, password = password.value, home = {
+            viewModel.signInWithEmailAndPassword {
                 navController.navigate(LevoSonusScreens.HomeScreen.name)
-            })
-            viewModel.viewModelScope.launch {
-                delay(2000L)
-                showProgressBar.value = false
             }
         }) {
-        if(showProgressBar.value) {
+        if(viewModel.showProgressBar.value) {
             CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
         } else {
             Text(
@@ -188,10 +149,6 @@ fun PortraitButtonAndRegistrationContent(
 
 @Composable
 fun LandscapeButtonAndRegistrationContent(
-    employeeId: MutableState<String>,
-    password: MutableState<String>,
-    isLoginButtonEnabled: MutableState<Boolean>,
-    showProgressBar: MutableState<Boolean>,
     viewModel: LoginViewModel,
     navController: NavController
 ) {
@@ -208,25 +165,17 @@ fun LandscapeButtonAndRegistrationContent(
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE),
             elevation = elevation(defaultElevation = ELEVATION.dp),
-            enabled = isLoginButtonEnabled.value,
+            enabled = viewModel.isLoginButtonEnabled.value,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {
-                showProgressBar.value = true
-                viewModel.signInWithEmailAndPassword(
-                    userId = employeeId.value,
-                    password = password.value,
-                    home = {
+                viewModel.signInWithEmailAndPassword{
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    })
-                viewModel.viewModelScope.launch {
-                    delay(2000L)
-                    showProgressBar.value = false
                 }
             }) {
-            if (showProgressBar.value) {
+            if (viewModel.showProgressBar.value) {
                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
             } else {
                 Text(

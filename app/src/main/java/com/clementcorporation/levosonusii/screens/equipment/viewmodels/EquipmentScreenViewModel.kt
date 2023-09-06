@@ -17,14 +17,22 @@ import com.clementcorporation.levosonusii.main.Constants.SCANNER
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
+import com.clementcorporation.levosonusii.util.AuthenticationUtil
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val CONNECTION = "CONNECTION"
 private const val IS_AVAILABLE = "IS_AVAILABLE"
 private const val TYPE = "TYPE"
 
-class EquipmentScreenViewModel(private val resources: Resources): ViewModel() {
+@HiltViewModel
+class EquipmentScreenViewModel @Inject constructor(
+    private val resources: Resources,
+    private val userInfo: DataStore<LSUserInfo>,
+    private val voiceProfile: DataStore<VoiceProfile>
+): ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
     private val document = collection.document(Constants.EQUIPMENT)
     private val _machineLiveData = MutableLiveData<List<Equipment>>()
@@ -34,149 +42,170 @@ class EquipmentScreenViewModel(private val resources: Resources): ViewModel() {
     private val _scannerLiveData = MutableLiveData<List<Equipment.ProductScanner>>()
     val scannerLiveData: LiveData<List<Equipment.ProductScanner>> get() = _scannerLiveData
     val showProgressBar = mutableStateOf(true)
+    val expandMenu = mutableStateOf(false)
     private val selectedMachineId = mutableStateOf("")
     private val selectedHeadsetId = mutableStateOf("")
     private val selectedScannerId = mutableStateOf("")
 
-
-    fun isForkliftOperator(userInfo: LSUserInfo): Boolean {
-        return userInfo.operatorType == resources.getString(R.string.operator_type_forklift_tile_text)
-    }
-
-    fun retrieveForkliftsData(userInfo: LSUserInfo) {
+    init {
         viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { forkliftDocument ->
-                val forklifts = arrayListOf<Equipment.Forklift>()
-                forkliftDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    val isSelected = mutableStateOf(false)
-                    var isAvailable = false
-                    val forkliftDetails = (it.value as Map<*, *>)
-                    forkliftDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            IS_AVAILABLE -> isAvailable = details.value as Boolean
-                        }
-                        isSelected.value = userInfo.machineId == id
-                    }
-                    if ((type == FORKLIFT && isAvailable) || isSelected.value) forklifts.add(
-                        Equipment.Forklift(
-                            serialNumber = id,
-                            isAvailable = isAvailable,
-                            isSelected = isSelected
-                        )
-                    )
-                }
-                _machineLiveData.postValue(forklifts.toList())
-                showProgressBar.value = false
-            }
-        }
-    }
-    fun retrieveElectricPalletJacksData(userInfo: LSUserInfo) {
-        viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { epjDocument ->
-                val epjs = arrayListOf<Equipment.ElectricPalletJack>()
-                epjDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    val isSelected = mutableStateOf(false)
-                    var isAvailable = false
-                    val epjDetails = (it.value as Map<*, *>)
-                    epjDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            IS_AVAILABLE -> isAvailable = details.value as Boolean
-                        }
-                        isSelected.value = userInfo.machineId == id
-                        if (isSelected.value) setSelectedMachineId(id)
-                    }
-                    if ((type == ELECTRIC_PALLET_JACK && isAvailable) || isSelected.value) epjs.add(
-                        Equipment.ElectricPalletJack(
-                            serialNumber = id,
-                            isAvailable = isAvailable,
-                            isSelected = isSelected
-                        )
-                    )
-                }
-                _machineLiveData.postValue(epjs.toList())
-                showProgressBar.value = false
+            userInfo.data.collect {
+                val isForkliftOperator = it.operatorType == resources.getString(R.string.operator_type_forklift_tile_text)
+                if (isForkliftOperator) retrieveForkliftsData() else retrieveElectricPalletJacksData()
             }
         }
     }
 
-    fun retrieveHeadsetsData(userInfo: LSUserInfo) {
+    fun signOut() {
         viewModelScope.launch {
             showProgressBar.value = true
-            document.get().addOnSuccessListener { headsetDocument ->
-                val headsets = arrayListOf<Equipment.Headset>()
-                headsetDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    var connection = ""
-                    val isSelected = mutableStateOf(false)
-                    var isAvailable = false
-                    val headsetDetails = (it.value as Map<*, *>)
-                    headsetDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            CONNECTION -> connection = details.value as String
-                            IS_AVAILABLE -> isAvailable = details.value as Boolean
+            expandMenu.value = false
+            AuthenticationUtil.signOut(userInfo, voiceProfile)
+        }
+    }
+
+    private fun retrieveForkliftsData() {
+        viewModelScope.launch {
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { forkliftDocument ->
+                    val forklifts = arrayListOf<Equipment.Forklift>()
+                    forkliftDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        val isSelected = mutableStateOf(false)
+                        var isAvailable = false
+                        val forkliftDetails = (it.value as Map<*, *>)
+                        forkliftDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                IS_AVAILABLE -> isAvailable = details.value as Boolean
+                            }
+                            isSelected.value = info.machineId == id
                         }
-                        isSelected.value = userInfo.headsetId == id
-                        if (isSelected.value) setSelectedHeadsetId(id)
-                    }
-                    if ((type == HEADSET && isAvailable) || isSelected.value) headsets.add(
-                        Equipment.Headset(
-                            serialNumber = id,
-                            connection = connection,
-                            isAvailable = isAvailable,
-                            isSelected = isSelected
+                        if ((type == FORKLIFT && isAvailable) || isSelected.value) forklifts.add(
+                            Equipment.Forklift(
+                                serialNumber = id,
+                                isAvailable = isAvailable,
+                                isSelected = isSelected
+                            )
                         )
-                    )
+                    }
+                    _machineLiveData.postValue(forklifts.toList())
+                    showProgressBar.value = false
                 }
-                _headsetLiveData.postValue(headsets.toList())
-                showProgressBar.value = false
+            }
+        }
+    }
+    private fun retrieveElectricPalletJacksData() {
+        viewModelScope.launch {
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { epjDocument ->
+                    val epjs = arrayListOf<Equipment.ElectricPalletJack>()
+                    epjDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        val isSelected = mutableStateOf(false)
+                        var isAvailable = false
+                        val epjDetails = (it.value as Map<*, *>)
+                        epjDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                IS_AVAILABLE -> isAvailable = details.value as Boolean
+                            }
+                            isSelected.value = info.machineId == id
+                            if (isSelected.value) setSelectedMachineId(id)
+                        }
+                        if ((type == ELECTRIC_PALLET_JACK && isAvailable) || isSelected.value) epjs.add(
+                            Equipment.ElectricPalletJack(
+                                serialNumber = id,
+                                isAvailable = isAvailable,
+                                isSelected = isSelected
+                            )
+                        )
+                    }
+                    _machineLiveData.postValue(epjs.toList())
+                    showProgressBar.value = false
+                }
             }
         }
     }
 
-    fun retrieveScannersData(userInfo: LSUserInfo) {
+    fun retrieveHeadsetsData() {
         viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { scannerDocument ->
-                val scanners = arrayListOf<Equipment.ProductScanner>()
-                scannerDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    var connection = ""
-                    val isSelected = mutableStateOf(false)
-                    var isAvailable = false
-                    val scannerDetails = (it.value as Map<*, *>)
-                    scannerDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            CONNECTION -> connection = details.value as String
-                            IS_AVAILABLE -> isAvailable = details.value as Boolean
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { headsetDocument ->
+                    val headsets = arrayListOf<Equipment.Headset>()
+                    headsetDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        var connection = ""
+                        val isSelected = mutableStateOf(false)
+                        var isAvailable = false
+                        val headsetDetails = (it.value as Map<*, *>)
+                        headsetDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                CONNECTION -> connection = details.value as String
+                                IS_AVAILABLE -> isAvailable = details.value as Boolean
+                            }
+                            isSelected.value = info.headsetId == id
+                            if (isSelected.value) setSelectedHeadsetId(id)
                         }
-                        isSelected.value = userInfo.scannerId == id
-                        if (isSelected.value) setSelectedScannerId(id)
-                    }
-                    if ((type == SCANNER && isAvailable) || isSelected.value) {
-                        scanners.add(
-                            Equipment.ProductScanner(
+                        if ((type == HEADSET && isAvailable) || isSelected.value) headsets.add(
+                            Equipment.Headset(
                                 serialNumber = id,
                                 connection = connection,
                                 isAvailable = isAvailable,
                                 isSelected = isSelected
                             )
                         )
+                        }
+                    _headsetLiveData.postValue(headsets.toList())
+                    showProgressBar.value = false
                     }
                 }
-                _scannerLiveData.postValue(scanners.toList())
-                showProgressBar.value = false
+        }
+    }
+
+    fun retrieveScannersData() {
+        viewModelScope.launch {
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { scannerDocument ->
+                    val scanners = arrayListOf<Equipment.ProductScanner>()
+                    scannerDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        var connection = ""
+                        val isSelected = mutableStateOf(false)
+                        var isAvailable = false
+                        val scannerDetails = (it.value as Map<*, *>)
+                        scannerDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                CONNECTION -> connection = details.value as String
+                                IS_AVAILABLE -> isAvailable = details.value as Boolean
+                            }
+                            isSelected.value = info.scannerId == id
+                            if (isSelected.value) setSelectedScannerId(id)
+                        }
+                        if ((type == SCANNER && isAvailable) || isSelected.value) {
+                            scanners.add(
+                                Equipment.ProductScanner(
+                                    serialNumber = id,
+                                    connection = connection,
+                                    isAvailable = isAvailable,
+                                    isSelected = isSelected
+                                )
+                            )
+                        }
+                    }
+                    _scannerLiveData.postValue(scanners.toList())
+                    showProgressBar.value = false
+                }
             }
         }
     }
@@ -199,163 +228,173 @@ class EquipmentScreenViewModel(private val resources: Resources): ViewModel() {
         }
     }
 
-    fun updateMachinesData(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+    fun updateMachinesData() {
         viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { machinesDocument ->
-                machinesDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    val machineDetails = (it.value as Map<*, *>)
-                    machineDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { machinesDocument ->
+                    machinesDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        val machineDetails = (it.value as Map<*, *>)
+                        machineDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                            }
                         }
-                    }
-                    if (type == FORKLIFT || type == ELECTRIC_PALLET_JACK) {
-                        if (id == selectedMachineId.value) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to type,
-                                    IS_AVAILABLE to false
+                        if (type == FORKLIFT || type == ELECTRIC_PALLET_JACK) {
+                            if (id == selectedMachineId.value) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to type,
+                                        IS_AVAILABLE to false
+                                    )
                                 )
-                            )
-                        } else if (id == userInfo.machineId) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to type,
-                                    IS_AVAILABLE to true
+                            } else if (id == info.machineId) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to type,
+                                        IS_AVAILABLE to true
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
+                updateUserInfo()
+                showProgressBar.value = false
             }
-            updateUserInfo(userInfo, dataStore, voiceProfile)
-            showProgressBar.value = false
         }
     }
 
-    fun updateHeadsetData(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+    fun updateHeadsetData() {
         viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { headsetDocument ->
-                headsetDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    var connection = ""
-                    val headsetDetails = (it.value as Map<*, *>)
-                    headsetDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            CONNECTION -> connection = details.value as String
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { headsetDocument ->
+                    headsetDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        var connection = ""
+                        val headsetDetails = (it.value as Map<*, *>)
+                        headsetDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                CONNECTION -> connection = details.value as String
+                            }
                         }
-                    }
-                    if (type == HEADSET) {
-                        if (id == selectedHeadsetId.value) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to HEADSET,
-                                    CONNECTION to connection,
-                                    IS_AVAILABLE to false
+                        if (type == HEADSET) {
+                            if (id == selectedHeadsetId.value) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to HEADSET,
+                                        CONNECTION to connection,
+                                        IS_AVAILABLE to false
+                                    )
                                 )
-                            )
-                        } else if (id == userInfo.headsetId) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to HEADSET,
-                                    CONNECTION to connection,
-                                    IS_AVAILABLE to true
+                            } else if (id == info.headsetId) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to HEADSET,
+                                        CONNECTION to connection,
+                                        IS_AVAILABLE to true
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
+                updateUserInfo()
+                showProgressBar.value = false
             }
-            updateUserInfo(userInfo, dataStore, voiceProfile)
-            showProgressBar.value = false
         }
     }
 
-    fun updateScannerData(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+    fun updateScannerData() {
         viewModelScope.launch {
-            showProgressBar.value = true
-            document.get().addOnSuccessListener { scannerDocument ->
-                scannerDocument.data?.forEach {
-                    val id = it.key
-                    var type = ""
-                    var connection = ""
-                    val scannerDetails = (it.value as Map<*, *>)
-                    scannerDetails.forEach { details ->
-                        when (details.key) {
-                            TYPE -> type = details.value as String
-                            CONNECTION -> connection = details.value as String
+            userInfo.data.collect { info ->
+                showProgressBar.value = true
+                document.get().addOnSuccessListener { scannerDocument ->
+                    scannerDocument.data?.forEach {
+                        val id = it.key
+                        var type = ""
+                        var connection = ""
+                        val scannerDetails = (it.value as Map<*, *>)
+                        scannerDetails.forEach { details ->
+                            when (details.key) {
+                                TYPE -> type = details.value as String
+                                CONNECTION -> connection = details.value as String
+                            }
                         }
-                    }
-                    if (type == SCANNER) {
-                        if (id == selectedScannerId.value) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to SCANNER,
-                                    CONNECTION to connection,
-                                    IS_AVAILABLE to false
+                        if (type == SCANNER) {
+                            if (id == selectedScannerId.value) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to SCANNER,
+                                        CONNECTION to connection,
+                                        IS_AVAILABLE to false
+                                    )
                                 )
-                            )
-                        } else if (id == userInfo.scannerId) {
-                            document.update(
-                                id,
-                                mapOf(
-                                    TYPE to SCANNER,
-                                    CONNECTION to connection,
-                                    IS_AVAILABLE to true
+                            } else if (id == info.scannerId) {
+                                document.update(
+                                    id,
+                                    mapOf(
+                                        TYPE to SCANNER,
+                                        CONNECTION to connection,
+                                        IS_AVAILABLE to true
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
+                updateUserInfo()
+                showProgressBar.value = false
             }
-            updateUserInfo(userInfo, dataStore, voiceProfile)
-            showProgressBar.value = false
         }
     }
 
-    private fun updateUserInfo(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, voiceProfile: VoiceProfile) {
+    private fun updateUserInfo() {
         viewModelScope.launch {
-            collection.document(Constants.USERS).update(
-                userInfo.employeeId,
-                mapOf(
-                    Constants.DEPARTMENT_ID to userInfo.departmentId,
-                    Constants.MACHINE_ID to selectedMachineId.value.ifEmpty { userInfo.machineId },
-                    Constants.HEADSET_ID to selectedHeadsetId.value.ifEmpty { userInfo.headsetId },
-                    Constants.SCANNER_ID to selectedScannerId.value.ifEmpty { userInfo.scannerId },
-                    Constants.NAME to userInfo.name,
-                    Constants.EMAIL to userInfo.emailAddress,
-                    Constants.PIC_URL to userInfo.profilePicUrl,
-                    Constants.USER_ID to userInfo.firebaseId,
-                    Constants.VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                    Constants.OP_TYPE to userInfo.operatorType,
-                    MESSENGER_IDS to userInfo.messengerIds
-                )
-            )
-            dataStore.updateData {
-                it.copy(
-                    name = userInfo.name,
-                    employeeId = userInfo.employeeId,
-                    firebaseId = userInfo.firebaseId,
-                    departmentId = userInfo.departmentId,
-                    machineId = selectedMachineId.value.ifEmpty { userInfo.machineId },
-                    headsetId = selectedHeadsetId.value.ifEmpty { userInfo.headsetId },
-                    scannerId = selectedScannerId.value.ifEmpty { userInfo.scannerId },
-                    emailAddress = userInfo.emailAddress,
-                    profilePicUrl = userInfo.profilePicUrl,
-                    operatorType = userInfo.operatorType,
-                    messengerIds = userInfo.messengerIds
-                )
+            userInfo.data.collect { info ->
+                voiceProfile.data.collect { vpInfo ->
+                    collection.document(Constants.USERS).update(
+                        info.employeeId,
+                        mapOf(
+                            Constants.DEPARTMENT_ID to info.departmentId,
+                            Constants.MACHINE_ID to selectedMachineId.value.ifEmpty { info.machineId },
+                            Constants.HEADSET_ID to selectedHeadsetId.value.ifEmpty { info.headsetId },
+                            Constants.SCANNER_ID to selectedScannerId.value.ifEmpty { info.scannerId },
+                            Constants.NAME to info.name,
+                            Constants.EMAIL to info.emailAddress,
+                            Constants.PIC_URL to info.profilePicUrl,
+                            Constants.USER_ID to info.firebaseId,
+                            Constants.VOICE_PROFILE to vpInfo.voiceProfileMap,
+                            Constants.OP_TYPE to info.operatorType,
+                            MESSENGER_IDS to info.messengerIds
+                        )
+                    )
+                    userInfo.updateData {
+                        it.copy(
+                            name = info.name,
+                            employeeId = info.employeeId,
+                            firebaseId = info.firebaseId,
+                            departmentId = info.departmentId,
+                            machineId = selectedMachineId.value.ifEmpty { info.machineId },
+                            headsetId = selectedHeadsetId.value.ifEmpty { info.headsetId },
+                            scannerId = selectedScannerId.value.ifEmpty { info.scannerId },
+                            emailAddress = info.emailAddress,
+                            profilePicUrl = info.profilePicUrl,
+                            operatorType = info.operatorType,
+                            messengerIds = info.messengerIds
+                        )
+                    }
+                }
             }
         }
     }

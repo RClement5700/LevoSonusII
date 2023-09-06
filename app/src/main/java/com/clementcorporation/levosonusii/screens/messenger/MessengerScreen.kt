@@ -13,13 +13,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -30,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -38,26 +39,19 @@ import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
-import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.TAG
-import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 
+private const val TAG = "MessengerScreen"
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
-    val context = LocalContext.current
-    val viewModel: MessengerViewModel = viewModel { MessengerViewModel(context.resources) }
-    val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val userInfo = hsViewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value
-    val showProgressBar = remember { mutableStateOf(false) }
+fun MessengerScreen(navController: NavController) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val viewModel: MessengerViewModel = hiltViewModel()
     val bottomSheetScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
-    viewModel.retrieveMessages(userInfo)
-
     BackHandler {
         navController.popBackStack()
         navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -73,7 +67,7 @@ fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
                     ThreadBottomSheetContent(
-                        showProgressBar,
+                        viewModel.showProgressBar,
                         lifecycleOwner,
                         viewModel,
                         bottomSheetScope,
@@ -86,14 +80,13 @@ fun MessengerScreen(navController: NavController, lifecycleOwner: LifecycleOwner
                     modifier = Modifier.fillMaxSize(),
                     backgroundColor = Color.White,
                     topBar = {
-                        LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                            title = "Messages",
+                        LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                            title = stringResource(id = R.string.messenger_screen_toolbar_title),
                             profilePicUrl = null,
                             onClickSignOut = {
-                                hsViewModel.signOut()
+                                viewModel.signOut()
                                 navController.popBackStack()
                                 navController.navigate(LevoSonusScreens.LoginScreen.name)
-
                             },
                             onClickLeftIcon = {
                                 navController.popBackStack()
@@ -167,7 +160,9 @@ fun ThreadBottomSheetContent(
     receiverPicUrl: String
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(PADDING.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

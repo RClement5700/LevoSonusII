@@ -9,6 +9,7 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
@@ -39,10 +40,13 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
-    ): ViewModel()
-{
+): ViewModel() {
+    val employeeId = mutableStateOf("")
+    val password = mutableStateOf("")
+    val isLoginButtonEnabled = mutableStateOf(false)
+    val showProgressBar = mutableStateOf(false)
 
-    fun signInWithEmailAndPassword(userId: String, password: String, home: () -> Unit = {}) {
+    fun signInWithEmailAndPassword(home: () -> Unit = {}) {
         var name: String? = ""
         var email: String? = ""
         var profilePicUrl: String? = ""
@@ -55,9 +59,11 @@ class LoginViewModel @Inject constructor(
         var messengerIds: ArrayList<String>? = arrayListOf<String>()
         var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
         viewModelScope.launch {
+            showProgressBar.value = true
             try {
                 FirebaseFirestore.getInstance().collection("HannafordFoods")
                     .document(USERS).get().addOnCompleteListener { document ->
+                        val userId = employeeId.value
                         document.result?.get(userId)?.let {
                             name = (it as HashMap<*,*>)[NAME] as String
                             email = it[EMAIL] as String
@@ -71,7 +77,7 @@ class LoginViewModel @Inject constructor(
                             messengerIds = it[MESSENGER_IDS] as ArrayList<String>
                             voiceProfile = it[VOICE_PROFILE] as HashMap<*, *>
                             email?.let { email ->
-                                Firebase.auth.signInWithEmailAndPassword(email.trim(), password.trim())
+                                Firebase.auth.signInWithEmailAndPassword(email.trim(), password.value.trim())
                                     .addOnCompleteListener { task ->
                                         Log.d("Sign In: ", "SUCCESS")
                                         name?.let { name ->
@@ -126,6 +132,7 @@ class LoginViewModel @Inject constructor(
                     Log.d("Sign In: ", it)
                 }
             }
+            showProgressBar.value = false
         }
     }
 

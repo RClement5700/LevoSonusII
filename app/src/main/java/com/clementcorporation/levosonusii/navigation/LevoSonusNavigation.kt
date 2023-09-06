@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,7 +42,7 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.HomeScreen.name){
-            HomeScreen(navController = navController, lifecycleOwner)
+            HomeScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.EquipmentScreen.name){
@@ -63,7 +62,7 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.MessengerScreen.name){
-            MessengerScreen(navController = navController, lifecycleOwner = lifecycleOwner)
+            MessengerScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.OrdersScreen.name){
@@ -79,15 +78,15 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             showFab.value = true
         }
         composable(LevoSonusScreens.MachinesScreen.name){
-            MachinesScreen(navController = navController, lifecycleOwner)
+            MachinesScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.HeadsetsScreen.name){
-            HeadsetsScreen(navController = navController, lifecycleOwner)
+            HeadsetsScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.ProductScannersScreen.name){
-            ScannersScreen(navController = navController, lifecycleOwner = lifecycleOwner)
+            ScannersScreen(navController = navController)
             showFab.value = true
         }
     }

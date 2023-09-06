@@ -9,38 +9,30 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
-import com.clementcorporation.levosonusii.model.LSUserInfo
-import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
-import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
+
+private const val TAG = "ScannersScreen"
 
 @Composable
-fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
-    val context = LocalContext.current
-    val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val equipmentScreenViewModel: EquipmentScreenViewModel = viewModel{ EquipmentScreenViewModel(context.resources) }
-    val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
-    val dataStore = hsViewModel.getUserInfo()
-    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-    equipmentScreenViewModel.retrieveScannersData(userInfo)
+fun ScannersScreen(navController: NavController) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val viewModel: EquipmentScreenViewModel = hiltViewModel()
+    viewModel.retrieveScannersData()
 
     BackHandler {
         navController.popBackStack()
@@ -56,11 +48,11 @@ fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                    title = "Scanners",
+                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                    title = stringResource(id = R.string.scanners_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.signOut()
+                        viewModel.signOut()
                         navController.popBackStack()
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
@@ -76,7 +68,7 @@ fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (equipmentScreenViewModel.showProgressBar.value) {
+                if (viewModel.showProgressBar.value) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .zIndex(1f)
@@ -106,7 +98,7 @@ fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                 .fillMaxHeight(0.9f),
                             state = rememberLazyListState()
                         ) {
-                            equipmentScreenViewModel.scannerLiveData.observe(lifecycleOwner) { scanners ->
+                            viewModel.scannerLiveData.observe(lifecycleOwner) { scanners ->
                                 items(scanners, key = { it.id }) { scanner ->
                                     SelectableTile(
                                         title = scanner.serialNumber,
@@ -117,7 +109,7 @@ fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                             it.isSelected.value = false
                                         }
                                         scanner.isSelected.value = !scanner.isSelected.value
-                                        equipmentScreenViewModel.setSelectedScannerId(scanner.id)
+                                        viewModel.setSelectedScannerId(scanner.id)
                                     }
                                 }
                             }
@@ -135,14 +127,10 @@ fun ScannersScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                 disabledBackgroundColor = Color.LightGray
                             ),
                             onClick = {
-                                equipmentScreenViewModel.updateScannerData(
-                                    dataStore = dataStore,
-                                    userInfo = userInfo,
-                                    voiceProfile = voiceProfile
-                                )
+                                viewModel.updateScannerData()
                                 navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                             }) {
-                            if (equipmentScreenViewModel.showProgressBar.value) {
+                            if (viewModel.showProgressBar.value) {
                                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
                             } else {
                                 Text(

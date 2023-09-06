@@ -2,8 +2,6 @@ package com.clementcorporation.levosonusii.screens.home
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.main.Constants
@@ -27,16 +25,20 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
-    ): ViewModel()
-{
-    private val _operatorTypeLiveData: MutableLiveData<String> = MutableLiveData()
-    val operatorTypeLiveData: LiveData<String> get() = _operatorTypeLiveData
+): ViewModel() {
     private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
     val expandMenu = mutableStateOf(false)
     val showProgressBar = mutableStateOf(false)
+    val showOperatorTypeWindow = mutableStateOf(false)
+    val inflateProfilePic = mutableStateOf(false)
+    val operatorType = mutableStateOf("")
 
     fun getVoiceProfile() = voiceProfileDataStore
     fun getUserInfo() = sessionDataStore
+
+    init {
+        retrieveOperatorType()
+    }
     fun signOut() {
         viewModelScope.launch {
             showProgressBar.value = true
@@ -45,66 +47,71 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    fun updateOperatorType(dataStore: DataStore<LSUserInfo>, userInfo: LSUserInfo, voiceProfile: VoiceProfile, operatorType: String) {
+    fun updateOperatorType() {
         viewModelScope.launch {
-            updateUserInfo(userInfo, dataStore, operatorType)
-            with(collection) {
-                document(USERS).update(
-                    userInfo.employeeId,
-                    mapOf(
-                        DEPARTMENT_ID to userInfo.departmentId,
-                        Constants.MACHINE_ID to userInfo.machineId,
-                        Constants.HEADSET_ID to userInfo.headsetId,
-                        Constants.SCANNER_ID to userInfo.scannerId,
-                        NAME to userInfo.name,
-                        EMAIL to userInfo.emailAddress,
-                        PIC_URL to userInfo.profilePicUrl,
-                        USER_ID to userInfo.firebaseId,
-                        VOICE_PROFILE to voiceProfile.voiceProfileMap,
-                        OP_TYPE to operatorType
-                    )
-                )
+            sessionDataStore.data.collect { info ->
+                voiceProfileDataStore.data.collect { vpDataStore ->
+                    updateUserInfo(operatorType.value)
+                    with(collection) {
+                        document(USERS).update(
+                            info.employeeId,
+                            mapOf(
+                                DEPARTMENT_ID to info.departmentId,
+                                Constants.MACHINE_ID to info.machineId,
+                                Constants.HEADSET_ID to info.headsetId,
+                                Constants.SCANNER_ID to info.scannerId,
+                                NAME to info.name,
+                                EMAIL to info.emailAddress,
+                                PIC_URL to info.profilePicUrl,
+                                USER_ID to info.firebaseId,
+                                VOICE_PROFILE to vpDataStore.voiceProfileMap,
+                                OP_TYPE to operatorType
+                            )
+                        )
+                    }
+                }
             }
         }
     }
 
-    fun retrieveOperatorType(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>) {
+    private fun retrieveOperatorType() {
         viewModelScope.launch {
-            var operatorType = ""
-            with(collection) {
-                document(USERS).get().addOnSuccessListener { task ->
-                    task.data?.forEach {
-                        if (it.key == userInfo.employeeId) {
-                            val userDetails = it.value as Map<*, *>
-                            userDetails.forEach { detail ->
-                                when(detail.key) {
-                                    OP_TYPE -> operatorType = detail.value as String
+            sessionDataStore.data.collect { info ->
+                var operatorType = ""
+                with(collection) {
+                    document(USERS).get().addOnSuccessListener { task ->
+                        task.data?.forEach {
+                            if (it.key == info.employeeId) {
+                                val userDetails = it.value as Map<*, *>
+                                userDetails.forEach { detail ->
+                                    when (detail.key) {
+                                        OP_TYPE -> operatorType = detail.value as String
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (operatorType.isNotEmpty()) {
-                updateUserInfo(userInfo, dataStore, operatorType)
-                _operatorTypeLiveData.postValue(operatorType)
+                if (operatorType.isNotEmpty()) {
+                    updateUserInfo(operatorType)
+                }
             }
         }
     }
 
-    private fun updateUserInfo(userInfo: LSUserInfo, dataStore: DataStore<LSUserInfo>, operatorType: String) {
+    private fun updateUserInfo(operatorType: String) {
         viewModelScope.launch {
-            dataStore.updateData {
-                it.copy(
-                    name = userInfo.name,
-                    employeeId = userInfo.employeeId,
-                    firebaseId = userInfo.firebaseId,
-                    departmentId = userInfo.departmentId,
-                    machineId = userInfo.machineId,
-                    headsetId = userInfo.headsetId,
-                    scannerId = userInfo.scannerId,
-                    emailAddress = userInfo.emailAddress,
-                    profilePicUrl = userInfo.profilePicUrl,
+            sessionDataStore.updateData { info ->
+                info.copy(
+                    name = info.name,
+                    employeeId = info.employeeId,
+                    firebaseId = info.firebaseId,
+                    departmentId = info.departmentId,
+                    machineId = info.machineId,
+                    headsetId = info.headsetId,
+                    scannerId = info.scannerId,
+                    emailAddress = info.emailAddress,
+                    profilePicUrl = info.profilePicUrl,
                     operatorType = operatorType
                 )
             }

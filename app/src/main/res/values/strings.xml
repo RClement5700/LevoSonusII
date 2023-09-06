@@ -22,6 +22,8 @@
     <string name="register_alert_dialog_title">New User Created</string>
 
     <!-- Home Screen -->
+    <string name="home_screen_profile_picture_content_description">Profile Picture</string>
+    <string name="home_screen_close_profile_picture_content_description">Profile Picture</string>
     <string name="menu_item_account_label">Account</string>
     <string name="menu_item_settings_label">Settings</string>
     <string name="menu_item_sign_out_label">Sign Out</string>
@@ -40,7 +42,6 @@
     <string name="homescreen_tile_announcements_label">ANNOUNCEMENTS</string>
     <string name="homescreen_tile_game_center_label">GAME CENTER</string>
 
-
     <!-- Departments Screen -->
     <string name="departments_screen_title_text">Departments</string>
     <string name="departments_screen_department_icon_content_description">Department Icon</string>
@@ -50,9 +51,14 @@
     <string name="departments_screen_department_electric_pallet_jack_operator_label">Order Pickers:</string>
     <string name="departments_screen_department_remaining_orders_label">Remaining Orders:</string>
 
-
+    <!--Equipment Screen -->
+    <string name="equipment_screen_toolbar_title_text">Equipment</string>
+    <string name="equipment_screen_machines_tile_title_text">Machines</string>
+    <string name="equipment_screen_scanners_tile_title_text">Scanners</string>
+    <string name="equipment_screen_headsets_tile_title_text">Headsets</string>
 
     <!-- Voice Profile Screen -->
+    <string name="voice_profile_screen_toolbar_title">Voice Profile</string>
     <string name="voice_profile_alert_dialog_title">Create Voice Profile?</string>
     <string name="voice_profile_are_you_sure_dialog_title">Are You Sure You Want \nto Retrain This Word:</string>
     <string name="voice_profile_dialog_btn_text_yes">Yes</string>
@@ -60,8 +66,18 @@
 
     <!-- Messenger Screen -->
     <string name="btn_text_send">Send</string>
+    <string name="messenger_screen_toolbar_title">Messages</string>
 
-    <!-- Levo Sonus Service -->
+    <!-- Machines Screen -->
+    <string name="machines_screen_toolbar_title">Machines</string>
+
+    <!-- Headsets Screen -->
+    <string name="headsets_screen_toolbar_title">Headsets</string>
+
+    <!-- Scanners Screen -->
+    <string name="scanners_screen_toolbar_title">Scanners</string>
+
+    <!-- LevoSonus Service -->
     <string name="ls_service_failed_toast_message">Start Listening Failed</string>
     <string name="ls_service_offline_toast_message">Voice Command Offline</string>
 

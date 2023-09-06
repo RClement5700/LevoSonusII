@@ -8,43 +8,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
-import com.clementcorporation.levosonusii.model.LSUserInfo
-import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
-import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
-const val TAG = "Machines Screen"
-
+private const val TAG = "MachinesScreen"
 @Composable
-fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
-    val context = LocalContext.current
-    val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val equipmentScreenViewModel: EquipmentScreenViewModel = viewModel{ EquipmentScreenViewModel(context.resources) }
-    val voiceProfile = hsViewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
-    val dataStore = hsViewModel.getUserInfo()
-    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-    if (equipmentScreenViewModel.isForkliftOperator(userInfo)) equipmentScreenViewModel.retrieveForkliftsData(userInfo)
-    else equipmentScreenViewModel.retrieveElectricPalletJacksData(userInfo)
+fun MachinesScreen(navController: NavController) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val viewModel: EquipmentScreenViewModel = hiltViewModel()
 
     BackHandler {
         navController.popBackStack()
@@ -60,11 +47,11 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                    title = "Machines",
+                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                    title = stringResource(id = R.string.machines_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.signOut()
+                        viewModel.signOut()
                         navController.popBackStack()
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
@@ -80,7 +67,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (equipmentScreenViewModel.showProgressBar.value) {
+                if (viewModel.showProgressBar.value) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .zIndex(1f)
@@ -104,8 +91,10 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
-                            equipmentScreenViewModel.machineLiveData.observe(lifecycleOwner) { equipmentList ->
+                        LazyColumn(modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.9f)) {
+                            viewModel.machineLiveData.observe(lifecycleOwner) { equipmentList ->
                                 items(equipmentList) { equipment ->
                                     if (equipment is Equipment.Forklift) {
                                         SelectableTile(
@@ -117,7 +106,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                                 (it as Equipment.Forklift).isSelected.value = false
                                             }
                                             equipment.isSelected.value = !equipment.isSelected.value
-                                            equipmentScreenViewModel.setSelectedMachineId(equipment.serialNumber)
+                                            viewModel.setSelectedMachineId(equipment.serialNumber)
                                         }
                                     } else {
                                         SelectableTile(
@@ -130,7 +119,7 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                                     false
                                             }
                                             equipment.isSelected.value = !equipment.isSelected.value
-                                            equipmentScreenViewModel.setSelectedMachineId(equipment.serialNumber)
+                                            viewModel.setSelectedMachineId(equipment.serialNumber)
                                         }
                                     }
                                 }
@@ -149,14 +138,10 @@ fun MachinesScreen(navController: NavController, lifecycleOwner: LifecycleOwner)
                                 disabledBackgroundColor = Color.LightGray
                             ),
                             onClick = {
-                                equipmentScreenViewModel.updateMachinesData(
-                                    dataStore = dataStore,
-                                    userInfo = userInfo,
-                                    voiceProfile = voiceProfile
-                                )
+                                viewModel.updateMachinesData()
                                 navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                             }) {
-                            if (equipmentScreenViewModel.showProgressBar.value) {
+                            if (viewModel.showProgressBar.value) {
                                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
                             } else {
                                 Text(

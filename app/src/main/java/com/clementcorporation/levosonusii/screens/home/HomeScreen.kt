@@ -26,9 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.datastore.core.DataStore
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -40,24 +38,17 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.model.LSUserInfo
-import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.TAG
 
+private const val TAG = "HomeScreen"
 @Composable
-fun HomeScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
+fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val dataStore = viewModel.getUserInfo()
-    val userInfo = dataStore.data.collectAsState(initial = LSUserInfo()).value
-    val voiceProfile = viewModel.getVoiceProfile().data.collectAsState(initial = VoiceProfile()).value
-    val profilePicUrl = userInfo.profilePicUrl
-    val showOperatorTypeWindow = remember { mutableStateOf(false) }
-    val inflateProfilePic = remember { mutableStateOf(false) }
-    val operatorType = remember { mutableStateOf("")}
-    viewModel.retrieveOperatorType(userInfo, dataStore)
-    viewModel.operatorTypeLiveData.observe(lifecycleOwner) {
-        showOperatorTypeWindow.value = it.isEmpty()
-    }
+    val profilePicUrl = viewModel.getUserInfo()
+        .data
+        .collectAsState(initial = LSUserInfo())
+        .value
+        .profilePicUrl
     BackHandler {
         viewModel.signOut()
         navController.popBackStack()
@@ -74,7 +65,7 @@ fun HomeScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
-                    title = dataStore.data.collectAsState(initial = LSUserInfo()).value.name,
+                    title = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
                         viewModel.signOut()
@@ -82,26 +73,21 @@ fun HomeScreen(navController: NavController, lifecycleOwner: LifecycleOwner) {
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
                     onClickLeftIcon = {
-                        inflateProfilePic.value = !inflateProfilePic.value
+                        viewModel.inflateProfilePic.value = !viewModel.inflateProfilePic.value
                     }
                 )
             }
         ) { paddingValues ->
             Log.e(TAG, paddingValues.toString())
-            if (showOperatorTypeWindow.value) ChooseOperatorTypeWindow(viewModel, showOperatorTypeWindow,
-                dataStore, voiceProfile, userInfo, operatorType
-            )
-            InflatableProfilePic(inflateProfilePic = inflateProfilePic, imageUrl = profilePicUrl)
+            if (viewModel.showOperatorTypeWindow.value) ChooseOperatorTypeWindow(viewModel)
+            InflatableProfilePic(inflateProfilePic = viewModel.inflateProfilePic, imageUrl = profilePicUrl)
             HomeScreenContent(navController = navController, viewModel = viewModel)
         }
     }
 }
 
 @Composable
-fun ChooseOperatorTypeWindow(
-    viewModel: HomeScreenViewModel, showWindow: MutableState<Boolean>, dataStore: DataStore<LSUserInfo>,
-    voiceProfile: VoiceProfile, userInfo: LSUserInfo, operatorType: MutableState<String>
-) {
+fun ChooseOperatorTypeWindow(viewModel: HomeScreenViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -153,7 +139,7 @@ fun ChooseOperatorTypeWindow(
                                 it.isSelected.value = false
                             }
                             type.isSelected.value = !type.isSelected.value
-                            operatorType.value = type.title
+                            viewModel.operatorType.value = type.title
                         }
                     }
                 }
@@ -169,14 +155,9 @@ fun ChooseOperatorTypeWindow(
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-                        if (operatorType.value.isNotEmpty()) {
-                            viewModel.updateOperatorType(
-                                dataStore,
-                                userInfo,
-                                voiceProfile,
-                                operatorType.value
-                            )
-                            showWindow.value = false
+                        if (viewModel.operatorType.value.isNotEmpty()) {
+                            viewModel.updateOperatorType()
+                            viewModel.showOperatorTypeWindow.value = false
                         } else {
                             Toast.makeText(context, context.getString(R.string.operator_type_toast_message), Toast.LENGTH_SHORT).show()
                         }
@@ -204,7 +185,7 @@ fun ChooseOperatorTypeWindow(
                         disabledBackgroundColor = Color.LightGray
                     ),
                     onClick = {
-                        showWindow.value = false
+                        viewModel.showOperatorTypeWindow.value = false
                     }) {
                         Text(
                             text = stringResource(id = R.string.operator_type_secondary_button_text),
@@ -257,7 +238,7 @@ fun InflatableProfilePic(inflateProfilePic: MutableState<Boolean>, imageUrl: Str
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Cancel,
-                            contentDescription = "Close Profile Picture"
+                            contentDescription = stringResource(id = R.string.home_screen_close_profile_picture_content_description)
                         )
                     }
                     Image(
@@ -265,7 +246,7 @@ fun InflatableProfilePic(inflateProfilePic: MutableState<Boolean>, imageUrl: Str
                             crossfade(false)
                             placeholder(R.drawable.levosonus_rocket_logo)
                         }),
-                        contentDescription = "Inflated Profile Picture",
+                        contentDescription = stringResource(id = R.string.home_screen_profile_picture_content_description),
                         contentScale = ContentScale.Crop
                     )
                 }

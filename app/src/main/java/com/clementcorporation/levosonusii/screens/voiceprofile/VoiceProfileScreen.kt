@@ -8,7 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,15 +28,11 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.NavTile
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.TAG
-import com.clementcorporation.levosonusii.screens.home.HomeScreenViewModel
 
+private const val TAG = "VoiceProfileScreen"
 @Composable
 fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (String) -> Unit) {
     val viewModel: VoiceProfileViewModel = hiltViewModel()
-    val hsViewModel: HomeScreenViewModel = hiltViewModel()
-    val showWarningDialog = remember { mutableStateOf(false) }
-    val warningDialogTitle = remember { mutableStateOf("") }
     BackHandler {
         navController.popBackStack()
         navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -50,11 +47,11 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = hsViewModel.expandMenu,
-                    title = "Voice Profile",
+                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                    title = stringResource(id = R.string.voice_profile_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        hsViewModel.signOut()
+                        viewModel.signOut()
                         navController.popBackStack()
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                     },
@@ -79,8 +76,8 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                         color = LS_BLUE
                     )
                 }
-                if (showWarningDialog.value) {
-                    VoiceProfileWarningDialog(warningDialogTitle, showWarningDialog, viewModel, showVoiceCommandActivity)
+                if (viewModel.showWarningDialog.value) {
+                    VoiceProfileWarningDialog(viewModel, showVoiceCommandActivity)
                 }
                 Column(
                     modifier = Modifier.verticalScroll(
@@ -99,8 +96,8 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                         initial = VoiceProfile()
                     ).value.voiceProfileMap.keys.sorted().forEach { key ->
                         NavTile(title = key) {
-                            warningDialogTitle.value = key
-                            showWarningDialog.value = true
+                            viewModel.warningDialogTitle.value = key
+                            viewModel.showWarningDialog.value = true
                         }
                     }
                 }
@@ -145,7 +142,7 @@ fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarn
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = warningDialogTitle.value,
+                    text = viewModel.warningDialogTitle.value,
                     textAlign = TextAlign.Center,
                     color = LS_BLUE,
                     fontWeight = FontWeight.Bold
@@ -199,7 +196,7 @@ fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarn
                             disabledBackgroundColor = Color.LightGray
                         ),
                         onClick = {
-                            showWarningDialog.value = false
+                            viewModel.showWarningDialog.value = false
                         }) {
                         Text(
                             text = stringResource(id = R.string.voice_profile_dialog_btn_text_no),

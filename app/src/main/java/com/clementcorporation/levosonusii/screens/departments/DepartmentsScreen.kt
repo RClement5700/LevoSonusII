@@ -39,8 +39,8 @@ import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.clementcorporation.levosonusii.screens.equipment.TAG
 
+private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val departmentsViewModel: DepartmentsViewModel = hiltViewModel()
