@@ -20,6 +20,9 @@
     <string name="register_navigation_pretext">Already Signed Up?</string>
     <string name="register_navigation_link_text">Login</string>
     <string name="register_alert_dialog_title">New User Created</string>
+    <string name="register_screen_new_user_dialog_body">\nName: %1$s %2$s \nEmail: %3$s \nEmployee ID: %4$s \nReady to Proceed?</string>
+    <string name="register_screen_user_already_exists_toast_message">User Already Exists</string>
+    <string name="register_screen_take_screenshot_toast_message">Take a screenshot to save your credentials</string>
 
     <!-- Home Screen -->
     <string name="home_screen_profile_picture_content_description">Profile Picture</string>

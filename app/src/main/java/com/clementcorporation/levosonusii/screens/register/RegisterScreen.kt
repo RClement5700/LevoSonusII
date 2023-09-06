@@ -10,7 +10,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,8 +27,8 @@ import com.clementcorporation.levosonusii.main.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.main.Constants.BTN_WIDTH
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
-import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.LOGO_SIZE
+import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAlertDialog
 import com.clementcorporation.levosonusii.main.LSPasswordTextField
@@ -40,27 +39,6 @@ import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 @Composable
 fun RegisterScreen(navController: NavController) {
     val viewModel: RegisterViewModel = hiltViewModel()
-    val email = remember{
-        mutableStateOf("")
-    }
-    val password = remember{
-        mutableStateOf("")
-    }
-    val firstName = remember{
-        mutableStateOf("")
-    }
-    val lastName = remember{
-        mutableStateOf("")
-    }
-    val isRegisterButtonEnabled = remember{
-        mutableStateOf(false)
-    }
-    val showNewUserDialog = remember {
-        mutableStateOf(false)
-    }
-    val showVoiceProfileDialog = remember {
-        mutableStateOf(false)
-    }
     Card(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -81,36 +59,44 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
-            if (showNewUserDialog.value) {
+            if (viewModel.showNewUserDialog.value) {
                 LSAlertDialog(
-                    showAlertDialog = showNewUserDialog,
+                    showAlertDialog = viewModel.showNewUserDialog,
                     dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
                         mutableStateOf(
-                            "\nName: ${firstName.value} ${lastName.value} \nEmail: ${email.value} \nEmployee ID: ${viewModel.employeeId.value} \nReady to Proceed?"
+                            navController.context.getString(
+                                R.string.register_screen_new_user_dialog_body,
+                                viewModel.firstName.value,
+                                viewModel.lastName.value,
+                                viewModel.email.value,
+                                viewModel.employeeId.value
+                            )
                         )
                     },
                     onPositiveButtonClicked = {
-                        showNewUserDialog.value = false
-                        showVoiceProfileDialog.value = true
+                        viewModel.showNewUserDialog.value = false
+                        viewModel.showVoiceProfileDialog.value = true
                     },
                     onNegativeButtonClicked = {
-                        Toast.makeText(navController.context, "Take a screenshot to save your credentials",
-                            Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            navController.context,
+                            navController.context.getString(R.string.register_screen_take_screenshot_toast_message),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 )
             }
-            if (showVoiceProfileDialog.value) {
+            if (viewModel.showVoiceProfileDialog.value) {
                 LSAlertDialog(
-                    showAlertDialog = showVoiceProfileDialog,
+                    showAlertDialog = viewModel.showVoiceProfileDialog,
                     dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
                     onPositiveButtonClicked = {
-                        showVoiceProfileDialog.value = false
+                        viewModel.showVoiceProfileDialog.value = false
                         navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                     },
                     onNegativeButtonClicked = {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
-
                     }
                 )
             }
@@ -118,22 +104,10 @@ fun RegisterScreen(navController: NavController) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeContent(
                     viewModel = viewModel,
                     navController = navController,
-                    showNewUserDialog = showNewUserDialog,
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    password = password,
-                    isRegisterButtonEnabled = isRegisterButtonEnabled
                 )
                 else -> PortraitContent(
                     viewModel = viewModel,
                     navController = navController,
-                    showNewUserDialog = showNewUserDialog,
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    password = password,
-                    isRegisterButtonEnabled = isRegisterButtonEnabled
                 )
             }
         }
@@ -141,75 +115,60 @@ fun RegisterScreen(navController: NavController) {
 }
 
 @Composable
-fun PortraitContent(
-    viewModel: RegisterViewModel,
-    navController: NavController,
-    showNewUserDialog: MutableState<Boolean>,
-    firstName: MutableState<String>,
-    lastName: MutableState<String>,
-    email: MutableState<String>,
-    password: MutableState<String>,
-    isRegisterButtonEnabled: MutableState<Boolean>
-) {
+fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, ) {
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
             .fillMaxWidth(),
-        userInput = email,
+        userInput = viewModel.email,
         label = stringResource(id = R.string.label_email_address),
         onAction = KeyboardActions {
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        email.value = it
-        isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+        viewModel.email.value = it
+        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
             .fillMaxWidth(),
-        userInput = firstName,
+        userInput = viewModel.firstName,
         label = stringResource(id = R.string.label_first_name),
         imeAction = ImeAction.Next,
         onAction = KeyboardActions {
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        firstName.value = it
-        isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+        viewModel.firstName.value = it
+        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
 
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
             .fillMaxWidth(),
-        userInput = lastName,
+        userInput = viewModel.lastName,
         label = stringResource(id = R.string.label_last_name),
         onAction = KeyboardActions {
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        lastName.value = it
-        isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+        viewModel.lastName.value = it
+        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     LSPasswordTextField(
         modifier = Modifier
             .padding(PADDING.dp)
             .fillMaxWidth(),
-        userInput = password,
+        userInput = viewModel.password,
         label = stringResource(id = R.string.label_password),
         onAction = KeyboardActions {
-            createUser(viewModel, navController, email, password, firstName, lastName) {
-                showNewUserDialog.value = true
-            }
+            viewModel.createUser(context = navController.context)
         }
     ) {
-        password.value = it
-        isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+        viewModel.password.value = it
+        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     Button(
         modifier = Modifier
@@ -217,17 +176,15 @@ fun PortraitContent(
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE.dp),
         elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
-        enabled = isRegisterButtonEnabled.value,
+        enabled = viewModel.isRegisterButtonEnabled.value,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
-            createUser(viewModel, navController, email, password, firstName, lastName) {
-                showNewUserDialog.value = true
-            }
+            viewModel.createUser(context = navController.context)
         }) {
-        if(viewModel.loading.value == true) {
+        if(viewModel.loading.value) {
             CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
         } else {
             Text(
@@ -260,16 +217,7 @@ fun PortraitContent(
 }
 
 @Composable
-fun LandscapeContent(
-    viewModel: RegisterViewModel,
-    navController: NavController,
-    showNewUserDialog: MutableState<Boolean>,
-    firstName: MutableState<String>,
-    lastName: MutableState<String>,
-    email: MutableState<String>,
-    password: MutableState<String>,
-    isRegisterButtonEnabled: MutableState<Boolean>
-) {
+fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController, ) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -277,27 +225,25 @@ fun LandscapeContent(
     ) {
         LSTextField(
             modifier = Modifier.padding(end = 8.dp),
-            userInput = firstName,
+            userInput = viewModel.firstName,
             label = stringResource(id = R.string.label_first_name),
             imeAction = ImeAction.Next,
             onAction = KeyboardActions {
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            firstName.value = it
-            isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                    && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+            viewModel.firstName.value = it
+            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
         LSTextField(
-            userInput = lastName,
+            userInput = viewModel.lastName,
             label = stringResource(id = R.string.label_last_name),
             onAction = KeyboardActions {
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            lastName.value = it
-            isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                    && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+            viewModel.lastName.value = it
+            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
     }
     Row(
@@ -307,28 +253,24 @@ fun LandscapeContent(
     ) {
         LSTextField(
             modifier = Modifier.padding(end = 8.dp),
-            userInput = email,
+            userInput = viewModel.email,
             label = stringResource(id = R.string.label_email_address),
             onAction = KeyboardActions {
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            email.value = it
-            isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                    && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+            viewModel.email.value = it
+            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
         LSPasswordTextField(
-            userInput = password,
+            userInput = viewModel.password,
             label = stringResource(id = R.string.label_password),
             onAction = KeyboardActions {
-                createUser(viewModel, navController, email, password, firstName, lastName) {
-                    showNewUserDialog.value = true
-                }
+                viewModel.createUser(context = navController.context)
             }
         ) {
-            password.value = it
-            isRegisterButtonEnabled.value = email.value.isNotEmpty() && password.value.isNotEmpty()
-                    && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+            viewModel.password.value = it
+            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
     }
     Row(
@@ -344,17 +286,15 @@ fun LandscapeContent(
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE.dp),
             elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
-            enabled = isRegisterButtonEnabled.value,
+            enabled = viewModel.isRegisterButtonEnabled.value,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {
-                createUser(viewModel, navController, email, password, firstName, lastName) {
-                    showNewUserDialog.value = true
-                }
+                viewModel.createUser(context = navController.context)
             }) {
-            if(viewModel.loading.value == true) {
+            if(viewModel.loading.value) {
                 CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
             } else {
                 Text(
@@ -384,16 +324,4 @@ fun LandscapeContent(
             )
         }
     }
-}
-
-private fun createUser(viewModel: RegisterViewModel, navController: NavController, email: MutableState<String>,
-password: MutableState<String>, firstName: MutableState<String>, lastName: MutableState<String>, goToNextScreen: () -> Unit) {
-    viewModel.createUserWithEmailAndPassword(
-        context = navController.context,
-        email = email.value,
-        password = password.value,
-        firstName = firstName.value,
-        lastName = lastName.value,
-        goToNextScreen = goToNextScreen
-    )
 }
