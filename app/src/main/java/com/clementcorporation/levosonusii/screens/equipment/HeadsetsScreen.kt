@@ -113,7 +113,7 @@ fun HeadsetsScreen(navController: NavController) {
                                                     it.isSelected.value = false
                                                 }
                                                 headset.isSelected.value = !headset.isSelected.value
-                                                viewModel.setSelectedScannerId(headset.id)
+                                                viewModel.setSelectedHeadsetId(headset.id)
                                             }
                                         }
                                     }
