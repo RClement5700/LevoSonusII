@@ -29,6 +29,8 @@ import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,10 +43,21 @@ class LoginViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
 ): ViewModel() {
+    private lateinit var collection: CollectionReference
+    private lateinit var document: DocumentReference
     val employeeId = mutableStateOf("")
     val password = mutableStateOf("")
     val isLoginButtonEnabled = mutableStateOf(false)
     val showProgressBar = mutableStateOf(false)
+
+    init {
+        viewModelScope.launch {
+            sessionDataStore.data.collect {
+                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+                document = collection.document(USERS)
+            }
+        }
+    }
 
     fun signInWithEmailAndPassword(home: () -> Unit = {}) {
         var name: String? = ""
@@ -61,8 +74,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             try {
-                FirebaseFirestore.getInstance().collection("HannafordFoods")
-                    .document(USERS).get().addOnCompleteListener { document ->
+                document.get().addOnCompleteListener { document ->
                         val userId = employeeId.value
                         document.result?.get(userId)?.let {
                             name = (it as HashMap<*,*>)[NAME] as String
@@ -93,6 +105,7 @@ class LoginViewModel @Inject constructor(
                                                                                 viewModelScope.launch {
                                                                                     sessionDataStore.updateData { userInfo ->
                                                                                         userInfo.copy(
+                                                                                            organization = userInfo.organization,
                                                                                             employeeId = userId,
                                                                                             firebaseId = firebaseId,
                                                                                             emailAddress = email,

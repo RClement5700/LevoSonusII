@@ -26,11 +26,11 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
                         lifecycleOwner: LifecycleOwner, showVoiceCommandActivity: (String) -> Unit) {
     NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
         composable(LevoSonusScreens.SplashScreen.name){
-            SplashScreen(navController)
+            SplashScreen()
             showFab.value = false
         }
         composable(LevoSonusScreens.LoginScreen.name){
-            LoginScreen(navController)
+            LoginScreen(navController = navController)
             showFab.value = true
         }
         composable(LevoSonusScreens.RegisterScreen.name){

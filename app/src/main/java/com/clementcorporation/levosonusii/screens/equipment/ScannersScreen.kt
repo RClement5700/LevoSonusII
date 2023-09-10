@@ -18,13 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenEvents
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
+import kotlinx.coroutines.launch
 
 private const val TAG = "ScannersScreen"
 
@@ -98,18 +101,22 @@ fun ScannersScreen(navController: NavController) {
                                 .fillMaxHeight(0.9f),
                             state = rememberLazyListState()
                         ) {
-                            viewModel.scannerLiveData.observe(lifecycleOwner) { scanners ->
-                                items(scanners, key = { it.id }) { scanner ->
-                                    SelectableTile(
-                                        title = scanner.serialNumber,
-                                        isSelected = scanner.isSelected,
-                                        icon = R.drawable.scanner_icon
-                                    ) {
-                                        scanners.forEach {
-                                            it.isSelected.value = false
+                            lifecycleOwner.lifecycleScope.launch {
+                                viewModel.equipmentScreenEventsFlow.collect { event ->
+                                    if (event is EquipmentScreenEvents.OnRetrieveScannersListData) {
+                                        items(event.scanners) { scanner ->
+                                            SelectableTile(
+                                                title = scanner.serialNumber,
+                                                isSelected = scanner.isSelected,
+                                                icon = R.drawable.scanner_icon
+                                            ) {
+                                                event.scanners.forEach {
+                                                    it.isSelected.value = false
+                                                }
+                                                scanner.isSelected.value = !scanner.isSelected.value
+                                                viewModel.setSelectedScannerId(scanner.id)
+                                            }
                                         }
-                                        scanner.isSelected.value = !scanner.isSelected.value
-                                        viewModel.setSelectedScannerId(scanner.id)
                                     }
                                 }
                             }

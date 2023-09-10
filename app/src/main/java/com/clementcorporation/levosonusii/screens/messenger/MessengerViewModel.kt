@@ -22,6 +22,8 @@ import com.clementcorporation.levosonusii.main.Constants.USER_2_MESSAGES
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -35,8 +37,8 @@ class MessengerViewModel @Inject constructor(
     private val userInfo: DataStore<LSUserInfo>,
     private val voiceProfile: DataStore<VoiceProfile>
     ): ViewModel() {
-    private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
-    private val document = collection.document(Constants.MESSENGER)
+    private lateinit var collection: CollectionReference
+    private lateinit var document: DocumentReference
     val showProgressBar = mutableStateOf(false)
     val expandMenu = mutableStateOf(false)
     val isInEditMode = mutableStateOf(false)
@@ -44,7 +46,13 @@ class MessengerViewModel @Inject constructor(
     val messengerEventsLiveData: LiveData<MessengerEvents> get() = _messengerEventsLiveData
 
     init {
-        retrieveMessages()
+        viewModelScope.launch {
+            userInfo.data.collect {
+                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+                document = collection.document(Constants.MESSENGER)
+                retrieveMessages()
+            }
+        }
     }
 
     fun signOut() {

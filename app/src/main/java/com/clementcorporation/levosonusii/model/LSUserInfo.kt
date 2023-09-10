@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LSUserInfo(
+    val organization: Organization = Organization(),
     val employeeId: String = "",
     val firebaseId: String = "",
     val name: String = "",
@@ -16,3 +17,6 @@ data class LSUserInfo(
     val operatorType: String = "",
     val messengerIds: ArrayList<String> = arrayListOf()
 )
+
+@Serializable
+data class Organization(val id: String = "", val name: String = "", val address: String = "")

@@ -3,6 +3,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="alert_dialog_positive_button_text">Yes</string>
     <string name="alert_dialog_negative_button_text">No</string>
+    <string name="organization_name_toast_message">Welcome to %s</string>
 
     <!-- Login Screen -->
     <string name="btn_text_login">Login</string>

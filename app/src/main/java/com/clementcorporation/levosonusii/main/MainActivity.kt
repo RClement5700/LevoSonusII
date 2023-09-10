@@ -9,10 +9,10 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants.DEFAULT_VOICE_COMMAND_PROMPT
 import com.clementcorporation.levosonusii.main.Constants.PROMPT_KEYWORD
 import com.clementcorporation.levosonusii.main.Constants.VOICE_COMMAND_KEY
@@ -105,12 +106,25 @@ class MainActivity : ComponentActivity(){
             ))
             LaunchedEffect(key1 = null) {
                 viewModel.mainActivityEventsState.collect { event ->
-                    if (event is MainActivityEvents.OnShowVoiceCommandActivity) {
-                        val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
-                            putExtra(PROMPT_KEYWORD, event.title)
-                            putExtra(VoiceCommandActivity.IS_TRAINING_MODE, event.isTrainingMode)
+                    when(event) {
+                        is MainActivityEvents.OnShowVoiceCommandActivity -> {
+                            val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
+                                putExtra(PROMPT_KEYWORD, event.title)
+                                putExtra(VoiceCommandActivity.IS_TRAINING_MODE, event.isTrainingMode)
+                            }
+                            resultLauncher.launch(i)
                         }
-                        resultLauncher.launch(i)
+                        is MainActivityEvents.OnFetchUserOrganization -> {
+                            event.name?.let {
+                                navController.navigate(LevoSonusScreens.LoginScreen.name)
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    getString(R.string.organization_name_toast_message, it),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                        else -> {}
                     }
                 }
             }
@@ -208,7 +222,7 @@ class MainActivity : ComponentActivity(){
     }
 
     private fun getCurrentLocation() {
-        val address = mutableStateOf("")
+        var address = ""
         when (
             ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
         ) {
@@ -220,19 +234,9 @@ class MainActivity : ComponentActivity(){
                         location?.latitude?.let { latitude = it }
                         location?.longitude?.let { longitude = it }
                         val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
-                        if (Build.VERSION.SDK_INT >= 33) {
-                            geocoder.getFromLocation(
-                                latitude,
-                                longitude,
-                                1) { addresses ->
-                                address.value = addresses.first().getAddressLine(0)
-                            }
-                        } else {
-                            val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
-                            address.value = addressFromGeocoder?.getAddressLine(0).toString()
-                        }
-                        //TODO: Why is address.value null?
-                        viewModel.fetchUserOrganization(address.value)
+                        val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
+                        address = addressFromGeocoder?.getAddressLine(0).toString()
+                        viewModel.fetchUserOrganization(address)
                         startVoiceCommandService()
                     }
                 } catch(e: Exception) {

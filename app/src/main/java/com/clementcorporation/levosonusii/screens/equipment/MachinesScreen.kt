@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
@@ -25,7 +26,9 @@ import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
+import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenEvents
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
+import kotlinx.coroutines.launch
 
 private const val TAG = "MachinesScreen"
 @Composable
@@ -94,32 +97,37 @@ fun MachinesScreen(navController: NavController) {
                         LazyColumn(modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight(0.9f)) {
-                            viewModel.machineLiveData.observe(lifecycleOwner) { equipmentList ->
-                                items(equipmentList) { equipment ->
-                                    if (equipment is Equipment.Forklift) {
-                                        SelectableTile(
-                                            title = equipment.serialNumber,
-                                            icon = R.drawable.forklift_icon,
-                                            isSelected = equipment.isSelected
-                                        ) {
-                                            equipmentList.forEach {
-                                                (it as Equipment.Forklift).isSelected.value = false
+
+                            lifecycleOwner.lifecycleScope.launch {
+                                viewModel.equipmentScreenEventsFlow.collect { event ->
+                                    if (event is EquipmentScreenEvents.OnRetrieveMachinesListData) {
+                                        items(event.machines) { machine ->
+                                            if (machine is Equipment.Forklift) {
+                                                SelectableTile(
+                                                    title = machine.serialNumber,
+                                                    icon = R.drawable.forklift_icon,
+                                                    isSelected = machine.isSelected
+                                                ) {
+                                                    event.machines.forEach {
+                                                        (it as Equipment.Forklift).isSelected.value = false
+                                                    }
+                                                    machine.isSelected.value = !machine.isSelected.value
+                                                    viewModel.setSelectedMachineId(machine.serialNumber)
+                                                }
+                                            } else {
+                                                SelectableTile(
+                                                    title = (machine as Equipment.ElectricPalletJack).serialNumber,
+                                                    icon = R.drawable.electric_pallet_jack_icon,
+                                                    isSelected = machine.isSelected
+                                                ) {
+                                                    event.machines.forEach {
+                                                        (it as Equipment.ElectricPalletJack).isSelected.value =
+                                                            false
+                                                    }
+                                                    machine.isSelected.value = !machine.isSelected.value
+                                                    viewModel.setSelectedMachineId(machine.serialNumber)
+                                                }
                                             }
-                                            equipment.isSelected.value = !equipment.isSelected.value
-                                            viewModel.setSelectedMachineId(equipment.serialNumber)
-                                        }
-                                    } else {
-                                        SelectableTile(
-                                            title = (equipment as Equipment.ElectricPalletJack).serialNumber,
-                                            icon = R.drawable.electric_pallet_jack_icon,
-                                            isSelected = equipment.isSelected
-                                        ) {
-                                            equipmentList.forEach {
-                                                (it as Equipment.ElectricPalletJack).isSelected.value =
-                                                    false
-                                            }
-                                            equipment.isSelected.value = !equipment.isSelected.value
-                                            viewModel.setSelectedMachineId(equipment.serialNumber)
                                         }
                                     }
                                 }

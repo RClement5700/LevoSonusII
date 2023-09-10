@@ -59,52 +59,54 @@ class RegisterViewModel @Inject constructor(
                 name = "${firstName.value} ${lastName.value}",
                 voiceProfile = voiceProfile,
             ).toMap()
-            val doc = FirebaseFirestore.getInstance().collection("HannafordFoods").document("users")
-            employeeId.value = (NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random().toString()
-            doc.get().addOnSuccessListener { users ->
-                val emailAddresses = arrayListOf<String>()
-                val employeeIds = arrayListOf<String>()
-                users.data?.forEach { user ->
-                    val employeeIdFromFirebase = user.key
-                    employeeIds.add(employeeIdFromFirebase)
-                    var emailAddressFromFirebase = ""
-                    val userDetails = user.value as Map<*,*>
-                    userDetails.forEach { detail ->
-                        when(detail.key) {
-                            Constants.EMAIL -> emailAddressFromFirebase = detail.value as String
-                        }
-                    }
-                    emailAddresses.add(emailAddressFromFirebase)
-                }
-                if (emailAddresses.contains(email.value) ||
-                    employeeIds.contains(employeeId.value)
-                ) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.register_screen_user_already_exists_toast_message),
-                        Toast.LENGTH_SHORT).show()
-                } else {
-                    Firebase.auth.createUserWithEmailAndPassword(email.value.trim(), password.value.trim())
-                        .addOnCompleteListener {
-                            viewModelScope.launch {
-                                AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
-                                sessionDataStore.updateData { userInfo ->
-                                    userInfo.copy(
-                                        employeeId = employeeId.value,
-                                        name = "${firstName.value} ${lastName.value}",
-                                        emailAddress = email.value
-                                    )
-                                }
-                                voiceProfileDataStore.updateData { vp ->
-                                    vp.copy(voiceProfileMap = voiceProfile)
-                                }
-                                doc.update(employeeId.value, lsUser)
-                                showNewUserDialog.value = true
+            sessionDataStore.data.collect{
+                val doc = FirebaseFirestore.getInstance().collection(it.organization.name).document("users")
+                employeeId.value = (NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random().toString()
+                doc.get().addOnSuccessListener { users ->
+                    val emailAddresses = arrayListOf<String>()
+                    val employeeIds = arrayListOf<String>()
+                    users.data?.forEach { user ->
+                        val employeeIdFromFirebase = user.key
+                        employeeIds.add(employeeIdFromFirebase)
+                        var emailAddressFromFirebase = ""
+                        val userDetails = user.value as Map<*,*>
+                        userDetails.forEach { detail ->
+                            when(detail.key) {
+                                Constants.EMAIL -> emailAddressFromFirebase = detail.value as String
                             }
                         }
+                        emailAddresses.add(emailAddressFromFirebase)
+                    }
+                    if (emailAddresses.contains(email.value) ||
+                        employeeIds.contains(employeeId.value)
+                    ) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.register_screen_user_already_exists_toast_message),
+                            Toast.LENGTH_SHORT).show()
+                    } else {
+                        Firebase.auth.createUserWithEmailAndPassword(email.value.trim(), password.value.trim())
+                            .addOnCompleteListener {
+                                viewModelScope.launch {
+                                    AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
+                                    sessionDataStore.updateData { userInfo ->
+                                        userInfo.copy(
+                                            employeeId = employeeId.value,
+                                            name = "${firstName.value} ${lastName.value}",
+                                            emailAddress = email.value
+                                        )
+                                    }
+                                    voiceProfileDataStore.updateData { vp ->
+                                        vp.copy(voiceProfileMap = voiceProfile)
+                                    }
+                                    doc.update(employeeId.value, lsUser)
+                                    showNewUserDialog.value = true
+                                }
+                            }
+                    }
                 }
+                loading.value = false
             }
-            loading.value = false
         }
     }
 }

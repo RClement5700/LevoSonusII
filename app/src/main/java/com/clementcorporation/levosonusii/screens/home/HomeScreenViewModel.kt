@@ -16,6 +16,7 @@ import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -26,18 +27,22 @@ class HomeScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
 ): ViewModel() {
-    private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
+    private lateinit var collection: CollectionReference
     val expandMenu = mutableStateOf(false)
     val showProgressBar = mutableStateOf(false)
     val showOperatorTypeWindow = mutableStateOf(false)
     val inflateProfilePic = mutableStateOf(false)
     val operatorType = mutableStateOf("")
 
-    fun getVoiceProfile() = voiceProfileDataStore
     fun getUserInfo() = sessionDataStore
 
     init {
-        retrieveOperatorType()
+        viewModelScope.launch {
+            sessionDataStore.data.collect {
+                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+                retrieveOperatorType()
+            }
+        }
     }
     fun signOut() {
         viewModelScope.launch {

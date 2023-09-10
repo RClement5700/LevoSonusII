@@ -19,6 +19,7 @@ import com.clementcorporation.levosonusii.main.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.main.Constants.NAME
 import com.clementcorporation.levosonusii.main.Constants.OP_COUNT
 import com.clementcorporation.levosonusii.main.Constants.OP_TYPE
+import com.clementcorporation.levosonusii.main.Constants.ORGANIZATION_ID
 import com.clementcorporation.levosonusii.main.Constants.PIC_URL
 import com.clementcorporation.levosonusii.main.Constants.REMAINING_ORDERS
 import com.clementcorporation.levosonusii.main.Constants.SCANNER_ID
@@ -29,6 +30,8 @@ import com.clementcorporation.levosonusii.main.Constants.VOICE_PROFILE
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -40,8 +43,8 @@ class DepartmentsViewModel @Inject constructor(
     private val voiceProfileDataStore: DataStore<VoiceProfile>,
     private val resources: Resources
 ): ViewModel() {
-    private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
-    private val document = collection.document(DEPARTMENTS)
+    private lateinit var collection: CollectionReference
+    private lateinit var document: DocumentReference
     private val _departmentsLiveData = MutableLiveData<List<Department>>()
     val departmentsLiveData: LiveData<List<Department>> get() = _departmentsLiveData
     private val selectedDepartmentId = mutableStateOf("")
@@ -49,7 +52,13 @@ class DepartmentsViewModel @Inject constructor(
     val expandMenu = mutableStateOf(false)
 
     init {
-        fetchDepartmentsData()
+        viewModelScope.launch {
+            sessionDataStore.data.collect {
+                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+                document = collection.document(DEPARTMENTS)
+                fetchDepartmentsData()
+            }
+        }
     }
 
     private fun fetchDepartmentsData() {
@@ -185,6 +194,7 @@ class DepartmentsViewModel @Inject constructor(
                     collection.document(USERS).update(
                         userInfo.employeeId,
                         mapOf(
+                            ORGANIZATION_ID to userInfo.organization.id,
                             DEPARTMENT_ID to selectedDepartmentId.value,
                             MACHINE_ID to userInfo.machineId,
                             HEADSET_ID to userInfo.headsetId,
@@ -200,6 +210,7 @@ class DepartmentsViewModel @Inject constructor(
                     )
                     sessionDataStore.updateData {
                         it.copy(
+                            organization = it.organization,
                             name = userInfo.name,
                             employeeId = userInfo.employeeId,
                             firebaseId = userInfo.firebaseId,

@@ -18,13 +18,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.main.Constants
 import com.clementcorporation.levosonusii.main.LSAppBar
 import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
+import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenEvents
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
+import kotlinx.coroutines.launch
 
 private const val TAG = "HeadsetsScreen"
 @Composable
@@ -97,18 +100,22 @@ fun HeadsetsScreen(navController: NavController) {
                                 .fillMaxHeight(0.9f),
                             state = rememberLazyListState()
                         ) {
-                            viewModel.headsetLiveData.observe(lifecycleOwner) { headsets ->
-                                items(headsets, key = { it.id }) { headset ->
-                                    SelectableTile(
-                                        title = headset.serialNumber,
-                                        isSelected = headset.isSelected,
-                                        icon = R.drawable.headset_icon
-                                    ) {
-                                        headsets.forEach {
-                                            it.isSelected.value = false
+                            lifecycleOwner.lifecycleScope.launch {
+                                viewModel.equipmentScreenEventsFlow.collect { event ->
+                                    if (event is EquipmentScreenEvents.OnRetrieveHeadsetsListData) {
+                                        items(event.headsets) { headset ->
+                                            SelectableTile(
+                                                title = headset.serialNumber,
+                                                isSelected = headset.isSelected,
+                                                icon = R.drawable.scanner_icon
+                                            ) {
+                                                event.headsets.forEach {
+                                                    it.isSelected.value = false
+                                                }
+                                                headset.isSelected.value = !headset.isSelected.value
+                                                viewModel.setSelectedScannerId(headset.id)
+                                            }
                                         }
-                                        headset.isSelected.value = !headset.isSelected.value
-                                        viewModel.setSelectedHeadsetId(headset.id)
                                     }
                                 }
                             }

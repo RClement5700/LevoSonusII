@@ -15,6 +15,7 @@ object Constants {
     const val BTN_WIDTH = 200
     val LS_BLUE = Color(0xFF32527B)
     const val USERS = "users"
+    const val ORGANIZATION_ID = "organizationId"
     const val DEPARTMENT_ID = "departmentId"
     const val MACHINE_ID = "machineId"
     const val SCANNER_ID = "scannerId"

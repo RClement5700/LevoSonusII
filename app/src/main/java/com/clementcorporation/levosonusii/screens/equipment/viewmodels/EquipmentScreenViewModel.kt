@@ -3,8 +3,6 @@ package com.clementcorporation.levosonusii.screens.equipment.viewmodels
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.R
@@ -18,8 +16,12 @@ import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.VoiceProfile
 import com.clementcorporation.levosonusii.screens.equipment.model.Equipment
 import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,14 +35,12 @@ class EquipmentScreenViewModel @Inject constructor(
     private val userInfo: DataStore<LSUserInfo>,
     private val voiceProfile: DataStore<VoiceProfile>
 ): ViewModel() {
-    private val collection = FirebaseFirestore.getInstance().collection("HannafordFoods")
-    private val document = collection.document(Constants.EQUIPMENT)
-    private val _machineLiveData = MutableLiveData<List<Equipment>>()
-    val machineLiveData: LiveData<List<Equipment>> get() = _machineLiveData
-    private val _headsetLiveData = MutableLiveData<List<Equipment.Headset>>()
-    val headsetLiveData: LiveData<List<Equipment.Headset>> get() = _headsetLiveData
-    private val _scannerLiveData = MutableLiveData<List<Equipment.ProductScanner>>()
-    val scannerLiveData: LiveData<List<Equipment.ProductScanner>> get() = _scannerLiveData
+    private lateinit var collection: CollectionReference
+    private lateinit var document: DocumentReference
+    private val _equipmentScreenEventsStateFlow = MutableStateFlow<EquipmentScreenEvents>(
+        EquipmentScreenEvents.OnViewModelCreated
+    )
+    val equipmentScreenEventsFlow: StateFlow<EquipmentScreenEvents> get() = _equipmentScreenEventsStateFlow
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)
     private val selectedMachineId = mutableStateOf("")
@@ -50,6 +50,8 @@ class EquipmentScreenViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             userInfo.data.collect {
+                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+                document = collection.document(Constants.EQUIPMENT)
                 val isForkliftOperator = it.operatorType == resources.getString(R.string.operator_type_forklift_tile_text)
                 if (isForkliftOperator) retrieveForkliftsData() else retrieveElectricPalletJacksData()
             }
@@ -91,7 +93,11 @@ class EquipmentScreenViewModel @Inject constructor(
                             )
                         )
                     }
-                    _machineLiveData.postValue(forklifts.toList())
+                    viewModelScope.launch {
+                        _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveMachinesListData(
+                            forklifts.toList()
+                        ))
+                    }
                     showProgressBar.value = false
                 }
             }
@@ -125,7 +131,11 @@ class EquipmentScreenViewModel @Inject constructor(
                             )
                         )
                     }
-                    _machineLiveData.postValue(epjs.toList())
+                    viewModelScope.launch {
+                        _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveMachinesListData(
+                            epjs.toList()
+                        ))
+                    }
                     showProgressBar.value = false
                 }
             }
@@ -162,8 +172,12 @@ class EquipmentScreenViewModel @Inject constructor(
                                 isSelected = isSelected
                             )
                         )
-                        }
-                    _headsetLiveData.postValue(headsets.toList())
+                    }
+                    viewModelScope.launch {
+                        _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveHeadsetsListData(
+                            headsets.toList()
+                        ))
+                    }
                     showProgressBar.value = false
                     }
                 }
@@ -203,7 +217,12 @@ class EquipmentScreenViewModel @Inject constructor(
                             )
                         }
                     }
-                    _scannerLiveData.postValue(scanners.toList())
+                    //TODO: See why the selected scanner is removed from list when apply is clicked
+                    viewModelScope.launch {
+                        _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveScannersListData(
+                            scanners.toList()
+                        ))
+                    }
                     showProgressBar.value = false
                 }
             }
@@ -319,6 +338,10 @@ class EquipmentScreenViewModel @Inject constructor(
             userInfo.data.collect { info ->
                 showProgressBar.value = true
                 document.get().addOnSuccessListener { scannerDocument ->
+                    var previousSelectionId: String? = null
+                    var previousSelectionMap: Map<*, *>? = null
+                    var currentSelectionId: String? = null
+                    var currentSelectionMap: Map<*, *>? = null
                     scannerDocument.data?.forEach {
                         val id = it.key
                         var type = ""
@@ -331,30 +354,32 @@ class EquipmentScreenViewModel @Inject constructor(
                             }
                         }
                         if (type == SCANNER) {
-                            if (id == selectedScannerId.value) {
-                                document.update(
-                                    id,
-                                    mapOf(
-                                        TYPE to SCANNER,
-                                        CONNECTION to connection,
-                                        IS_AVAILABLE to false
-                                    )
+                            if (id == info.scannerId) {
+                                previousSelectionId = id
+                                previousSelectionMap = mapOf(
+                                    TYPE to SCANNER,
+                                    CONNECTION to connection,
+                                    IS_AVAILABLE to true
                                 )
-                            } else if (id == info.scannerId) {
-                                document.update(
-                                    id,
-                                    mapOf(
-                                        TYPE to SCANNER,
-                                        CONNECTION to connection,
-                                        IS_AVAILABLE to true
-                                    )
+                            } else if (id == selectedScannerId.value) {
+                                currentSelectionId = id
+                                currentSelectionMap = mapOf(
+                                    TYPE to SCANNER,
+                                    CONNECTION to connection,
+                                    IS_AVAILABLE to false
                                 )
                             }
                         }
                     }
+                    previousSelectionId?.let { id ->
+                        document.update(id, previousSelectionMap)
+                    }
+                    currentSelectionId?.let { id ->
+                        document.update(id, currentSelectionMap)
+                    }
+                    updateUserInfo()
+                    showProgressBar.value = false
                 }
-                updateUserInfo()
-                showProgressBar.value = false
             }
         }
     }
@@ -366,6 +391,7 @@ class EquipmentScreenViewModel @Inject constructor(
                     collection.document(Constants.USERS).update(
                         info.employeeId,
                         mapOf(
+                            Constants.ORGANIZATION_ID to info.organization.id,
                             Constants.DEPARTMENT_ID to info.departmentId,
                             Constants.MACHINE_ID to selectedMachineId.value.ifEmpty { info.machineId },
                             Constants.HEADSET_ID to selectedHeadsetId.value.ifEmpty { info.headsetId },
@@ -381,6 +407,7 @@ class EquipmentScreenViewModel @Inject constructor(
                     )
                     userInfo.updateData {
                         it.copy(
+                            organization = it.organization,
                             name = info.name,
                             employeeId = info.employeeId,
                             firebaseId = info.firebaseId,
@@ -398,4 +425,11 @@ class EquipmentScreenViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed class EquipmentScreenEvents {
+    object OnViewModelCreated: EquipmentScreenEvents()
+    class OnRetrieveMachinesListData(val machines: List<Equipment>): EquipmentScreenEvents()
+    class OnRetrieveHeadsetsListData(val headsets: List<Equipment.Headset>): EquipmentScreenEvents()
+    class OnRetrieveScannersListData(val scanners: List<Equipment.ProductScanner>): EquipmentScreenEvents()
 }

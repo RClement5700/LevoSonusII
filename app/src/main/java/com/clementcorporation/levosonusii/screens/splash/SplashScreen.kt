@@ -22,17 +22,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.main.Constants.CURVATURE
 import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.LevoSonusLogo
-import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -51,12 +48,7 @@ fun SplashScreen(navController: NavController) {
                             .getInterpolation(it)
                     })
             )
-            delay(2000L)
-            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
-                navController.navigate(LevoSonusScreens.LoginScreen.name)
-            } else {
-                navController.navigate(LevoSonusScreens.HomeScreen.name)
-            }
+            delay(3000L)
         }
         val configuration = LocalConfiguration.current
         when (configuration.orientation) {
