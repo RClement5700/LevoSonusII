@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
@@ -43,6 +44,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import java.util.*
 
 
@@ -105,7 +107,7 @@ class MainActivity : ComponentActivity(){
                 Manifest.permission.ACCESS_FINE_LOCATION
             ))
             LaunchedEffect(key1 = null) {
-                viewModel.mainActivityEventsState.collect { event ->
+                viewModel.mainActivityEventsState.collectLatest { event ->
                     when(event) {
                         is MainActivityEvents.OnShowVoiceCommandActivity -> {
                             val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
@@ -115,11 +117,18 @@ class MainActivity : ComponentActivity(){
                             resultLauncher.launch(i)
                         }
                         is MainActivityEvents.OnFetchUserOrganization -> {
-                            event.name?.let {
+                            if (event.name?.isNotEmpty() == true) {
                                 navController.navigate(LevoSonusScreens.LoginScreen.name)
                                 Toast.makeText(
                                     this@MainActivity,
-                                    getString(R.string.organization_name_toast_message, it),
+                                    getString(R.string.organization_name_success_toast_message, event.name),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                startVoiceCommandService()
+                            } else {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    getString(R.string.organization_name_failed_toast_message),
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -234,10 +243,20 @@ class MainActivity : ComponentActivity(){
                         location?.latitude?.let { latitude = it }
                         location?.longitude?.let { longitude = it }
                         val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
-                        val addressFromGeocoder = geocoder.getFromLocation(latitude, longitude, 1)?.first()
-                        address = addressFromGeocoder?.getAddressLine(0).toString()
-                        viewModel.fetchUserOrganization(address)
-                        startVoiceCommandService()
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
+                                address = addresses.first().getAddressLine(0).toString()
+                            }
+                        } else {
+                            val addressFromGeocoder =
+                                geocoder.getFromLocation(latitude, longitude, 1)?.first()
+                            address = addressFromGeocoder?.getAddressLine(0).toString()
+                        }
+                        if (address.isEmpty()) {
+                            viewModel.getAddressWhenGeocoderOffline(this@MainActivity, latitude.toString(), longitude.toString())
+                        } else {
+                            viewModel.fetchUserOrganization(address)
+                        }
                     }
                 } catch(e: Exception) {
                     e.localizedMessage?.let { Log.d(TAG, it) }

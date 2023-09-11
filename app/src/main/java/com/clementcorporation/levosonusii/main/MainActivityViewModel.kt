@@ -1,8 +1,15 @@
 package com.clementcorporation.levosonusii.main
 
+import android.content.Context
+import android.content.res.Resources
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import com.clementcorporation.levosonusii.BuildConfig
+import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.model.Organization
 import com.clementcorporation.levosonusii.model.VoiceProfile
@@ -10,19 +17,47 @@ import com.clementcorporation.levosonusii.util.AuthenticationUtil
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 const val ORGANIZATION_PATH = "Organizations"
 const val BUSINESSES_DOC = "businesses"
 const val ADDRESS_KEY = "address"
+const val RESULTS_KEY = "results"
+const val FORMATTED_ADDRESS_KEY = "formatted_address"
+private const val TAG = "MainActivityViewModel"
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
+    private val resources: Resources,
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>): ViewModel() {
     private val _mainActivityEventsState = MutableStateFlow<MainActivityEvents>(MainActivityEvents.OnViewModelCreated)
-    val mainActivityEventsState: StateFlow<MainActivityEvents> get() = _mainActivityEventsState
+    val mainActivityEventsState = _mainActivityEventsState.asStateFlow()
+
+    fun getAddressWhenGeocoderOffline(context: Context, lat: String, long: String) {
+        viewModelScope.launch {
+            var address = ""
+            val queue = Volley.newRequestQueue(context)
+            val url = resources.getString(R.string.google_maps_location_api_url, lat, long, BuildConfig.PLACES_API_KEY)
+            val jsonRequest = JsonObjectRequest(
+                url,
+                { response ->
+                    address = response.getJSONArray(RESULTS_KEY)
+                        .getJSONObject(0)
+                        .getString(FORMATTED_ADDRESS_KEY)
+                    Log.e(TAG, "Current Location Received: $address")
+
+                },
+                {
+                    Log.e(TAG, "Current Location Error: ${it.message}")
+                })
+            queue.add(jsonRequest)
+            queue.start()
+            fetchUserOrganization(address)
+        }
+    }
 
     fun fetchUserOrganization(addressFromGeocoder: String) {
         viewModelScope.launch {
@@ -30,7 +65,7 @@ class MainActivityViewModel @Inject constructor(
                 .document(BUSINESSES_DOC).get().addOnSuccessListener { businesses ->
                     var addressFromFirebase = ""
                     var orgNameFromFirebase = ""
-                    var idFromFirebase: String? = null
+                    var idFromFirebase = ""
                     businesses.data?.forEach { business ->
                         val businessDetails = business.value as Map<*, *>
                         businessDetails.forEach { detail ->
@@ -45,36 +80,32 @@ class MainActivityViewModel @Inject constructor(
                             }
                         }
                     }
-                    idFromFirebase?.let { id ->
-                        if (id.isNotEmpty()) {
-                            viewModelScope.launch {
-                                sessionDataStore.updateData {
-                                    it.copy(
-                                        organization = Organization(
-                                            id = id,
-                                            name = orgNameFromFirebase,
-                                            address = addressFromFirebase
-                                        ),
-                                        name = it.name,
-                                        employeeId = it.employeeId,
-                                        firebaseId = it.firebaseId,
-                                        departmentId = it.departmentId,
-                                        machineId = it.machineId,
-                                        headsetId = it.headsetId,
-                                        scannerId = it.scannerId,
-                                        emailAddress = it.emailAddress,
-                                        profilePicUrl = it.profilePicUrl,
-                                        operatorType = it.operatorType,
-                                        messengerIds = it.messengerIds
-                                    )
-                                }
-                                _mainActivityEventsState.emit(
-                                    MainActivityEvents.OnFetchUserOrganization(
-                                        orgNameFromFirebase
-                                    )
-                                )
-                            }
+                    viewModelScope.launch {
+                        sessionDataStore.updateData {
+                            it.copy(
+                                organization = Organization(
+                                    id = idFromFirebase,
+                                    name = orgNameFromFirebase,
+                                    address = addressFromFirebase
+                                ),
+                                name = it.name,
+                                employeeId = it.employeeId,
+                                firebaseId = it.firebaseId,
+                                departmentId = it.departmentId,
+                                machineId = it.machineId,
+                                headsetId = it.headsetId,
+                                scannerId = it.scannerId,
+                                emailAddress = it.emailAddress,
+                                profilePicUrl = it.profilePicUrl,
+                                operatorType = it.operatorType,
+                                messengerIds = it.messengerIds
+                            )
                         }
+                        _mainActivityEventsState.emit(
+                            MainActivityEvents.OnFetchUserOrganization(
+                                orgNameFromFirebase
+                            )
+                        )
                     }
                 }
         }

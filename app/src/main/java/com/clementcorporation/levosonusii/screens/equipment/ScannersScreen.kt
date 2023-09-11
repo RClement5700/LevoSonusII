@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import com.clementcorporation.levosonusii.main.SelectableTile
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenEvents
 import com.clementcorporation.levosonusii.screens.equipment.viewmodels.EquipmentScreenViewModel
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 private const val TAG = "ScannersScreen"
@@ -34,6 +36,7 @@ private const val TAG = "ScannersScreen"
 @Composable
 fun ScannersScreen(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
     viewModel.retrieveScannersData()
 
@@ -101,7 +104,10 @@ fun ScannersScreen(navController: NavController) {
                                 .fillMaxHeight(0.9f),
                             state = rememberLazyListState()
                         ) {
-                            lifecycleOwner.lifecycleScope.launch {
+                            lifecycleOwner.lifecycleScope.launch(
+                                context = coroutineScope.coroutineContext,
+                                start = CoroutineStart.LAZY
+                            ) {
                                 viewModel.equipmentScreenEventsFlow.collect { event ->
                                     if (event is EquipmentScreenEvents.OnRetrieveScannersListData) {
                                         items(event.scanners) { scanner ->

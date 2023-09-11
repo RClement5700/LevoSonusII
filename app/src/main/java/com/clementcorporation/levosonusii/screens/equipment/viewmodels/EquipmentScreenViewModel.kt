@@ -21,7 +21,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,7 +40,7 @@ class EquipmentScreenViewModel @Inject constructor(
     private val _equipmentScreenEventsStateFlow = MutableStateFlow<EquipmentScreenEvents>(
         EquipmentScreenEvents.OnViewModelCreated
     )
-    val equipmentScreenEventsFlow: StateFlow<EquipmentScreenEvents> get() = _equipmentScreenEventsStateFlow
+    val equipmentScreenEventsFlow = _equipmentScreenEventsStateFlow.asStateFlow()//: StateFlow<EquipmentScreenEvents> get() = _equipmentScreenEventsStateFlow
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)
     private val selectedMachineId = mutableStateOf("")
@@ -217,7 +217,6 @@ class EquipmentScreenViewModel @Inject constructor(
                             )
                         }
                     }
-                    //TODO: See why the selected scanner is removed from list when apply is clicked
                     viewModelScope.launch {
                         _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveScannersListData(
                             scanners.toList()
@@ -334,6 +333,7 @@ class EquipmentScreenViewModel @Inject constructor(
     }
 
     fun updateScannerData() {
+        //TODO: See why the selected scanner is removed from list when apply is clicked
         viewModelScope.launch {
             userInfo.data.collect { info ->
                 showProgressBar.value = true
