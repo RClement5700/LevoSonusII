@@ -12,12 +12,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
@@ -37,14 +37,13 @@ import com.clementcorporation.levosonusii.main.Constants.ELEVATION
 import com.clementcorporation.levosonusii.main.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.main.Constants.PADDING
 import com.clementcorporation.levosonusii.main.LSAppBar
-import com.clementcorporation.levosonusii.model.LSUserInfo
 import com.clementcorporation.levosonusii.navigation.LevoSonusScreens
 
 private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val departmentsViewModel: DepartmentsViewModel = hiltViewModel()
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val uiState: DepartmentsScreenUiState by departmentsViewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle()
     BackHandler {
         navController.popBackStack()
         navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -80,7 +79,7 @@ fun DepartmentsScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                if (departmentsViewModel.showProgressBar.value) {
+                if (uiState is DepartmentsScreenUiState.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .zIndex(1f)
@@ -109,12 +108,9 @@ fun DepartmentsScreen(navController: NavController) {
                 LazyColumn(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.9f)) {
-                    departmentsViewModel.departmentsLiveData.observe(lifecycleOwner) { departments ->
+                    if (uiState is DepartmentsScreenUiState.DataRetrieved) {
+                        val departments = (uiState as DepartmentsScreenUiState.DataRetrieved).data
                         items(departments) { department ->
-                            department.isSelected.value =
-                                departmentsViewModel.getSessionDataStore().data.collectAsState(
-                                    initial = LSUserInfo()
-                                ).value.departmentId == department.id
                             DepartmentTile(department) {
                                 departments.forEach {
                                     it.isSelected.value = false
@@ -134,13 +130,13 @@ fun DepartmentsScreen(navController: NavController) {
                     elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = LS_BLUE,
-                        disabledBackgroundColor = Color.LightGray
+                        disabledBackgroundColor = Color.Gray
                     ),
                     onClick = {
                         departmentsViewModel.updateUserDepartment()
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
-                    if(departmentsViewModel.showProgressBar.value) {
+                    if (uiState is DepartmentsScreenUiState.Loading) {
                         CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
                     } else {
                         Text(

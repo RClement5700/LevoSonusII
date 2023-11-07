@@ -5,7 +5,7 @@
     <string name="alert_dialog_negative_button_text">No</string>
     <string name="organization_name_success_toast_message">Welcome to %s</string>
     <string name="organization_name_failed_toast_message">Failed to Geolocate User</string>
-    <string name="google_maps_location_api_url">https://maps.googleapis.com/maps/api/geocode/json?latlng=$1%s,$2%s&amp;key=$3%s</string>
+    <string name="google_maps_location_api_url">https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&amp;key=%s</string>
 
     <!-- Login Screen -->
     <string name="btn_text_login">Login</string>
@@ -49,6 +49,7 @@
     <string name="homescreen_tile_game_center_label">GAME CENTER</string>
 
     <!-- Departments Screen -->
+    <string name="departments_screen_error_message">Failed to retrieve departments\' data</string>
     <string name="departments_screen_title_text">Departments</string>
     <string name="departments_screen_department_icon_content_description">Department Icon</string>
     <string name="departments_screen_electric_pallet_jack_icon_content_description">Electric Pallet Jack Icon</string>

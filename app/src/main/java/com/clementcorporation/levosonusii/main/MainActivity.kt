@@ -19,7 +19,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Surface
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -44,9 +45,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
 import java.util.*
-
 
 private const val TAG = "MainActivity"
 @AndroidEntryPoint
@@ -97,6 +96,7 @@ class MainActivity : ComponentActivity(){
                 addAction(Constants.USER_INPUT)
             }
             viewModel = hiltViewModel()
+            val uiState: MainActivityEvents by viewModel.mainActivityEventsState.collectAsStateWithLifecycle()
             bManager = LocalBroadcastManager.getInstance(this).apply {
                 registerReceiver(bReceiver, intentFilter)
             }
@@ -106,37 +106,34 @@ class MainActivity : ComponentActivity(){
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ))
-            LaunchedEffect(key1 = null) {
-                viewModel.mainActivityEventsState.collectLatest { event ->
-                    when(event) {
-                        is MainActivityEvents.OnShowVoiceCommandActivity -> {
-                            val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
-                                putExtra(PROMPT_KEYWORD, event.title)
-                                putExtra(VoiceCommandActivity.IS_TRAINING_MODE, event.isTrainingMode)
-                            }
-                            resultLauncher.launch(i)
-                        }
-                        is MainActivityEvents.OnFetchUserOrganization -> {
-                            if (event.name?.isNotEmpty() == true) {
-                                navController.navigate(LevoSonusScreens.LoginScreen.name)
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    getString(R.string.organization_name_success_toast_message, event.name),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                startVoiceCommandService()
-                            } else {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    getString(R.string.organization_name_failed_toast_message),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                        else -> {}
+            when(uiState) {
+                is MainActivityEvents.OnShowVoiceCommandActivity -> {
+                    val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
+                        putExtra(PROMPT_KEYWORD, (uiState as MainActivityEvents.OnShowVoiceCommandActivity).title)
+                        putExtra(VoiceCommandActivity.IS_TRAINING_MODE, (uiState as MainActivityEvents.OnShowVoiceCommandActivity).isTrainingMode)
+                    }
+                    resultLauncher.launch(i)
+                }
+                is MainActivityEvents.OnFetchUserOrganization -> {
+                    if ((uiState as MainActivityEvents.OnFetchUserOrganization).name?.isNotEmpty() == true) {
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.organization_name_success_toast_message, (uiState as MainActivityEvents.OnFetchUserOrganization).name),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        startVoiceCommandService()
+                    } else {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.organization_name_failed_toast_message),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
+                else -> {}
             }
+
             LevoSonusIITheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -283,12 +280,5 @@ class MainActivity : ComponentActivity(){
                 requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 1)
             }
         }
-    }
-
-    private fun onClickVoiceCommandBtn(prompt: String = "How Can I Help?") {
-        val i = Intent(this, VoiceCommandActivity::class.java).apply {
-            putExtra(PROMPT_KEYWORD, prompt)
-        }
-        resultLauncher.launch(i)
     }
 }
