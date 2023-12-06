@@ -25,7 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LevoSonusII">
         <activity
-            android:name=".main.MainActivity"
+            android:name=".presentation.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.LevoSonusII"
             android:windowSoftInputMode="adjustResize">
@@ -35,13 +35,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".main.VoiceCommandActivity"
+            android:name=".presentation.voice_command.VoiceCommandActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
             android:theme="@style/Theme.Transparent"
             android:launchMode="singleInstance" />
 
-        <service android:name=".main.LevoSonusService"
+        <service android:name=".data.local.LevoSonusService"
             android:label="@string/app_name"
             android:exported="true">
             <intent-filter>

@@ -5,21 +5,22 @@ import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.clementcorporation.levosonusii.presentation.departments.DepartmentsScreen
+import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreen
+import com.clementcorporation.levosonusii.presentation.equipment.HeadsetsScreen
+import com.clementcorporation.levosonusii.presentation.equipment.MachinesScreen
+import com.clementcorporation.levosonusii.presentation.equipment.ScannersScreen
+import com.clementcorporation.levosonusii.presentation.healthandwellness.HealthAndWellnessScreen
+import com.clementcorporation.levosonusii.presentation.home.HomeScreen
+import com.clementcorporation.levosonusii.presentation.login.LoginScreen
+import com.clementcorporation.levosonusii.presentation.messenger.MessengerScreen
+import com.clementcorporation.levosonusii.presentation.orders.OrdersScreen
+import com.clementcorporation.levosonusii.presentation.payandbenefits.PayAndBenefitsScreen
+import com.clementcorporation.levosonusii.presentation.register.RegisterScreen
+import com.clementcorporation.levosonusii.presentation.splash.SplashScreen
+import com.clementcorporation.levosonusii.presentation.voiceprofile.VoiceProfileScreen
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
-import com.clementcorporation.levosonusii.screens.departments.DepartmentsScreen
-import com.clementcorporation.levosonusii.screens.equipment.EquipmentScreen
-import com.clementcorporation.levosonusii.screens.equipment.HeadsetsScreen
-import com.clementcorporation.levosonusii.screens.equipment.MachinesScreen
-import com.clementcorporation.levosonusii.screens.equipment.ScannersScreen
-import com.clementcorporation.levosonusii.screens.healthandwellness.HealthAndWellnessScreen
-import com.clementcorporation.levosonusii.screens.home.HomeScreen
-import com.clementcorporation.levosonusii.screens.login.LoginScreen
-import com.clementcorporation.levosonusii.screens.messenger.MessengerScreen
-import com.clementcorporation.levosonusii.screens.orders.OrdersScreen
-import com.clementcorporation.levosonusii.screens.payandbenefits.PayAndBenefitsScreen
-import com.clementcorporation.levosonusii.screens.register.RegisterScreen
-import com.clementcorporation.levosonusii.screens.splash.SplashScreen
-import com.clementcorporation.levosonusii.screens.voiceprofile.VoiceProfileScreen
+import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
 @Composable
 fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>,

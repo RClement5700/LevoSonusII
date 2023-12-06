@@ -3,8 +3,8 @@ package com.clementcorporation.levosonusii.di
 import android.content.Context
 import android.content.res.Resources
 import androidx.datastore.dataStore
-import com.clementcorporation.levosonusii.model.LSUserInfoSerializer
-import com.clementcorporation.levosonusii.model.VoiceProfileSerializer
+import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
+import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
