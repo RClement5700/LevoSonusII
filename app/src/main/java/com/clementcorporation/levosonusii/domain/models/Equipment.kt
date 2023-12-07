@@ -1,4 +1,4 @@
-package com.clementcorporation.levosonusii.presentation.equipment.model
+package com.clementcorporation.levosonusii.domain.models
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

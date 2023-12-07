@@ -33,8 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.presentation.equipment.viewmodels.EquipmentScreenEvents
-import com.clementcorporation.levosonusii.presentation.equipment.viewmodels.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens

@@ -18,6 +18,8 @@ import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.clementcorporation.levosonusii.util.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.util.Constants.EMAIL
 import com.clementcorporation.levosonusii.util.Constants.HEADSET_ID
@@ -30,8 +32,6 @@ import com.clementcorporation.levosonusii.util.Constants.SCANNER_ID
 import com.clementcorporation.levosonusii.util.Constants.USERS
 import com.clementcorporation.levosonusii.util.Constants.USER_ID
 import com.clementcorporation.levosonusii.util.Constants.VOICE_PROFILE
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -41,7 +41,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+//WHEN REWRITING THIS CLASS, BE SURE TO FOLLOW THIS STACKOVERFLOW PAGE TO REWRITE THE RULES OF
+//FIRESTORE: https://stackoverflow.com/questions/60972889/firebase-firestore-rules-authenticated-access-to-all-collections-except-one
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,

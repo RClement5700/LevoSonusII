@@ -35,6 +35,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.MessengerListItem
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING

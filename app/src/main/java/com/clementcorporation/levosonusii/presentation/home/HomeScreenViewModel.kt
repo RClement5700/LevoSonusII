@@ -4,7 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.util.Constants.EMAIL
@@ -14,8 +16,6 @@ import com.clementcorporation.levosonusii.util.Constants.PIC_URL
 import com.clementcorporation.levosonusii.util.Constants.USERS
 import com.clementcorporation.levosonusii.util.Constants.USER_ID
 import com.clementcorporation.levosonusii.util.Constants.VOICE_PROFILE
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +48,7 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
+            SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
         }
     }
 

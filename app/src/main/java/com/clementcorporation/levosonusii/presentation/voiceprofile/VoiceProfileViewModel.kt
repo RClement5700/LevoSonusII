@@ -4,9 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,7 +26,7 @@ class VoiceProfileViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
+            SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
         }
     }
 

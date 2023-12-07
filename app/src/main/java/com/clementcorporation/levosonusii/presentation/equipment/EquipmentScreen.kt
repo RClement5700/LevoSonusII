@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.presentation.equipment.viewmodels.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar

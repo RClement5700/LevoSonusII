@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.Department
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
@@ -184,7 +185,7 @@ fun DepartmentIcon(modifier: Modifier, url: String) {
 }
 
 @Composable
-fun DepartmentTile(department: com.clementcorporation.levosonusii.presentation.departments.Department, onClick: () -> Unit = {}) {
+fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
     val backgroundColor = if (department.isSelected.value) Color.Cyan else Color.White
     Card(
         modifier = Modifier

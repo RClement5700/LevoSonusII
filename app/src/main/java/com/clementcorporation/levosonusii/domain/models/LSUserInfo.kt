@@ -1,10 +1,10 @@
-package com.clementcorporation.levosonusii.util
+package com.clementcorporation.levosonusii.domain.models
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class LSUserInfo(
-    val organization: Organization = Organization(),
+    val organization: Business = Business(),
     val employeeId: String = "",
     val firebaseId: String = "",
     val name: String = "",
@@ -19,4 +19,4 @@ data class LSUserInfo(
 )
 
 @Serializable
-data class Organization(val id: String = "", val name: String = "", val address: String = "")
+data class Business(val id: String = "", val name: String = "", val address: String = "")

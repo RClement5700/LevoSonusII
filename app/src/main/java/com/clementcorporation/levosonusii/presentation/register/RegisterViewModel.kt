@@ -7,11 +7,11 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.LevoSonusUser
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
 import com.clementcorporation.levosonusii.util.VoiceProfileConstants
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -88,7 +88,7 @@ class RegisterViewModel @Inject constructor(
                         Firebase.auth.createUserWithEmailAndPassword(email.value.trim(), password.value.trim())
                             .addOnCompleteListener {
                                 viewModelScope.launch {
-                                    AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
+                                    SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
                                     sessionDataStore.updateData { userInfo ->
                                         userInfo.copy(
                                             employeeId = employeeId.value,

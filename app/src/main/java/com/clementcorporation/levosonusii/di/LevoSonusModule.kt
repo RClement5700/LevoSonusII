@@ -3,6 +3,12 @@ package com.clementcorporation.levosonusii.di
 import android.content.Context
 import android.content.res.Resources
 import androidx.datastore.dataStore
+import com.clementcorporation.levosonusii.data.remote.DepartmentsRepositoryImpl
+import com.clementcorporation.levosonusii.data.remote.EquipmentRepositoryImpl
+import com.clementcorporation.levosonusii.data.remote.MainRepositoryImpl
+import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
+import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
+import com.clementcorporation.levosonusii.domain.repositories.MainRepository
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
 import dagger.Module
@@ -17,10 +23,23 @@ private const val VOICE_PROFILE_FILE_NAME = "voice-profile.json"
 
 @Module
 @InstallIn(SingletonComponent::class)
-class LevoSonusModule {
+object LevoSonusModule {
 
     private val Context.sessionDataStore by dataStore(fileName = SESSION_FILE_NAME, serializer = LSUserInfoSerializer)
     private val Context.voiceProfileDataStore by dataStore(fileName = VOICE_PROFILE_FILE_NAME, serializer = VoiceProfileSerializer)
+
+    @Provides
+    @Singleton
+    fun providesMainRepository(): MainRepository = MainRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun providesEquipmentRepository(): EquipmentRepository = EquipmentRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun providesDepartmentsRepository(resources: Resources): DepartmentsRepository =
+        DepartmentsRepositoryImpl(resources)
 
     @Provides
     fun providesResources(@ApplicationContext context: Context): Resources = context.resources

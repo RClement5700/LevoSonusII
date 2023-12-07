@@ -1,12 +1,14 @@
 package com.clementcorporation.levosonusii.presentation.departments
 
-import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.data.remote.DepartmentsRepositoryImpl
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.clementcorporation.levosonusii.domain.models.Department
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants.DEPARTMENT_ID
 import com.clementcorporation.levosonusii.util.Constants.EMAIL
 import com.clementcorporation.levosonusii.util.Constants.HEADSET_ID
@@ -20,9 +22,7 @@ import com.clementcorporation.levosonusii.util.Constants.SCANNER_ID
 import com.clementcorporation.levosonusii.util.Constants.USERS
 import com.clementcorporation.levosonusii.util.Constants.USER_ID
 import com.clementcorporation.levosonusii.util.Constants.VOICE_PROFILE
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.Resource
-import com.clementcorporation.levosonusii.util.VoiceProfile
+import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,11 +33,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DepartmentsViewModel @Inject constructor(
-    private val resources: Resources,
+    private val repo: DepartmentsRepository,
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>,
 ): ViewModel() {
-    private val repo = DepartmentsRepositoryImpl(resources, sessionDataStore)
     private val _departmentsScreenEventsStateFlow = MutableStateFlow<DepartmentsScreenUiState>(
         DepartmentsScreenUiState.Loading
     )
@@ -52,19 +51,23 @@ class DepartmentsViewModel @Inject constructor(
 
     private fun fetchDepartmentsData() {
         viewModelScope.launch {
-            repo.fetchDepartmentsData().collectLatest { result ->
-                if (result is Resource.Success) {
-                    result.data?.let { departmentsData ->
-                        selectedDepartmentId.value = departmentsData.find { it.isSelected.value }?.id.toString()
-                        _departmentsScreenEventsStateFlow.emit(
-                            DepartmentsScreenUiState.DataRetrieved(
-                                departmentsData
+            sessionDataStore.data.collectLatest { userInfo ->
+                repo.fetchDepartmentsData(userInfo).collectLatest { result ->
+                    if (result is Response.Success) {
+                        result.data?.let { departmentsData ->
+                            selectedDepartmentId.value =
+                                departmentsData.find { it.isSelected.value }?.id.toString()
+                            _departmentsScreenEventsStateFlow.emit(
+                                DepartmentsScreenUiState.DataRetrieved(
+                                    departmentsData
+                                )
                             )
-                    ) }
-                } else result.message?.let {
-                    _departmentsScreenEventsStateFlow.emit(
-                        DepartmentsScreenUiState.Error
-                    )
+                        }
+                    } else result.message?.let {
+                        _departmentsScreenEventsStateFlow.emit(
+                            DepartmentsScreenUiState.Error
+                        )
+                    }
                 }
             }
         }
@@ -72,14 +75,18 @@ class DepartmentsViewModel @Inject constructor(
 
     private fun subtractOrderPickerFromDepartment() {
         viewModelScope.launch {
-            repo.subtractOrderPickerFromDepartment()
+            sessionDataStore.data.collectLatest { userInfo ->
+                repo.subtractOrderPickerFromDepartment(userInfo)
+            }
         }
     }
 
     private fun addOrderPickerToDepartment() {
         if (selectedDepartmentId.value.isNotEmpty()) {
             viewModelScope.launch {
-                repo.addOrderPickerToDepartment(selectedDepartmentId.value)
+                sessionDataStore.data.collectLatest { userInfo ->
+                    repo.addOrderPickerToDepartment(userInfo, selectedDepartmentId.value)
+                }
             }
         }
     }
@@ -144,13 +151,13 @@ class DepartmentsViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            AuthenticationUtil.signOut(sessionDataStore, voiceProfileDataStore)
+            SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
         }
     }
 }
 
 sealed class DepartmentsScreenUiState {
-    object Loading: DepartmentsScreenUiState()
-    object Error: DepartmentsScreenUiState()
-    class DataRetrieved(val data: List<com.clementcorporation.levosonusii.presentation.departments.Department>): DepartmentsScreenUiState()
+    data object Loading: DepartmentsScreenUiState()
+    data object Error: DepartmentsScreenUiState()
+    class DataRetrieved(val data: List<Department>): DepartmentsScreenUiState()
 }

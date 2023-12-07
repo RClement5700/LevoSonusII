@@ -52,14 +52,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
-import com.clementcorporation.levosonusii.util.LSUserInfo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.NavTile
+import com.clementcorporation.levosonusii.util.OperatorType
 import com.clementcorporation.levosonusii.util.SelectableTile
 
 private const val TAG = "HomeScreen"

@@ -1,4 +1,4 @@
-package com.clementcorporation.levosonusii.util
+package com.clementcorporation.levosonusii.domain.models
 
 import kotlinx.serialization.Serializable
 

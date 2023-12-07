@@ -38,12 +38,12 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.NavTile
-import com.clementcorporation.levosonusii.util.VoiceProfile
 
 private const val TAG = "VoiceProfileScreen"
 @Composable

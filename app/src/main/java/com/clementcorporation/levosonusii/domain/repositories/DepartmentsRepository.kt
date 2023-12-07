@@ -1,10 +1,12 @@
 package com.clementcorporation.levosonusii.domain.repositories
 
-import com.clementcorporation.levosonusii.util.Resource
+import com.clementcorporation.levosonusii.domain.models.Department
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface DepartmentsRepository {
-    fun fetchDepartmentsData(): Flow<Resource<List<com.clementcorporation.levosonusii.presentation.departments.Department>>>
-    suspend fun subtractOrderPickerFromDepartment()
-    suspend fun addOrderPickerToDepartment(currentDepartmentId: String)
+    fun fetchDepartmentsData(userInfo: LSUserInfo): Flow<Response<List<Department>>>
+    fun subtractOrderPickerFromDepartment(userInfo: LSUserInfo)
+    fun addOrderPickerToDepartment(userInfo: LSUserInfo, currentDepartmentId: String)
 }

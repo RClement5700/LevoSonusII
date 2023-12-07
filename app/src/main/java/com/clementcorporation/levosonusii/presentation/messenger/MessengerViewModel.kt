@@ -9,7 +9,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.MessengerListItem
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.BODY
 import com.clementcorporation.levosonusii.util.Constants.DATE
@@ -20,8 +23,6 @@ import com.clementcorporation.levosonusii.util.Constants.USER_1
 import com.clementcorporation.levosonusii.util.Constants.USER_1_MESSAGES
 import com.clementcorporation.levosonusii.util.Constants.USER_2
 import com.clementcorporation.levosonusii.util.Constants.USER_2_MESSAGES
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -59,7 +60,7 @@ class MessengerViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            AuthenticationUtil.signOut(userInfo, voiceProfile)
+            SignOutUseCase(userInfo, voiceProfile).invoke()
         }
     }
 
@@ -161,14 +162,16 @@ class MessengerViewModel @Inject constructor(
                                             u2Body
                                         }
                                     }
-                                messages.add(MessengerListItem(
+                                messages.add(
+                                    MessengerListItem(
                                     threadId = threadId,
                                     message = messengerItemMessage,
                                     date = messengerItemDate,
                                     time = messengerItemTime,
                                     user1 = user1,
                                     user2 = user2
-                                ))
+                                )
+                                )
                             }
                         }
                     }
@@ -182,9 +185,11 @@ class MessengerViewModel @Inject constructor(
     private fun onMessageReceived() {
         viewModelScope.launch {
             showProgressBar.value = true
-            _messengerEventsLiveData.postValue(MessengerEvents.OnMessageReceived(MessengerListItem(
+            _messengerEventsLiveData.postValue(MessengerEvents.OnMessageReceived(
+                MessengerListItem(
                 "", "", "", "", "", "", ""
-            )))
+            )
+            ))
             showProgressBar.value = false
         }
     }

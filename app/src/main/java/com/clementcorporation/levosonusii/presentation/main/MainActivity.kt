@@ -123,22 +123,21 @@ class MainActivity : ComponentActivity(){
                     }
                     resultLauncher.launch(i)
                 }
-                is MainActivityEvents.OnFetchUserOrganization -> {
-                    if (uiState.name?.isNotEmpty() == true) {
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.organization_name_success_toast_message, (uiState as MainActivityEvents.OnFetchUserOrganization).name),
-                            Toast.LENGTH_LONG
-                        ).show()
-                        startVoiceCommandService()
-                    } else {
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.organization_name_failed_toast_message),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                is MainActivityEvents.OnFetchUsersBusiness -> {
+                    navController.navigate(LevoSonusScreens.LoginScreen.name)
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.organization_name_success_toast_message, uiState.name),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    startVoiceCommandService()
+                }
+                is MainActivityEvents.OnFailedToRetrieveBusiness -> {
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.organization_name_failed_toast_message),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
                 else -> {}
             }
@@ -261,7 +260,7 @@ class MainActivity : ComponentActivity(){
                             val queue = Volley.newRequestQueue(this@MainActivity)
                             viewModel.getAddressWhenGeocoderOffline(queue, latitude.toString(), longitude.toString())
                         } else {
-                            viewModel.fetchUserOrganization(address)
+                            viewModel.getBusinessByAddress(address)
                         }
                     }
                 } catch(e: Exception) {

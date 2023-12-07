@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.util
 
 import androidx.datastore.core.Serializer
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream

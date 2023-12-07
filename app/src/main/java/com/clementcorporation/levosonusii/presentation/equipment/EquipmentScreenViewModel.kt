@@ -1,19 +1,19 @@
-package com.clementcorporation.levosonusii.presentation.equipment.viewmodels
+package com.clementcorporation.levosonusii.presentation.equipment
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.presentation.equipment.model.Equipment
-import com.clementcorporation.levosonusii.util.AuthenticationUtil
+import com.clementcorporation.levosonusii.domain.models.Equipment
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.ELECTRIC_PALLET_JACK
 import com.clementcorporation.levosonusii.util.Constants.FORKLIFT
 import com.clementcorporation.levosonusii.util.Constants.HEADSET
 import com.clementcorporation.levosonusii.util.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.util.Constants.SCANNER
-import com.clementcorporation.levosonusii.util.LSUserInfo
-import com.clementcorporation.levosonusii.util.VoiceProfile
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,9 +28,11 @@ private const val CONNECTION = "CONNECTION"
 private const val IS_AVAILABLE = "IS_AVAILABLE"
 private const val TYPE = "TYPE"
 
+//TODO: cancel/unsubscribe equipmentScreenEventsStateFlow when operations have completed
+//      https://developer.android.com/kotlin/flow
+
 @HiltViewModel
 class EquipmentScreenViewModel @Inject constructor(
-    private val resources: Resources,
     private val userInfo: DataStore<LSUserInfo>,
     private val voiceProfile: DataStore<VoiceProfile>
 ): ViewModel() {
@@ -51,21 +53,21 @@ class EquipmentScreenViewModel @Inject constructor(
             userInfo.data.collect {
                 collection = FirebaseFirestore.getInstance().collection(it.organization.name)
                 document = collection.document(Constants.EQUIPMENT)
-                val isForkliftOperator = it.operatorType == resources.getString(R.string.operator_type_forklift_tile_text)
-                if (isForkliftOperator) retrieveForkliftsData() else retrieveElectricPalletJacksData()
             }
         }
     }
+
+    fun getUserInfo() = userInfo
 
     fun signOut() {
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            AuthenticationUtil.signOut(userInfo, voiceProfile)
+            SignOutUseCase(userInfo, voiceProfile).invoke()
         }
     }
 
-    private fun retrieveForkliftsData() {
+    fun retrieveForkliftsData() {
         viewModelScope.launch {
             userInfo.data.collect { info ->
                 showProgressBar.value = true
@@ -94,15 +96,16 @@ class EquipmentScreenViewModel @Inject constructor(
                     }
                     viewModelScope.launch {
                         _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveMachinesListData(
-                            forklifts.toList()
+                            forklifts.toList().sortedBy { it.id.toInt() }
                         ))
+                        _equipmentScreenEventsStateFlow
                     }
                     showProgressBar.value = false
                 }
             }
         }
     }
-    private fun retrieveElectricPalletJacksData() {
+    fun retrieveElectricPalletJacksData() {
         viewModelScope.launch {
             userInfo.data.collect { info ->
                 showProgressBar.value = true
@@ -132,7 +135,7 @@ class EquipmentScreenViewModel @Inject constructor(
                     }
                     viewModelScope.launch {
                         _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveMachinesListData(
-                            epjs.toList()
+                            epjs.toList().sortedBy { it.id.toInt() }
                         ))
                     }
                     showProgressBar.value = false
@@ -174,7 +177,7 @@ class EquipmentScreenViewModel @Inject constructor(
                     }
                     viewModelScope.launch {
                         _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveHeadsetsListData(
-                            headsets.toList()
+                            headsets.toList().sortedBy { it.id.toInt() }
                         ))
                     }
                     showProgressBar.value = false
@@ -218,7 +221,7 @@ class EquipmentScreenViewModel @Inject constructor(
                     }
                     viewModelScope.launch {
                         _equipmentScreenEventsStateFlow.emit(EquipmentScreenEvents.OnRetrieveScannersListData(
-                            scanners.toList()
+                            scanners.toList().sortedBy { it.id.toInt() }
                         ))
                     }
                     showProgressBar.value = false
@@ -247,7 +250,7 @@ class EquipmentScreenViewModel @Inject constructor(
 
     fun updateMachinesData() {
         viewModelScope.launch {
-            userInfo.data.collect { info ->
+            userInfo.data.collectLatest { info ->
                 showProgressBar.value = true
                 document.get().addOnSuccessListener { machinesDocument ->
                     machinesDocument.data?.forEach {
@@ -411,7 +414,7 @@ class EquipmentScreenViewModel @Inject constructor(
                             employeeId = info.employeeId,
                             firebaseId = info.firebaseId,
                             departmentId = info.departmentId,
-                            machineId = selectedMachineId.value.ifEmpty { info.machineId },
+                            machineId = selectedMachineId.value,
                             headsetId = selectedHeadsetId.value.ifEmpty { info.headsetId },
                             scannerId = selectedScannerId.value.ifEmpty { info.scannerId },
                             emailAddress = info.emailAddress,
