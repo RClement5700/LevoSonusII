@@ -15,6 +15,7 @@ import com.clementcorporation.levosonusii.domain.repositories.MainRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -58,7 +59,6 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun getBusinessByAddress(addressFromGeocoder: String) {
-        //isExecuting??
         viewModelScope.launch {
             repo.getBusinessByAddress(addressFromGeocoder).collectLatest { response ->
                 when (response) {
@@ -84,8 +84,8 @@ class MainActivityViewModel @Inject constructor(
                                 )
                             }
                         }
+                        cancel()
                     }
-
                     is Response.Error -> {
                         val errorMessage = response.message
                         errorMessage?.let {

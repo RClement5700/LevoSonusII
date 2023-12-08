@@ -6,26 +6,31 @@ import com.clementcorporation.levosonusii.domain.repositories.MainRepository
 import com.clementcorporation.levosonusii.presentation.main.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flowOn
 
 private const val TAG = "MainRepositoryImpl"
 class MainRepositoryImpl: MainRepository {
     override fun getBusinessByAddress(addressFromGeocoder: String): Flow<Response<Business>>
-    = flow {
-        var business: Business? = null
+    = callbackFlow {
         FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT).get()
             .addOnSuccessListener { businesses ->
                 val businessObjects = businesses.toObjects(Business::class.java)
-                business = businessObjects.find { it.address == addressFromGeocoder }
+                val business = businessObjects.find { it.address == addressFromGeocoder }
                 Log.d(TAG, "Business retrieved: ${business?.name}")
+                trySend(Response.Success(data = business))
             }
             .addOnFailureListener {
+                trySend(Response.Error("Failed to retrieve company details"))
                 Log.d(TAG, "Failed to retrieve Business: \n${it.message}")
             }
-        if (business != null) {
-            emit(Response.Success(data = business))
+        awaitClose {
+            cancel()
         }
-        else emit(Response.Error("Failed to retrieve company details"))
-    }
+    }.cancellable().flowOn(Dispatchers.IO)
 }
