@@ -3,6 +3,7 @@ package com.clementcorporation.levosonusii.util
 import androidx.compose.ui.graphics.Color
 
 object Constants {
+    const val BUSINESSES_ENDPOINT = "businesses"
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"
     const val VOICE_COMMAND_KEY = "USER_INPUT"
     const val DEFAULT_VOICE_COMMAND_PROMPT = "How Can I Help?"

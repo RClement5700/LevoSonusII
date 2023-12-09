@@ -2,8 +2,8 @@ package com.clementcorporation.levosonusii.data.remote
 
 import android.util.Log
 import com.clementcorporation.levosonusii.domain.models.Business
-import com.clementcorporation.levosonusii.domain.repositories.MainRepository
-import com.clementcorporation.levosonusii.presentation.main.BUSINESSES_ENDPOINT
+import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
+import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOn
 
-private const val TAG = "MainRepositoryImpl"
-class MainRepositoryImpl: MainRepository {
+private const val TAG = "LoadingRepositoryImpl"
+class LoadingRepositoryImpl: LoadingRepository {
     override fun getBusinessByAddress(addressFromGeocoder: String): Flow<Response<Business>>
     = callbackFlow {
         FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT).get()

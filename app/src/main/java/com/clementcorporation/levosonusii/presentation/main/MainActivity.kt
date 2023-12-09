@@ -7,37 +7,28 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Surface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.android.volley.toolbox.Volley
-import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.data.local.LevoSonusService
 import com.clementcorporation.levosonusii.navigation.LevoSonusNavigation
 import com.clementcorporation.levosonusii.presentation.voice_command.VoiceCommandActivity
@@ -54,7 +45,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Locale
 
 private const val TAG = "MainActivity"
 @AndroidEntryPoint
@@ -64,18 +54,13 @@ class MainActivity : ComponentActivity(){
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        when {
-            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION,
-                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false
-                )) -> {
-                getCurrentLocation()
-            } else -> {
-                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
-            }
+        ActivityResultContracts.RequestPermission()
+    ) { permission ->
+        if (!permission) {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
     }
+
     private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val resultCode = result.resultCode
         if (resultCode == Activity.RESULT_OK) {
@@ -100,6 +85,7 @@ class MainActivity : ComponentActivity(){
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkForLocationPermission()
         setContent {
             val intentFilter = IntentFilter().apply {
                 addAction(Constants.USER_INPUT)
@@ -111,10 +97,7 @@ class MainActivity : ComponentActivity(){
             }
             navController = rememberNavController()
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
-            locationPermissionRequest.launch(arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ))
+            locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             when(uiState) {
                 is MainActivityEvents.OnShowVoiceCommandActivity -> {
                     val i = Intent(this@MainActivity, VoiceCommandActivity::class.java).apply {
@@ -123,55 +106,31 @@ class MainActivity : ComponentActivity(){
                     }
                     resultLauncher.launch(i)
                 }
-                is MainActivityEvents.OnFetchUsersBusiness -> {
-                    navController.navigate(LevoSonusScreens.LoginScreen.name)
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.organization_name_success_toast_message, uiState.name),
-                        Toast.LENGTH_LONG
-                    ).show()
-                    startVoiceCommandService()
-                }
-                is MainActivityEvents.OnFailedToRetrieveBusiness -> {
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.organization_name_failed_toast_message),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
                 else -> {}
             }
             LevoSonusIITheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.White
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(8.dp).background(Color.White),
+                    contentAlignment = Alignment.BottomEnd
                 ) {
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Box(
-                                modifier = Modifier.padding(8.dp),
-                                contentAlignment = Alignment.BottomEnd
-                            ) {
-                                val showFAB = remember {
-                                    mutableStateOf(false)
-                                }
-                                LevoSonusNavigation(navController, showFAB, viewModel::showVoiceCommandActivity)
-                                if (showFAB.value) {
-                                    LSFAB {
-                                        viewModel.showVoiceCommandActivity(DEFAULT_VOICE_COMMAND_PROMPT)
-                                    }
-                                }
-                            }
+                    val showFAB = remember {
+                        mutableStateOf(false)
+                    }
+                    LevoSonusNavigation(
+                        showFab = showFAB,
+                        navController = navController,
+                        showVoiceCommandActivity = viewModel::showVoiceCommandActivity,
+                        fusedLocationClient = fusedLocationClient
+                    )
+                    if (showFAB.value) {
+                        LSFAB {
+                            viewModel.showVoiceCommandActivity(DEFAULT_VOICE_COMMAND_PROMPT)
                         }
                     }
                 }
             }
         }
+        startVoiceCommandService()
     }
 
     private fun executeVoiceCommand(command: String) {
@@ -215,6 +174,16 @@ class MainActivity : ComponentActivity(){
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        startVoiceCommandService()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopService()
+    }
+
     override fun onStop() {
         super.onStop()
         stopService()
@@ -234,43 +203,10 @@ class MainActivity : ComponentActivity(){
         }
     }
 
-    private fun getCurrentLocation() {
-        var address = ""
-        when (
-            ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
-        ) {
-            PackageManager.PERMISSION_GRANTED -> {
-                try {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location : Location? ->
-                        var latitude = 0.0
-                        var longitude = 0.0
-                        location?.latitude?.let { latitude = it }
-                        location?.longitude?.let { longitude = it }
-                        val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
-                        if (Build.VERSION.SDK_INT >= 33) {
-                            geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
-                                address = addresses.first().getAddressLine(0).toString()
-                            }
-                        } else {
-                            val addressFromGeocoder =
-                                geocoder.getFromLocation(latitude, longitude, 1)?.first()
-                            address = addressFromGeocoder?.getAddressLine(0).toString()
-                        }
-                        if (address.isEmpty()) {
-                            val queue = Volley.newRequestQueue(this@MainActivity)
-                            viewModel.getAddressWhenGeocoderOffline(queue, latitude.toString(), longitude.toString())
-                        } else {
-                            viewModel.getBusinessByAddress(address)
-                        }
-                    }
-                } catch(e: Exception) {
-                    e.localizedMessage?.let { Log.d(TAG, it) }
-                }
-            }
-            else -> {
-                requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 0)
-            }
-        }
+    private fun checkForLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this@MainActivity,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
     }
 
     private fun startVoiceCommandService() {

@@ -17,17 +17,18 @@ import com.clementcorporation.levosonusii.presentation.messenger.MessengerScreen
 import com.clementcorporation.levosonusii.presentation.orders.OrdersScreen
 import com.clementcorporation.levosonusii.presentation.payandbenefits.PayAndBenefitsScreen
 import com.clementcorporation.levosonusii.presentation.register.RegisterScreen
-import com.clementcorporation.levosonusii.presentation.splash.SplashScreen
+import com.clementcorporation.levosonusii.presentation.splash.LoadingScreen
 import com.clementcorporation.levosonusii.presentation.voiceprofile.VoiceProfileScreen
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.google.android.gms.location.FusedLocationProviderClient
 
 @Composable
 fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>,
                         lifecycleOwner: LifecycleOwner, showVoiceCommandActivity: (String) -> Unit) {
     NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
         composable(LevoSonusScreens.SplashScreen.name){
-            SplashScreen()
+            LoadingScreen(navController, fusedLocationClient)
             showFab.value = false
         }
         composable(LevoSonusScreens.LoginScreen.name){
