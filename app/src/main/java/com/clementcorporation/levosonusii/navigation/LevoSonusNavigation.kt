@@ -12,12 +12,12 @@ import com.clementcorporation.levosonusii.presentation.equipment.MachinesScreen
 import com.clementcorporation.levosonusii.presentation.equipment.ScannersScreen
 import com.clementcorporation.levosonusii.presentation.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.presentation.home.HomeScreen
+import com.clementcorporation.levosonusii.presentation.loading.LoadingScreen
 import com.clementcorporation.levosonusii.presentation.login.LoginScreen
 import com.clementcorporation.levosonusii.presentation.messenger.MessengerScreen
 import com.clementcorporation.levosonusii.presentation.orders.OrdersScreen
 import com.clementcorporation.levosonusii.presentation.payandbenefits.PayAndBenefitsScreen
 import com.clementcorporation.levosonusii.presentation.register.RegisterScreen
-import com.clementcorporation.levosonusii.presentation.splash.LoadingScreen
 import com.clementcorporation.levosonusii.presentation.voiceprofile.VoiceProfileScreen
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
 import com.clementcorporation.levosonusii.util.LevoSonusScreens

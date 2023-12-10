@@ -1,10 +1,9 @@
-package com.clementcorporation.levosonusii.presentation.splash
+package com.clementcorporation.levosonusii.presentation.loading
 
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -40,49 +39,44 @@ private const val TAG = "LoadingScreen"
 fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocationProviderClient) {
     val viewModel: LoadingScreenViewModel = hiltViewModel()
     val uiState = viewModel.loadingScreenEventsState.collectAsStateWithLifecycle().value
-    val permissionsState = rememberPermissionState(
-        permission = android.Manifest.permission.ACCESS_FINE_LOCATION
-    )
+    val permissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current
-    LaunchedEffect(key1 = !permissionsState.hasPermission) {
-        permissionsState.launchPermissionRequest()
-    }
     var address = ""
-    try {
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                var latitude = 0.0
-                var longitude = 0.0
-                location?.latitude?.let { latitude = it }
-                location?.longitude?.let { longitude = it }
-                val geocoder = Geocoder(context, Locale.getDefault())
-                if (Build.VERSION.SDK_INT >= 33) {
-                    geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
-                        address = addresses.first().getAddressLine(0).toString()
-                    }
-                } else {
-                    val addressFromGeocoder =
-                        geocoder.getFromLocation(latitude, longitude, 1)?.first()
-                    address = addressFromGeocoder?.getAddressLine(0).toString()
+    if (ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            var latitude = 0.0
+            var longitude = 0.0
+            location?.latitude?.let { latitude = it }
+            location?.longitude?.let { longitude = it }
+            val geocoder = Geocoder(context, Locale.getDefault())
+            if (Build.VERSION.SDK_INT >= 33) {
+                geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
+                    address = addresses.first().getAddressLine(0).toString()
                 }
-                if (address.isEmpty()) {
-                    val queue = Volley.newRequestQueue(context)
-                    viewModel.getAddressWhenGeocoderOffline(
-                        queue,
-                        latitude.toString(),
-                        longitude.toString()
-                    )
-                } else {
-                    viewModel.getBusinessByAddress(address)
-                }
+            } else {
+                val addressFromGeocoder =
+                    geocoder.getFromLocation(latitude, longitude, 1)?.first()
+                address = addressFromGeocoder?.getAddressLine(0).toString()
+            }
+            if (address.isEmpty()) {
+                val queue = Volley.newRequestQueue(context)
+                viewModel.getAddressWhenGeocoderOffline(
+                    queue,
+                    latitude.toString(),
+                    longitude.toString()
+                )
+            } else {
+                viewModel.getBusinessByAddress(address)
             }
         }
-    } catch(e: Exception) {
-        e.localizedMessage?.let { Log.d(TAG, it) }
+    } else {
+        LaunchedEffect(key1 = !permissionState.hasPermission) {
+            permissionState.launchPermissionRequest()
+        }
     }
     Surface(
         modifier = Modifier.fillMaxSize(),

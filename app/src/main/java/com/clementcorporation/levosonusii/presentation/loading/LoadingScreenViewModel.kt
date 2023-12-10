@@ -1,4 +1,4 @@
-package com.clementcorporation.levosonusii.presentation.splash
+package com.clementcorporation.levosonusii.presentation.loading
 
 import android.content.res.Resources
 import android.util.Log
@@ -13,6 +13,7 @@ import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -78,9 +79,9 @@ class LoadingScreenViewModel @Inject constructor(
                                     messengerIds = it.messengerIds
                                 )
                             }
+                            cancel()
                         }
                     }
-
                     is Response.Error -> {
                         val errorMessage = response.message
                         errorMessage?.let {
@@ -88,6 +89,7 @@ class LoadingScreenViewModel @Inject constructor(
                         }
                         _loadingScreenEventsState.value =
                             LoadingScreenEvents.OnFailedToRetrieveBusiness
+                        getBusinessByAddress(addressFromGeocoder)
                     }
                 }
             }
