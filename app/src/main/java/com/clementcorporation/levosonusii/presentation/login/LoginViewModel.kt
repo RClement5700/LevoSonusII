@@ -19,41 +19,39 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
-import com.clementcorporation.levosonusii.util.Constants.DEPARTMENT_ID
-import com.clementcorporation.levosonusii.util.Constants.EMAIL
-import com.clementcorporation.levosonusii.util.Constants.HEADSET_ID
-import com.clementcorporation.levosonusii.util.Constants.MACHINE_ID
-import com.clementcorporation.levosonusii.util.Constants.MESSENGER_IDS
-import com.clementcorporation.levosonusii.util.Constants.NAME
-import com.clementcorporation.levosonusii.util.Constants.OP_TYPE
-import com.clementcorporation.levosonusii.util.Constants.PIC_URL
-import com.clementcorporation.levosonusii.util.Constants.SCANNER_ID
+import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.util.Constants.USERS
-import com.clementcorporation.levosonusii.util.Constants.USER_ID
-import com.clementcorporation.levosonusii.util.Constants.VOICE_PROFILE
-import com.google.firebase.auth.ktx.auth
+import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-//WHEN REWRITING THIS CLASS, BE SURE TO FOLLOW THIS STACKOVERFLOW PAGE TO REWRITE THE RULES OF
-//FIRESTORE: https://stackoverflow.com/questions/60972889/firebase-firestore-rules-authenticated-access-to-all-collections-except-one
+
+sealed class LoginScreenEvents {
+    data object OnScreenCreated: LoginScreenEvents()
+    data class OnLoading(val isLoading: Boolean): LoginScreenEvents()
+    data class OnUserDataRetrieved(val user: LSUserInfo): LoginScreenEvents()
+    data class OnFailedToLoadUser(val message: String): LoginScreenEvents()
+}
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
+    private val repo: LoginRepository,
+    private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
     private lateinit var collection: CollectionReference
     private lateinit var document: DocumentReference
     val employeeId = mutableStateOf("")
     val password = mutableStateOf("")
-    val isLoginButtonEnabled = mutableStateOf(false)
-    val showProgressBar = mutableStateOf(false)
+    private val _loginScreenEvents = MutableStateFlow<LoginScreenEvents>(
+        LoginScreenEvents.OnScreenCreated
+    )
+    val loginScreenEvents get() = _loginScreenEvents
 
     init {
         viewModelScope.launch {
@@ -64,93 +62,33 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun signInWithEmailAndPassword(home: () -> Unit = {}) {
-        var name: String? = ""
-        var email: String? = ""
-        var profilePicUrl: String? = ""
-        var firebaseId: String? = ""
-        var departmentId: String? = ""
-        var machineId: String? = ""
-        var scannerId: String? = ""
-        var headsetId: String? = ""
-        var operatorType: String? = ""
-        var messengerIds: ArrayList<String>? = arrayListOf<String>()
-        var voiceProfile: Map<*,*>? = hashMapOf<String, ArrayList<String>>()
+    fun signIn() {
         viewModelScope.launch {
-            showProgressBar.value = true
-            try {
-                document.get().addOnCompleteListener { document ->
-                        val userId = employeeId.value
-                        document.result?.get(userId)?.let {
-                            name = (it as HashMap<*,*>)[NAME] as String
-                            email = it[EMAIL] as String
-                            firebaseId = it[USER_ID] as String
-                            departmentId = it[DEPARTMENT_ID] as String
-                            machineId = it[MACHINE_ID] as String
-                            scannerId = it[SCANNER_ID] as String
-                            headsetId = it[HEADSET_ID] as String
-                            operatorType = it[OP_TYPE] as String
-                            profilePicUrl = it[PIC_URL] as String
-                            messengerIds = it[MESSENGER_IDS] as ArrayList<String>
-                            voiceProfile = it[VOICE_PROFILE] as HashMap<*, *>
-                            email?.let { email ->
-                                Firebase.auth.signInWithEmailAndPassword(email.trim(), password.value.trim())
-                                    .addOnCompleteListener { task ->
-                                        Log.d("Sign In: ", "SUCCESS")
-                                        name?.let { name ->
-                                            profilePicUrl?.let { url ->
-                                                voiceProfile?.let { voiceProfile ->
-                                                    firebaseId?.let { firebaseId ->
-                                                        departmentId?.let { departmentId ->
-                                                            machineId?.let { machineId ->
-                                                                scannerId?.let { scannerId ->
-                                                                    headsetId?.let { headsetId ->
-                                                                        operatorType?.let { operatorType ->
-                                                                            messengerIds?.let { messengerIds ->
-                                                                                viewModelScope.launch {
-                                                                                    sessionDataStore.updateData { userInfo ->
-                                                                                        userInfo.copy(
-                                                                                            organization = userInfo.organization,
-                                                                                            employeeId = userId,
-                                                                                            firebaseId = firebaseId,
-                                                                                            emailAddress = email,
-                                                                                            name = name,
-                                                                                            profilePicUrl = url,
-                                                                                            departmentId = departmentId,
-                                                                                            machineId = machineId,
-                                                                                            scannerId = scannerId,
-                                                                                            headsetId = headsetId,
-                                                                                            operatorType = operatorType,
-                                                                                            messengerIds = messengerIds
-                                                                                        )
-                                                                                    }
-                                                                                    voiceProfileDataStore.updateData { vp ->
-                                                                                        vp.copy(
-                                                                                            voiceProfileMap = voiceProfile as HashMap<String, ArrayList<String>>
-                                                                                        )
-                                                                                    }
-                                                                                    home()
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+            _loginScreenEvents.value = LoginScreenEvents.OnLoading(true)
+            sessionDataStore.data.collectLatest {
+                val businessId = it.organization.id
+                repo.signIn(businessId, employeeId.value, password.value).collectLatest { response ->
+                    when(response) {
+                        is Response.Success -> {
+                            response.data?.let { user ->
+                                _loginScreenEvents.value =
+                                    LoginScreenEvents.OnUserDataRetrieved(user)
+                                cancel()
                             }
                         }
+                        is Response.Error -> {
+                            response.message?.let { errorMessage ->
+                                _loginScreenEvents.value =
+                                    LoginScreenEvents.OnFailedToLoadUser(errorMessage)
+                            }
+                        }
+                        is Response.Loading -> {
+                            _loginScreenEvents.value = LoginScreenEvents.OnLoading(true)
+                        }
                     }
-            } catch (e: Exception) {
-                e.localizedMessage?.let {
-                    Log.d("Sign In: ", it)
                 }
             }
-            showProgressBar.value = false
+            _loginScreenEvents.value = LoginScreenEvents.OnLoading(false)
         }
     }
 

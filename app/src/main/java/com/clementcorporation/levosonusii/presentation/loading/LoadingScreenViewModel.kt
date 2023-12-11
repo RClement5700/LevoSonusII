@@ -91,6 +91,7 @@ class LoadingScreenViewModel @Inject constructor(
                             LoadingScreenEvents.OnFailedToRetrieveBusiness
                         getBusinessByAddress(addressFromGeocoder)
                     }
+                    else -> {}
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.login
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,15 +23,21 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
@@ -48,7 +55,8 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 @Composable
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()
-
+    val uiState = viewModel.loginScreenEvents.collectAsStateWithLifecycle().value
+    val isLoading = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -77,30 +85,44 @@ fun LoginScreen(navController: NavController) {
                 }
             ) {
                 viewModel.employeeId.value = it
-                viewModel.isLoginButtonEnabled.value = viewModel.employeeId.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
             }
             LSPasswordTextField(
                 modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
                 userInput = viewModel.password,
                 label = stringResource(id = R.string.label_password),
                 onAction = KeyboardActions {
-                    viewModel.signInWithEmailAndPassword {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    }
+                    viewModel.signIn()
                 }
             ) {
                 viewModel.password.value = it
-                viewModel.isLoginButtonEnabled.value = viewModel.employeeId.value.isNotEmpty() && viewModel.password.value.isNotEmpty()
             }
             when (configuration.orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
                     viewModel = viewModel,
-                    navController = navController
+                    navController = navController,
+                    isLoading = isLoading
                 )
                 else -> PortraitButtonAndRegistrationContent(
                     viewModel = viewModel,
-                    navController = navController
+                    navController = navController,
+                    isLoading = isLoading
                 )
+            }
+            when (uiState) {
+                is LoginScreenEvents.OnUserDataRetrieved -> {
+                    isLoading.value = false
+                    LaunchedEffect(key1 = !isLoading.value) {
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                    }
+                }
+                is LoginScreenEvents.OnFailedToLoadUser -> {
+                    isLoading.value = false
+                    Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
+                }
+                is LoginScreenEvents.OnLoading -> {
+                    isLoading.value = uiState.isLoading
+                }
+                else -> {}
             }
         }
     }
@@ -109,7 +131,8 @@ fun LoginScreen(navController: NavController) {
 @Composable
 fun PortraitButtonAndRegistrationContent(
     viewModel: LoginViewModel,
-    navController: NavController
+    navController: NavController,
+    isLoading: MutableState<Boolean>
 ) {
     Button(
         modifier = Modifier
@@ -117,17 +140,15 @@ fun PortraitButtonAndRegistrationContent(
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE),
         elevation = elevation(defaultElevation = ELEVATION.dp),
-        enabled = viewModel.isLoginButtonEnabled.value,
+        enabled = viewModel.employeeId.value.length >= 4 && viewModel.password.value.length >= 6,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
-            viewModel.signInWithEmailAndPassword {
-                navController.navigate(LevoSonusScreens.HomeScreen.name)
-            }
+            viewModel.signIn()
         }) {
-        if(viewModel.showProgressBar.value) {
+        if(isLoading.value) {
             CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
         } else {
             Text(
@@ -162,7 +183,8 @@ fun PortraitButtonAndRegistrationContent(
 @Composable
 fun LandscapeButtonAndRegistrationContent(
     viewModel: LoginViewModel,
-    navController: NavController
+    navController: NavController,
+    isLoading: MutableState<Boolean>
 ) {
     Row(
         modifier = Modifier
@@ -177,17 +199,15 @@ fun LandscapeButtonAndRegistrationContent(
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE),
             elevation = elevation(defaultElevation = ELEVATION.dp),
-            enabled = viewModel.isLoginButtonEnabled.value,
+            enabled = viewModel.employeeId.value.length >= 4 && viewModel.password.value.length >= 6,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {
-                viewModel.signInWithEmailAndPassword{
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                }
+                viewModel.signIn()
             }) {
-            if (viewModel.showProgressBar.value) {
+            if (isLoading.value) {
                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
             } else {
                 Text(
