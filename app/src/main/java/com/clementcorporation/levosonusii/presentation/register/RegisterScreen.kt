@@ -22,6 +22,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
@@ -51,6 +53,10 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 @Composable
 fun RegisterScreen(navController: NavController) {
     val viewModel: RegisterViewModel = hiltViewModel()
+    val uiState = viewModel.registerScreenEvents.collectAsStateWithLifecycle().value
+    val isLoading = remember { mutableStateOf(false) }
+    val showNewUserDialog = remember { mutableStateOf(false) }
+    val showVoiceProfileDialog = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -71,9 +77,9 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
-            if (viewModel.showNewUserDialog.value) {
+            if (showNewUserDialog.value) {
                 LSAlertDialog(
-                    showAlertDialog = viewModel.showNewUserDialog,
+                    showAlertDialog = showNewUserDialog,
                     dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
                         mutableStateOf(
@@ -87,8 +93,8 @@ fun RegisterScreen(navController: NavController) {
                         )
                     },
                     onPositiveButtonClicked = {
-                        viewModel.showNewUserDialog.value = false
-                        viewModel.showVoiceProfileDialog.value = true
+                        showNewUserDialog.value = false
+                        showVoiceProfileDialog.value = true
                     },
                     onNegativeButtonClicked = {
                         Toast.makeText(
@@ -99,12 +105,12 @@ fun RegisterScreen(navController: NavController) {
                     }
                 )
             }
-            if (viewModel.showVoiceProfileDialog.value) {
+            if (showVoiceProfileDialog.value) {
                 LSAlertDialog(
-                    showAlertDialog = viewModel.showVoiceProfileDialog,
+                    showAlertDialog = showVoiceProfileDialog,
                     dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
                     onPositiveButtonClicked = {
-                        viewModel.showVoiceProfileDialog.value = false
+                        showVoiceProfileDialog.value = false
                         navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                     },
                     onNegativeButtonClicked = {
@@ -116,10 +122,12 @@ fun RegisterScreen(navController: NavController) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeContent(
                     viewModel = viewModel,
                     navController = navController,
+                    isLoading = isLoading
                 )
                 else -> PortraitContent(
                     viewModel = viewModel,
                     navController = navController,
+                    isLoading = isLoading
                 )
             }
         }
@@ -127,7 +135,9 @@ fun RegisterScreen(navController: NavController) {
 }
 
 @Composable
-fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, ) {
+fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
+                    isLoading: MutableState<Boolean>
+) {
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
@@ -139,7 +149,6 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, 
         }
     ) {
         viewModel.email.value = it
-        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     LSTextField(
         modifier = Modifier
@@ -153,7 +162,6 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, 
         }
     ) {
         viewModel.firstName.value = it
-        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
 
     LSTextField(
@@ -167,20 +175,18 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, 
         }
     ) {
         viewModel.lastName.value = it
-        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     LSPasswordTextField(
         modifier = Modifier
             .padding(PADDING.dp)
             .fillMaxWidth(),
         userInput = viewModel.password,
-        label = stringResource(id = R.string.label_password),
+        label = stringResource(id = R.string.password_placeholder),
         onAction = KeyboardActions {
-            viewModel.createUser(context = navController.context)
+            viewModel.createNewUser()
         }
     ) {
         viewModel.password.value = it
-        viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
     }
     Button(
         modifier = Modifier
@@ -188,15 +194,15 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, 
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE.dp),
         elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
-        enabled = viewModel.isRegisterButtonEnabled.value,
+        enabled = viewModel.validateInputs(),
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
-            viewModel.createUser(context = navController.context)
+            viewModel.createNewUser()
         }) {
-        if(viewModel.loading.value) {
+        if(isLoading.value) {
             CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
         } else {
             Text(
@@ -229,7 +235,9 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController, 
 }
 
 @Composable
-fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController, ) {
+fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
+                     isLoading: MutableState<Boolean>
+) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -245,7 +253,6 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             }
         ) {
             viewModel.firstName.value = it
-            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
         LSTextField(
             userInput = viewModel.lastName,
@@ -255,7 +262,6 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             }
         ) {
             viewModel.lastName.value = it
-            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
     }
     Row(
@@ -272,17 +278,15 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             }
         ) {
             viewModel.email.value = it
-            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
         LSPasswordTextField(
             userInput = viewModel.password,
-            label = stringResource(id = R.string.label_password),
+            label = stringResource(id = R.string.password_placeholder),
             onAction = KeyboardActions {
-                viewModel.createUser(context = navController.context)
+                viewModel.createNewUser()
             }
         ) {
             viewModel.password.value = it
-            viewModel.isRegisterButtonEnabled.value = viewModel.validateInputs()
         }
     }
     Row(
@@ -298,15 +302,15 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE.dp),
             elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
-            enabled = viewModel.isRegisterButtonEnabled.value,
+            enabled = viewModel.validateInputs(),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray
             ),
             onClick = {
-                viewModel.createUser(context = navController.context)
+                viewModel.createNewUser()
             }) {
-            if(viewModel.loading.value) {
+            if(isLoading.value) {
                 CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
             } else {
                 Text(

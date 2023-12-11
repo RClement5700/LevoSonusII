@@ -1,111 +1,89 @@
 package com.clementcorporation.levosonusii.presentation.register
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.text.isDigitsOnly
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.domain.models.LevoSonusUser
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
-import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
-import com.clementcorporation.levosonusii.util.Constants
-import com.clementcorporation.levosonusii.util.VoiceProfileConstants
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
+import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
+import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
+import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val EMAIL_VALIDATOR_AT = "@"
 private const val EMAIL_VALIDATOR_COM = ".com"
-private const val NEW_EMPLOYEE_ID_UPPER_BOUND = 10000
-private const val NEW_EMPLOYEE_ID_LOWER_BOUND = 999
+sealed class RegisterScreenEvents {
+    data object OnScreenCreated: RegisterScreenEvents()
+    data class OnLoading(val isLoading: Boolean): RegisterScreenEvents()
+    data class OnUserDataRetrieved(val user: LSUserInfo): RegisterScreenEvents()
+    data class OnFailedToLoadUser(val message: String): RegisterScreenEvents()
+}
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
+    private val repo: RegisterRepository,
     private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
 ): ViewModel() {
-    val loading = mutableStateOf(false)
     val employeeId = mutableStateOf("")
     val email = mutableStateOf("")
     val password = mutableStateOf("")
     val firstName = mutableStateOf("")
     val lastName = mutableStateOf("")
-    val isRegisterButtonEnabled = mutableStateOf(false)
-    val showNewUserDialog = mutableStateOf(false)
-    val showVoiceProfileDialog = mutableStateOf(false)
+    private val _registerScreenEvents = MutableStateFlow<RegisterScreenEvents>(
+        RegisterScreenEvents.OnScreenCreated
+    )
+    val registerScreenEvents get() = _registerScreenEvents.asStateFlow()
     
     fun validateInputs(): Boolean {
-        return email.value.contains(EMAIL_VALIDATOR_AT) && email.value.contains(EMAIL_VALIDATOR_COM) && email.value.isNotEmpty() && password.value.isNotEmpty()
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty()
+        return email.value.contains(EMAIL_VALIDATOR_AT) && email.value.contains(EMAIL_VALIDATOR_COM)
+                && password.value.isNotEmpty() && password.value.isDigitsOnly()
+                && password.value.length == VALID_PASSWORD_LENGTH
+                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && email.value.isNotEmpty()
     }
 
-    fun createUser(context: Context) {
+    fun createNewUser() {
         viewModelScope.launch {
-            loading.value = true
-            val userId = Firebase.auth.currentUser?.uid
-            val voiceProfile: HashMap<String, ArrayList<String>> = hashMapOf()
-            VoiceProfileConstants.values().forEach {
-                voiceProfile[it.name] = arrayListOf()
-            }
-            val lsUser = LevoSonusUser(
-                userId = userId.toString(),
-                emailAddress = email.value,
-                name = "${firstName.value} ${lastName.value}",
-                voiceProfile = voiceProfile,
-            ).toMap()
-            sessionDataStore.data.collect{
-                val doc = FirebaseFirestore.getInstance().collection(it.organization.name).document("users")
-                employeeId.value = (NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random().toString()
-                doc.get().addOnSuccessListener { users ->
-                    val emailAddresses = arrayListOf<String>()
-                    val employeeIds = arrayListOf<String>()
-                    users.data?.forEach { user ->
-                        val employeeIdFromFirebase = user.key
-                        employeeIds.add(employeeIdFromFirebase)
-                        var emailAddressFromFirebase = ""
-                        val userDetails = user.value as Map<*,*>
-                        userDetails.forEach { detail ->
-                            when(detail.key) {
-                                Constants.EMAIL -> emailAddressFromFirebase = detail.value as String
-                            }
-                        }
-                        emailAddresses.add(emailAddressFromFirebase)
-                    }
-                    if (emailAddresses.contains(email.value) ||
-                        employeeIds.contains(employeeId.value)
-                    ) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.register_screen_user_already_exists_toast_message),
-                            Toast.LENGTH_SHORT).show()
-                    } else {
-                        Firebase.auth.createUserWithEmailAndPassword(email.value.trim(), password.value.trim())
-                            .addOnCompleteListener {
-                                viewModelScope.launch {
-                                    SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
-                                    sessionDataStore.updateData { userInfo ->
-                                        userInfo.copy(
-                                            employeeId = employeeId.value,
-                                            name = "${firstName.value} ${lastName.value}",
-                                            emailAddress = email.value
-                                        )
-                                    }
-                                    voiceProfileDataStore.updateData { vp ->
-                                        vp.copy(voiceProfileMap = voiceProfile)
-                                    }
-                                    doc.update(employeeId.value, lsUser)
-                                    showNewUserDialog.value = true
+            if (validateInputs())
+                sessionDataStore.data.collectLatest { userInfo ->
+                    repo.register(
+                        userInfo.organization,
+                        firstName.value,
+                        lastName.value,
+                        password.value,
+                        email.value
+                    ).collectLatest { response ->
+                        when(response) {
+                            //TODO: -Display user credentials to new user then prompt use to
+                            //          open VoiceCommandTrainingWindow or ContinueToHomeScreen
+                            //      -Write up the SignInUseCase
+                            is Response.Success -> {
+                                response.data?.let { newUser ->
+                                    _registerScreenEvents.value =
+                                        RegisterScreenEvents.OnUserDataRetrieved(newUser)
                                 }
                             }
+                            is Response.Loading -> {
+                                _registerScreenEvents.value =
+                                    RegisterScreenEvents.OnLoading(true)
+                            }
+                            is Response.Error -> {
+                                response.message?.let { errorMessage ->
+                                    _registerScreenEvents.value =
+                                        RegisterScreenEvents.OnFailedToLoadUser(errorMessage)
+                                }
+                            }
+                        }
                     }
                 }
-                loading.value = false
+            else {
+                _registerScreenEvents.value =
+                    RegisterScreenEvents.OnFailedToLoadUser("Input Error...")
             }
         }
     }

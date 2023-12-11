@@ -9,6 +9,7 @@ data class LSUserInfo(
     val firebaseId: String = "",
     val name: String = "",
     val emailAddress: String = "",
+    val password: String = "",
     val profilePicUrl: String = "",
     val machineId: String = "",
     val scannerId: String = "",

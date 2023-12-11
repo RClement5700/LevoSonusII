@@ -140,7 +140,7 @@ fun PortraitButtonAndRegistrationContent(
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE),
         elevation = elevation(defaultElevation = ELEVATION.dp),
-        enabled = viewModel.employeeId.value.length >= 4 && viewModel.password.value.length >= 6,
+        enabled = viewModel.validateInputs(),
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LS_BLUE,
             disabledBackgroundColor = Color.LightGray
@@ -199,7 +199,7 @@ fun LandscapeButtonAndRegistrationContent(
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE),
             elevation = elevation(defaultElevation = ELEVATION.dp),
-            enabled = viewModel.employeeId.value.length >= 4 && viewModel.password.value.length >= 6,
+            enabled = viewModel.validateInputs(),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = LS_BLUE,
                 disabledBackgroundColor = Color.LightGray

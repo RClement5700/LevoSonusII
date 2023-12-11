@@ -20,10 +20,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
+import com.clementcorporation.levosonusii.util.Constants.VALID_EMPLOYEE_ID_LENGTH
+import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,7 +47,10 @@ class LoginViewModel @Inject constructor(
     private val _loginScreenEvents = MutableStateFlow<LoginScreenEvents>(
         LoginScreenEvents.OnScreenCreated
     )
-    val loginScreenEvents get() = _loginScreenEvents
+    val loginScreenEvents get() = _loginScreenEvents.asStateFlow()
+
+    fun validateInputs(): Boolean =
+        employeeId.value.length >= VALID_EMPLOYEE_ID_LENGTH && password.value.length == VALID_PASSWORD_LENGTH
 
     fun signIn() {
         viewModelScope.launch {

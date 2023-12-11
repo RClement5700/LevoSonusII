@@ -7,10 +7,12 @@ import com.clementcorporation.levosonusii.data.remote.DepartmentsRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.EquipmentRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.LoadingRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.LoginRepositoryImpl
+import com.clementcorporation.levosonusii.data.remote.RegisterRepositoryImpl
 import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
+import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
 import dagger.Module
@@ -36,7 +38,11 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesMainRepository(): LoadingRepository = LoadingRepositoryImpl()
+    fun providesRegisterRepository(): RegisterRepository = RegisterRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun providesLoadingRepository(): LoadingRepository = LoadingRepositoryImpl()
 
     @Provides
     @Singleton

@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 object Constants {
     const val BUSINESSES_ENDPOINT = "businesses"
     const val USERS_ENDPOINT = "users"
+    const val VALID_PASSWORD_LENGTH = 6
+    const val VALID_EMPLOYEE_ID_LENGTH = 4
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"
     const val VOICE_COMMAND_KEY = "USER_INPUT"
     const val DEFAULT_VOICE_COMMAND_PROMPT = "How Can I Help?"
