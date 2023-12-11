@@ -20,18 +20,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
-import com.clementcorporation.levosonusii.util.Constants.USERS
 import com.clementcorporation.levosonusii.util.Response
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 sealed class LoginScreenEvents {
     data object OnScreenCreated: LoginScreenEvents()
@@ -44,23 +39,12 @@ class LoginViewModel @Inject constructor(
     private val repo: LoginRepository,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
-    private lateinit var collection: CollectionReference
-    private lateinit var document: DocumentReference
     val employeeId = mutableStateOf("")
     val password = mutableStateOf("")
     private val _loginScreenEvents = MutableStateFlow<LoginScreenEvents>(
         LoginScreenEvents.OnScreenCreated
     )
     val loginScreenEvents get() = _loginScreenEvents
-
-    init {
-        viewModelScope.launch {
-            sessionDataStore.data.collect {
-                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
-                document = collection.document(USERS)
-            }
-        }
-    }
 
     fun signIn() {
         viewModelScope.launch {
