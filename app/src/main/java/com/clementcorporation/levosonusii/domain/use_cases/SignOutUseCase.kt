@@ -5,13 +5,10 @@ import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import javax.inject.Inject
 
-class SignOutUseCase @Inject constructor(
-    private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
-) {
-    suspend operator fun invoke() {
+class SignOutUseCase {
+    suspend operator fun invoke(sessionDataStore: DataStore<LSUserInfo>,
+                                voiceProfileDataStore: DataStore<VoiceProfile>) {
         Firebase.auth.signOut()
         sessionDataStore.updateData {
             LSUserInfo()

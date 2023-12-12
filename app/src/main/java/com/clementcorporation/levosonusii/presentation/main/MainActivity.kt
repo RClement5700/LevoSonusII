@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity(){
                 addAction(Constants.USER_INPUT)
             }
             viewModel = hiltViewModel()
-            val uiState: MainActivityEvents = viewModel.mainActivityEventsState.collectAsStateWithLifecycle().value
+            val uiState: MainActivityEvents = viewModel.mainActivityUiState.collectAsStateWithLifecycle().value
             bManager = LocalBroadcastManager.getInstance(this).apply {
                 registerReceiver(bReceiver, intentFilter)
             }

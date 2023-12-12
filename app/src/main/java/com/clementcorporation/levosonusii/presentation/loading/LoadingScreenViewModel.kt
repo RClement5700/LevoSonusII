@@ -29,8 +29,8 @@ class LoadingScreenViewModel @Inject constructor(
     private val resources: Resources,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
-    private val _loadingScreenEventsState = MutableStateFlow<LoadingScreenEvents>(LoadingScreenEvents.OnLoading)
-    val loadingScreenEventsState = _loadingScreenEventsState.asStateFlow()
+    private val _loadingScreenUiState = MutableStateFlow<LoadingScreenUiState>(LoadingScreenUiState.OnLoading)
+    val loadingScreenUiState = _loadingScreenUiState.asStateFlow()
 
     fun getAddressWhenGeocoderOffline(queue: RequestQueue, lat: String, long: String) {
         viewModelScope.launch {
@@ -61,8 +61,8 @@ class LoadingScreenViewModel @Inject constructor(
                     is Response.Success -> {
                         val result = response.data
                         result?.let { business ->
-                            _loadingScreenEventsState.value =
-                                LoadingScreenEvents.OnFetchUsersBusiness(business.name)
+                            _loadingScreenUiState.value =
+                                LoadingScreenUiState.OnFetchUsersBusiness(business.name)
                             sessionDataStore.updateData {
                                 it.copy(
                                     organization = business,
@@ -87,8 +87,8 @@ class LoadingScreenViewModel @Inject constructor(
                         errorMessage?.let {
                             Log.e(TAG, it)
                         }
-                        _loadingScreenEventsState.value =
-                            LoadingScreenEvents.OnFailedToRetrieveBusiness
+                        _loadingScreenUiState.value =
+                            LoadingScreenUiState.OnFailedToRetrieveBusiness
                         getBusinessByAddress(addressFromGeocoder)
                     }
                     else -> {}
@@ -98,8 +98,8 @@ class LoadingScreenViewModel @Inject constructor(
     }
 }
 
-sealed class LoadingScreenEvents {
-    data object OnLoading: LoadingScreenEvents()
-    class OnFetchUsersBusiness(val name: String): LoadingScreenEvents()
-    data object OnFailedToRetrieveBusiness: LoadingScreenEvents()
+sealed class LoadingScreenUiState {
+    data object OnLoading: LoadingScreenUiState()
+    class OnFetchUsersBusiness(val name: String): LoadingScreenUiState()
+    data object OnFailedToRetrieveBusiness: LoadingScreenUiState()
 }

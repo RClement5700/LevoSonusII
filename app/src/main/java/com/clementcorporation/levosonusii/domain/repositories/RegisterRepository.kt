@@ -6,6 +6,7 @@ import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface RegisterRepository {
+    fun signIn(businessId: String, employeeId: String, password: String): Flow<Response<LSUserInfo>>
     fun register(business: Business, firstName: String, lastName: String, password: String, email: String
         ): Flow<Response<LSUserInfo>>
 }

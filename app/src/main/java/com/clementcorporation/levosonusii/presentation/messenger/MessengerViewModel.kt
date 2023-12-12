@@ -60,7 +60,7 @@ class MessengerViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase(userInfo, voiceProfile).invoke()
+            SignOutUseCase().invoke(userInfo, voiceProfile)
         }
     }
 

@@ -31,11 +31,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed class LoginScreenEvents {
-    data object OnScreenCreated: LoginScreenEvents()
-    data class OnLoading(val isLoading: Boolean): LoginScreenEvents()
-    data class OnUserDataRetrieved(val user: LSUserInfo): LoginScreenEvents()
-    data class OnFailedToLoadUser(val message: String): LoginScreenEvents()
+sealed class LoginScreenUiState {
+    data object OnScreenCreated: LoginScreenUiState()
+    data class OnLoading(val isLoading: Boolean): LoginScreenUiState()
+    data class OnUserDataRetrieved(val user: LSUserInfo): LoginScreenUiState()
+    data class OnFailedToLoadUser(val message: String): LoginScreenUiState()
 }
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -44,41 +44,41 @@ class LoginViewModel @Inject constructor(
 ): ViewModel() {
     val employeeId = mutableStateOf("")
     val password = mutableStateOf("")
-    private val _loginScreenEvents = MutableStateFlow<LoginScreenEvents>(
-        LoginScreenEvents.OnScreenCreated
+    private val _loginScreenUiState = MutableStateFlow<LoginScreenUiState>(
+        LoginScreenUiState.OnScreenCreated
     )
-    val loginScreenEvents get() = _loginScreenEvents.asStateFlow()
+    val loginScreenUiState get() = _loginScreenUiState.asStateFlow()
 
     fun validateInputs(): Boolean =
         employeeId.value.length >= VALID_EMPLOYEE_ID_LENGTH && password.value.length == VALID_PASSWORD_LENGTH
 
     fun signIn() {
         viewModelScope.launch {
-            _loginScreenEvents.value = LoginScreenEvents.OnLoading(true)
+            _loginScreenUiState.value = LoginScreenUiState.OnLoading(true)
             sessionDataStore.data.collectLatest {
                 val businessId = it.organization.id
                 repo.signIn(businessId, employeeId.value, password.value).collectLatest { response ->
                     when(response) {
                         is Response.Success -> {
                             response.data?.let { user ->
-                                _loginScreenEvents.value =
-                                    LoginScreenEvents.OnUserDataRetrieved(user)
+                                _loginScreenUiState.value =
+                                    LoginScreenUiState.OnUserDataRetrieved(user)
                                 cancel()
                             }
                         }
                         is Response.Error -> {
                             response.message?.let { errorMessage ->
-                                _loginScreenEvents.value =
-                                    LoginScreenEvents.OnFailedToLoadUser(errorMessage)
+                                _loginScreenUiState.value =
+                                    LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                             }
                         }
                         is Response.Loading -> {
-                            _loginScreenEvents.value = LoginScreenEvents.OnLoading(true)
+                            _loginScreenUiState.value = LoginScreenUiState.OnLoading(true)
                         }
                     }
                 }
             }
-            _loginScreenEvents.value = LoginScreenEvents.OnLoading(false)
+            _loginScreenUiState.value = LoginScreenUiState.OnLoading(false)
         }
     }
 

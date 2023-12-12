@@ -17,13 +17,13 @@ class MainActivityViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
 ): ViewModel() {
-    private val _mainActivityEventsState = MutableStateFlow<MainActivityEvents>(MainActivityEvents.OnViewModelCreated)
-    val mainActivityEventsState = _mainActivityEventsState.asStateFlow()
+    private val _mainActivityUiState = MutableStateFlow<MainActivityEvents>(MainActivityEvents.OnViewModelCreated)
+    val mainActivityUiState = _mainActivityUiState.asStateFlow()
 
 
     fun showVoiceCommandActivity(title: String, isTrainingMode: Boolean = false) {
         viewModelScope.launch {
-            _mainActivityEventsState.value =
+            _mainActivityUiState.value =
                 MainActivityEvents.OnShowVoiceCommandActivity(
                     title, isTrainingMode
                 )
@@ -32,7 +32,7 @@ class MainActivityViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
+            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
         }
     }
 }

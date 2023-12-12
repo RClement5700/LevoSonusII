@@ -22,6 +22,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -52,8 +54,9 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
 @Composable
 fun RegisterScreen(navController: NavController) {
+    val context = LocalContext.current
     val viewModel: RegisterViewModel = hiltViewModel()
-    val uiState = viewModel.registerScreenEvents.collectAsStateWithLifecycle().value
+    val uiState = viewModel.registerScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
     val showNewUserDialog = remember { mutableStateOf(false) }
     val showVoiceProfileDialog = remember { mutableStateOf(false) }
@@ -77,13 +80,49 @@ fun RegisterScreen(navController: NavController) {
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
+            when(uiState) {
+                is RegisterScreenUiState.OnLoading -> {
+                    isLoading.value = true
+                }
+                is RegisterScreenUiState.OnUserDataRetrieved -> {
+                    LaunchedEffect(key1 = true) {
+                        showNewUserDialog.value = true
+                        isLoading.value = false
+                    }
+                }
+                is RegisterScreenUiState.OnFailedToLoadUser -> {
+                    isLoading.value = false
+                    Toast.makeText(
+                        context,
+                        uiState.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                is RegisterScreenUiState.OnSignInSuccess -> {
+                    isLoading.value = false
+                    LaunchedEffect(key1 = true) {
+                        if (uiState.isCreatingVoiceProfile)
+                            navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                        else navController.navigate(LevoSonusScreens.HomeScreen.name)
+                    }
+                }
+                is RegisterScreenUiState.OnSignInFailure -> {
+                    isLoading.value = false
+                    Toast.makeText(
+                        context,
+                        uiState.message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                else -> {}
+            }
             if (showNewUserDialog.value) {
                 LSAlertDialog(
                     showAlertDialog = showNewUserDialog,
                     dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
                         mutableStateOf(
-                            navController.context.getString(
+                            context.getString(
                                 R.string.register_screen_new_user_dialog_body,
                                 viewModel.firstName.value,
                                 viewModel.lastName.value,
@@ -98,8 +137,8 @@ fun RegisterScreen(navController: NavController) {
                     },
                     onNegativeButtonClicked = {
                         Toast.makeText(
-                            navController.context,
-                            navController.context.getString(R.string.register_screen_take_screenshot_toast_message),
+                            context,
+                            context.getString(R.string.register_screen_take_screenshot_toast_message),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -111,10 +150,11 @@ fun RegisterScreen(navController: NavController) {
                     dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
                     onPositiveButtonClicked = {
                         showVoiceProfileDialog.value = false
-                        navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                        viewModel.signIn(true)
                     },
                     onNegativeButtonClicked = {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        showVoiceProfileDialog.value = false
+                        viewModel.signIn(false)
                     }
                 )
             }

@@ -3,8 +3,10 @@ package com.clementcorporation.levosonusii.data.remote
 import android.util.Log
 import com.clementcorporation.levosonusii.domain.models.Business
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.toDto
 import com.clementcorporation.levosonusii.domain.models.toMap
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
+import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
 import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
@@ -17,11 +19,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOn
+import javax.inject.Inject
 
 private const val TAG = "RegisterRepositoryImpl"
 private const val NEW_EMPLOYEE_ID_UPPER_BOUND = 10000
 private const val NEW_EMPLOYEE_ID_LOWER_BOUND = 999
-class RegisterRepositoryImpl: RegisterRepository {
+class RegisterRepositoryImpl @Inject constructor(private val signInUseCase: SignInUseCase): RegisterRepository {
+
+    override fun signIn(businessId: String, employeeId: String, password: String
+    ): Flow<Response<LSUserInfo>> = signInUseCase.invoke(businessId, employeeId, password)
+
     override fun register(business: Business, firstName: String, lastName: String, password: String,
                           email: String): Flow<Response<LSUserInfo>> = callbackFlow {
         send(Response.Loading())
@@ -36,9 +43,10 @@ class RegisterRepositoryImpl: RegisterRepository {
                         password = password,
                         emailAddress = email
                     )
+                //TODO: Check if employeeId already exists in the database
                 FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT)
                     .document(business.id).collection(USERS_ENDPOINT).add(
-                        userInfo.toMap()
+                        userInfo.toDto().toMap()
                     ).addOnSuccessListener {
                         Log.d(TAG, "Successfully Created A New User: ${userInfo.name}")
                         trySend(Response.Success(data = userInfo))

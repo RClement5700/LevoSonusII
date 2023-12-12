@@ -55,7 +55,7 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 @Composable
 fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()
-    val uiState = viewModel.loginScreenEvents.collectAsStateWithLifecycle().value
+    val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxSize(),
@@ -109,17 +109,18 @@ fun LoginScreen(navController: NavController) {
                 )
             }
             when (uiState) {
-                is LoginScreenEvents.OnUserDataRetrieved -> {
+                is LoginScreenUiState.OnUserDataRetrieved -> {
                     isLoading.value = false
                     LaunchedEffect(key1 = !isLoading.value) {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }
-                is LoginScreenEvents.OnFailedToLoadUser -> {
+                is LoginScreenUiState.OnFailedToLoadUser -> {
+                    //TODO: find out why this isn't being triggered when invalid credentials are entered
                     isLoading.value = false
                     Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
                 }
-                is LoginScreenEvents.OnLoading -> {
+                is LoginScreenUiState.OnLoading -> {
                     isLoading.value = uiState.isLoading
                 }
                 else -> {}

@@ -13,6 +13,8 @@ import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepositor
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
+import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
+import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
 import dagger.Module
@@ -34,11 +36,19 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesLoginRepository(): LoginRepository = LoginRepositoryImpl()
+    fun providesSignInUseCase(): SignInUseCase = SignInUseCase()
 
     @Provides
     @Singleton
-    fun providesRegisterRepository(): RegisterRepository = RegisterRepositoryImpl()
+    fun providesSignOutUseCase(): SignOutUseCase = SignOutUseCase()
+
+    @Provides
+    @Singleton
+    fun providesLoginRepository(signInUseCase: SignInUseCase): LoginRepository = LoginRepositoryImpl(signInUseCase)
+
+    @Provides
+    @Singleton
+    fun providesRegisterRepository(signInUseCase: SignInUseCase): RegisterRepository = RegisterRepositoryImpl(signInUseCase)
 
     @Provides
     @Singleton

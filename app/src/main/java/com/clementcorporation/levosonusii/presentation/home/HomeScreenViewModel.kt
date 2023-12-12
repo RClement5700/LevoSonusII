@@ -48,7 +48,7 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase(sessionDataStore, voiceProfileDataStore).invoke()
+            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
         }
     }
 

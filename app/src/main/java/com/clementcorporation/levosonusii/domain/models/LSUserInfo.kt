@@ -19,9 +19,38 @@ data class LSUserInfo(
     val messengerIds: ArrayList<String> = arrayListOf()
 )
 
-fun LSUserInfo.toMap(): MutableMap<String, Any> {
+@Serializable
+data class LSUserDto(
+    val employeeId: String = "",
+    val firebaseId: String = "",
+    val name: String = "",
+    val emailAddress: String = "",
+    val password: String = "",
+    val profilePicUrl: String = "",
+    val machineId: String = "",
+    val scannerId: String = "",
+    val headsetId: String = "",
+    val departmentId: String = "",
+    val operatorType: String = "",
+    val messengerIds: ArrayList<String> = arrayListOf()
+)
+
+fun LSUserInfo.toDto():LSUserDto =
+    LSUserDto(
+        employeeId = employeeId,
+        firebaseId = firebaseId,
+        name = name,
+        emailAddress = emailAddress,
+        password = password,
+        profilePicUrl = profilePicUrl,
+        machineId = machineId,
+        scannerId = scannerId,
+        headsetId = headsetId,
+        departmentId = departmentId
+    )
+
+fun LSUserDto.toMap(): MutableMap<String, Any> {
     return mutableMapOf(
-        "business" to organization,
         "employeeId" to employeeId,
         "name" to name,
         "emailAddress" to emailAddress,

@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.util
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -380,7 +382,8 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
     AlertDialog(
         modifier = Modifier
             .fillMaxWidth(.9f)
-            .fillMaxHeight(.6f),
+            .fillMaxHeight(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
+            0.6f else 0.33f),
         backgroundColor = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp),
         properties = DialogProperties(),

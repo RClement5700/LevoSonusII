@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,12 +32,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.FusedLocationProviderClient
 import java.util.Locale
 
-private const val TAG = "LoadingScreen"
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocationProviderClient) {
     val viewModel: LoadingScreenViewModel = hiltViewModel()
-    val uiState = viewModel.loadingScreenEventsState.collectAsStateWithLifecycle().value
+    val uiState = viewModel.loadingScreenUiState.collectAsStateWithLifecycle().value
     val permissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current
     var address = ""
@@ -89,27 +87,31 @@ fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocati
             contentAlignment = Alignment.Center
         ) {
             when (uiState) {
-                is LoadingScreenEvents.OnLoading -> {
+                is LoadingScreenUiState.OnLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(48.dp),
                         strokeWidth = 4.dp,
                         color = Color.Blue
                     )
                 }
-                is LoadingScreenEvents.OnFetchUsersBusiness -> {
-                    navController.navigate(LevoSonusScreens.LoginScreen.name)
-                    Toast.makeText(
-                        context,
-                        stringResource(R.string.organization_name_success_toast_message, uiState.name),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                is LoadingScreenUiState.OnFetchUsersBusiness -> {
+                    LaunchedEffect(key1 = uiState) {
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.organization_name_success_toast_message, uiState.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-                is LoadingScreenEvents.OnFailedToRetrieveBusiness -> {
-                    Toast.makeText(
-                        context,
-                        stringResource(R.string.organization_name_failed_toast_message),
-                        Toast.LENGTH_LONG
-                    ).show()
+                is LoadingScreenUiState.OnFailedToRetrieveBusiness -> {
+                    LaunchedEffect(key1 = true) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.organization_name_failed_toast_message),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }
