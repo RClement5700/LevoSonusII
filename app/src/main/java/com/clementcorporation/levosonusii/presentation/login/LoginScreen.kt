@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,6 +81,7 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
                 userInput = viewModel.employeeId,
                 label = stringResource(id = R.string.label_employee_id),
+                keyboardType = KeyboardType.Number,
                 onAction = KeyboardActions {
                     defaultKeyboardAction(ImeAction.Next)
                 }

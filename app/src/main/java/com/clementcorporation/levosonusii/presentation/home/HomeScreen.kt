@@ -35,7 +35,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,7 +51,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
@@ -67,15 +65,12 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val profilePicUrl = viewModel.getUserInfo()
-        .data
-        .collectAsState(initial = LSUserInfo())
-        .value
-        .profilePicUrl
+    val profilePicUrl = ""
     BackHandler {
-        viewModel.signOut()
-        navController.popBackStack()
-        navController.navigate(LevoSonusScreens.LoginScreen.name)
+        viewModel.signOut {
+            navController.popBackStack()
+            navController.navigate(LevoSonusScreens.LoadingScreen.name)
+        }
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -88,12 +83,13 @@ fun HomeScreen(navController: NavController) {
             backgroundColor = Color.White,
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
-                    title = viewModel.getUserInfo().data.collectAsState(initial = LSUserInfo()).value.name,
+                    title = "",
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.popBackStack()
+                            navController.navigate(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         viewModel.inflateProfilePic.value = !viewModel.inflateProfilePic.value

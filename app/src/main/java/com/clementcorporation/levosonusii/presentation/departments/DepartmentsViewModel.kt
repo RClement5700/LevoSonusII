@@ -34,6 +34,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DepartmentsViewModel @Inject constructor(
     private val repo: DepartmentsRepository,
+    private val signOutUseCase: SignOutUseCase,
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>,
 ): ViewModel() {
@@ -151,7 +152,7 @@ class DepartmentsViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
+            signOutUseCase.invoke()
         }
     }
 }

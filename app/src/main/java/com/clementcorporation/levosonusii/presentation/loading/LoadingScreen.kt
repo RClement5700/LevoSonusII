@@ -13,6 +13,11 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,9 +42,9 @@ import java.util.Locale
 fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocationProviderClient) {
     val viewModel: LoadingScreenViewModel = hiltViewModel()
     val uiState = viewModel.loadingScreenUiState.collectAsStateWithLifecycle().value
+    var address by remember { mutableStateOf("") }
     val permissionState = rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current
-    var address = ""
     if (ContextCompat.checkSelfPermission(
             context,
             android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -95,7 +100,7 @@ fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocati
                     )
                 }
                 is LoadingScreenUiState.OnFetchUsersBusiness -> {
-                    LaunchedEffect(key1 = uiState) {
+                    SideEffect {
                         navController.navigate(LevoSonusScreens.LoginScreen.name)
                         Toast.makeText(
                             context,
@@ -105,7 +110,7 @@ fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocati
                     }
                 }
                 is LoadingScreenUiState.OnFailedToRetrieveBusiness -> {
-                    LaunchedEffect(key1 = true) {
+                    SideEffect {
                         Toast.makeText(
                             context,
                             context.getString(R.string.organization_name_failed_toast_message),

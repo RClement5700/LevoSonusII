@@ -45,7 +45,7 @@ fun HeadsetsScreen(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
     val uiState = viewModel.equipmentScreenEventsFlow.collectAsStateWithLifecycle().value
-    viewModel.retrieveHeadsetsData()
+//    viewModel.retrieveHeadsetsData()
 
     BackHandler {
         navController.popBackStack()

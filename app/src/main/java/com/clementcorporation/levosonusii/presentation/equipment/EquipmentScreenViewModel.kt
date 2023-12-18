@@ -16,7 +16,6 @@ import com.clementcorporation.levosonusii.util.Constants.MESSENGER_IDS
 import com.clementcorporation.levosonusii.util.Constants.SCANNER
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +33,8 @@ private const val TYPE = "TYPE"
 @HiltViewModel
 class EquipmentScreenViewModel @Inject constructor(
     private val userInfo: DataStore<LSUserInfo>,
-    private val voiceProfile: DataStore<VoiceProfile>
+    private val voiceProfile: DataStore<VoiceProfile>,
+    private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
     private lateinit var collection: CollectionReference
     private lateinit var document: DocumentReference
@@ -48,22 +48,13 @@ class EquipmentScreenViewModel @Inject constructor(
     private val selectedHeadsetId = mutableStateOf("")
     private val selectedScannerId = mutableStateOf("")
 
-    init {
-        viewModelScope.launch {
-            userInfo.data.collect {
-                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
-                document = collection.document(Constants.EQUIPMENT)
-            }
-        }
-    }
-
     fun getUserInfo() = userInfo
 
     fun signOut() {
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase().invoke(userInfo, voiceProfile)
+            signOutUseCase.invoke()
         }
     }
 

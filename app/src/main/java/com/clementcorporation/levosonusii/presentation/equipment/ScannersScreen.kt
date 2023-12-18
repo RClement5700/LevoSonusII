@@ -45,7 +45,7 @@ private const val TAG = "ScannersScreen"
 fun ScannersScreen(navController: NavController) {
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
     val uiState = viewModel.equipmentScreenEventsFlow.collectAsStateWithLifecycle().value
-    viewModel.retrieveScannersData()
+//    viewModel.retrieveScannersData()
 
     BackHandler {
         navController.popBackStack()

@@ -55,6 +55,7 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 @Composable
 fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val viewModel: RegisterViewModel = hiltViewModel()
     val uiState = viewModel.registerScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
@@ -66,7 +67,6 @@ fun RegisterScreen(navController: NavController) {
         backgroundColor = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
-        val configuration = LocalConfiguration.current
         Column(
             modifier = Modifier
                 .padding(
@@ -176,8 +176,7 @@ fun RegisterScreen(navController: NavController) {
 
 @Composable
 fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
-                    isLoading: MutableState<Boolean>
-) {
+                    isLoading: MutableState<Boolean>) {
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
@@ -276,8 +275,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
 
 @Composable
 fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
-                     isLoading: MutableState<Boolean>
-) {
+                     isLoading: MutableState<Boolean>) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,

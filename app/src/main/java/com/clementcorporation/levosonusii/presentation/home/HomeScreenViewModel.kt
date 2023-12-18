@@ -17,7 +17,6 @@ import com.clementcorporation.levosonusii.util.Constants.USERS
 import com.clementcorporation.levosonusii.util.Constants.USER_ID
 import com.clementcorporation.levosonusii.util.Constants.VOICE_PROFILE
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
+    private val voiceProfileDataStore: DataStore<VoiceProfile>,
+    private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
     private lateinit var collection: CollectionReference
     val expandMenu = mutableStateOf(false)
@@ -36,19 +36,11 @@ class HomeScreenViewModel @Inject constructor(
 
     fun getUserInfo() = sessionDataStore
 
-    init {
-        viewModelScope.launch {
-            sessionDataStore.data.collect {
-                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
-                retrieveOperatorType()
-            }
-        }
-    }
-    fun signOut() {
+    fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
+            signOutUseCase.invoke(navigate)
         }
     }
 

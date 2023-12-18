@@ -307,7 +307,8 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
 }
 
 @Composable
-fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""), label: String = "",
+fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> = mutableStateOf(""),
+                label: String = "", keyboardType: KeyboardType = KeyboardType.Text,
                 imeAction: ImeAction = ImeAction.Next, onAction: KeyboardActions = KeyboardActions.Default,
                 onValueChange: (String) -> Unit = {}
 ) {
@@ -329,7 +330,7 @@ fun LSTextField(modifier: Modifier = Modifier, userInput: MutableState<String> =
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
         maxLines = 1,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         keyboardActions = onAction
     )
 }
@@ -368,7 +369,7 @@ fun LSPasswordTextField(modifier: Modifier = Modifier, userInput: MutableState<S
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
         maxLines = 1,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
         keyboardActions = onAction,
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
     )

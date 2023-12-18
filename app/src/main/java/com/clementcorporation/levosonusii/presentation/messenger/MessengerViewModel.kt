@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.MessengerListItem
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.BODY
@@ -36,7 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MessengerViewModel @Inject constructor(
     private val userInfo: DataStore<LSUserInfo>,
-    private val voiceProfile: DataStore<VoiceProfile>
+    private val signOutUseCase: SignOutUseCase
     ): ViewModel() {
     private lateinit var collection: CollectionReference
     private lateinit var document: DocumentReference
@@ -60,7 +59,7 @@ class MessengerViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase().invoke(userInfo, voiceProfile)
+            signOutUseCase.invoke()
         }
     }
 

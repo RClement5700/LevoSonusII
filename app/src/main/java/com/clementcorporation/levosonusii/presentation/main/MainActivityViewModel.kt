@@ -1,10 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.main
 
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +11,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-    private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
+    private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
     private val _mainActivityUiState = MutableStateFlow<MainActivityEvents>(MainActivityEvents.OnViewModelCreated)
     val mainActivityUiState = _mainActivityUiState.asStateFlow()
@@ -32,7 +28,7 @@ class MainActivityViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
+            signOutUseCase.invoke()
         }
     }
 }

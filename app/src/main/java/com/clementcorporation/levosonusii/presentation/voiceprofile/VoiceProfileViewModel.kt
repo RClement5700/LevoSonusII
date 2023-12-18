@@ -14,7 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class VoiceProfileViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>
+    private val voiceProfileDataStore: DataStore<VoiceProfile>,
+    private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
 
     val expandMenu = mutableStateOf(false)
@@ -26,7 +27,7 @@ class VoiceProfileViewModel @Inject constructor(
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            SignOutUseCase().invoke(sessionDataStore, voiceProfileDataStore)
+            signOutUseCase.invoke()
         }
     }
 

@@ -24,10 +24,12 @@ class LoadingRepositoryImpl: LoadingRepository {
                 val business = businessObjects.find { it.address == addressFromGeocoder }
                 Log.d(TAG, "Business retrieved: ${business?.name}")
                 trySend(Response.Success(data = business))
+                close()
             }
             .addOnFailureListener {
                 trySend(Response.Error("Failed to retrieve company details"))
                 Log.d(TAG, "Failed to retrieve Business: \n${it.message}")
+                close()
             }
         awaitClose {
             cancel()
