@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,7 +13,6 @@ import javax.inject.Inject
 @HiltViewModel
 class VoiceProfileViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
-    private val voiceProfileDataStore: DataStore<VoiceProfile>,
     private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
 
@@ -23,14 +21,13 @@ class VoiceProfileViewModel @Inject constructor(
     val showWarningDialog = mutableStateOf(false)
     val warningDialogTitle = mutableStateOf("")
 
-    fun signOut() {
+    fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            signOutUseCase.invoke()
+            signOutUseCase.invoke(navigate)
         }
     }
 
     fun getDataStore() = sessionDataStore
-    fun getVoiceProfileDataStore() = voiceProfileDataStore
 }

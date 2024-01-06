@@ -11,7 +11,7 @@ class SignOutUseCase @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val voiceProfileDataStore: DataStore<VoiceProfile>
 ) {
-    suspend operator fun invoke(navigate: () -> Unit = {}) {
+    suspend operator fun invoke(navigate: () -> Unit) {
         Firebase.auth.signOut()
         sessionDataStore.updateData {
             LSUserInfo()

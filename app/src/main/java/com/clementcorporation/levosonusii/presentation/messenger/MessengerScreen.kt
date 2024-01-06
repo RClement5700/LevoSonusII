@@ -55,7 +55,6 @@ fun MessengerScreen(navController: NavController) {
     )
     BackHandler {
         navController.popBackStack()
-        navController.navigate(LevoSonusScreens.HomeScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -85,13 +84,12 @@ fun MessengerScreen(navController: NavController) {
                             title = stringResource(id = R.string.messenger_screen_toolbar_title),
                             profilePicUrl = null,
                             onClickSignOut = {
-                                viewModel.signOut()
-                                navController.popBackStack()
-                                navController.navigate(LevoSonusScreens.LoginScreen.name)
+                                viewModel.signOut {
+                                    navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                                }
                             },
                             onClickLeftIcon = {
                                 navController.popBackStack()
-                                navController.navigate(LevoSonusScreens.HomeScreen.name)
                             }
                         )
                     },

@@ -64,13 +64,12 @@ fun MachinesScreen(navController: NavController) {
                     title = stringResource(id = R.string.machines_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                     }
                 )
             }

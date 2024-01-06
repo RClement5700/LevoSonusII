@@ -46,6 +46,7 @@ import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSAlertDialog
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
 import com.clementcorporation.levosonusii.util.LSTextField
@@ -225,7 +226,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             viewModel.createNewUser()
         }
     ) {
-        viewModel.password.value = it
+        if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password.value = it
     }
     Button(
         modifier = Modifier

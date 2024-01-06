@@ -164,8 +164,9 @@ class MainActivity : ComponentActivity(){
                     navController.navigate(LevoSonusScreens.OrdersScreen.name)
                 }
                 VoiceCommands.SIGN_OUT -> {
-                    viewModel.signOut()
-                    navController.navigate(LevoSonusScreens.LoginScreen.name)
+                    viewModel.signOut {
+                        navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                    }
                 }
                 VoiceCommands.VOICE_PROFILE -> {
                     navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)

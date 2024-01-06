@@ -10,6 +10,7 @@ import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -62,6 +63,7 @@ class RegisterViewModel @Inject constructor(
                             response.data?.let { user ->
                                 _registerScreenUiState.value =
                                     RegisterScreenUiState.OnSignInSuccess(user, isCreatingVoiceProfile)
+                                cancel()
                             }
                         }
                         is Response.Loading -> {
@@ -99,6 +101,7 @@ class RegisterViewModel @Inject constructor(
                                     employeeId.value = newUser.employeeId
                                     _registerScreenUiState.value =
                                         RegisterScreenUiState.OnUserDataRetrieved(newUser)
+                                    cancel()
                                 }
                             }
                             is Response.Loading -> {

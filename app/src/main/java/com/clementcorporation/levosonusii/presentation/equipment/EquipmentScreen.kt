@@ -33,7 +33,6 @@ private const val TAG = "EquipmentScreen"
 @Composable
 fun EquipmentScreen(navController: NavController) {
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
-
     BackHandler {
         navController.popBackStack()
     }
@@ -51,13 +50,12 @@ fun EquipmentScreen(navController: NavController) {
                     title = stringResource(id = R.string.equipment_screen_toolbar_title_text),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }

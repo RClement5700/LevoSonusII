@@ -24,7 +24,6 @@ import com.clementcorporation.levosonusii.util.Constants.VALID_EMPLOYEE_ID_LENGT
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -47,7 +46,7 @@ class LoginViewModel @Inject constructor(
     private val _loginScreenUiState = MutableStateFlow<LoginScreenUiState>(
         LoginScreenUiState.OnScreenCreated
     )
-    val loginScreenUiState get() = _loginScreenUiState.asStateFlow()
+    val loginScreenUiState = _loginScreenUiState.asStateFlow()
 
     fun validateInputs(): Boolean =
         employeeId.value.length >= VALID_EMPLOYEE_ID_LENGTH && password.value.length == VALID_PASSWORD_LENGTH
@@ -63,7 +62,6 @@ class LoginViewModel @Inject constructor(
                             response.data?.let { user ->
                                 _loginScreenUiState.value =
                                     LoginScreenUiState.OnUserDataRetrieved(user)
-                                cancel()
                             }
                         }
                         is Response.Error -> {

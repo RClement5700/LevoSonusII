@@ -4,33 +4,34 @@ import android.content.res.Resources
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.clementcorporation.levosonusii.BuildConfig
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
-import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 const val RESULTS_KEY = "results"
 const val FORMATTED_ADDRESS_KEY = "formatted_address"
 private const val TAG = "LoadingScreenViewModel"
+
 @HiltViewModel
 class LoadingScreenViewModel @Inject constructor(
     private val repo: LoadingRepository,
     private val resources: Resources,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
-    private val _loadingScreenUiState = MutableStateFlow<LoadingScreenUiState>(LoadingScreenUiState.OnLoading)
-    val loadingScreenUiState get() = _loadingScreenUiState.asStateFlow()
+    private val _loadingScreenUiState = MutableStateFlow<LoadingScreenUiState>(
+        LoadingScreenUiState.OnLoading
+    )
+    val loadingScreenUiState = _loadingScreenUiState.asStateFlow()
 
     fun getAddressWhenGeocoderOffline(queue: RequestQueue, lat: String, long: String) {
         var address: String?
@@ -53,13 +54,11 @@ class LoadingScreenViewModel @Inject constructor(
     }
 
     fun getBusinessByAddress(addressFromGeocoder: String) {
-        repo.getBusinessByAddress(addressFromGeocoder).onEach { response ->
-            when (response) {
-                is Response.Success -> {
-                    val result = response.data
-                    result?.let { business ->
-                        _loadingScreenUiState.value =
-                            LoadingScreenUiState.OnFetchUsersBusiness(business.name)
+        viewModelScope.launch {
+            repo.getBusinessByAddress(addressFromGeocoder).collectLatest { business ->
+                _loadingScreenUiState.value =
+                    if (business != null) {
+                        Log.d(TAG, "Business retrieved: ${business.name}")
                         sessionDataStore.updateData {
                             it.copy(
                                 organization = business,
@@ -76,20 +75,11 @@ class LoadingScreenViewModel @Inject constructor(
                                 messengerIds = it.messengerIds
                             )
                         }
+                        LoadingScreenUiState.OnFetchUsersBusiness(business.name)
                     }
-                }
-                is Response.Error -> {
-                    val errorMessage = response.message
-                    errorMessage?.let {
-                        Log.e(TAG, it)
-                    }
-                    _loadingScreenUiState.value =
-                        LoadingScreenUiState.OnFailedToRetrieveBusiness
-                    getBusinessByAddress(addressFromGeocoder)
-                }
-                else -> {}
+                    else LoadingScreenUiState.OnFailedToRetrieveBusiness
             }
-        }.launchIn(CoroutineScope(Dispatchers.IO))
+        }
     }
 }
 

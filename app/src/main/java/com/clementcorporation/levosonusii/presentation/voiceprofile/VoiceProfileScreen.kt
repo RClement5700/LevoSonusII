@@ -25,7 +25,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +35,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.domain.models.VoiceProfile
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar
@@ -49,9 +49,14 @@ private const val TAG = "VoiceProfileScreen"
 @Composable
 fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (String) -> Unit) {
     val viewModel: VoiceProfileViewModel = hiltViewModel()
+    val userInfo = viewModel.getDataStore().data.collectAsStateWithLifecycle(
+        initialValue = LSUserInfo()
+    ).value
     BackHandler {
-        navController.popBackStack()
-        navController.navigate(LevoSonusScreens.HomeScreen.name)
+        navController.apply {
+            popBackStack()
+            navigate(LevoSonusScreens.HomeScreen.name)
+        }
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -67,13 +72,15 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                     title = stringResource(id = R.string.voice_profile_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        navController.apply {
+                            popBackStack()
+                            navigate(LevoSonusScreens.HomeScreen.name)
+                        }
                     }
                 )
             }
@@ -99,7 +106,8 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                     modifier = Modifier.verticalScroll(
                         enabled = true,
                         state = rememberScrollState()
-                    )
+                    ),
+                    verticalArrangement = Arrangement.Top
                 ) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Divider(
@@ -108,9 +116,7 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                         modifier = Modifier.padding(start = 8.dp, end = 8.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    viewModel.getVoiceProfileDataStore().data.collectAsState(
-                        initial = VoiceProfile()
-                    ).value.voiceProfileMap.keys.sorted().forEach { key ->
+                    userInfo.voiceProfile.keys.sorted().forEach { key ->
                         NavTile(title = key) {
                             viewModel.warningDialogTitle.value = key
                             viewModel.showWarningDialog.value = true

@@ -55,11 +55,11 @@ class MessengerViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
+    fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
             showProgressBar.value = true
             expandMenu.value = false
-            signOutUseCase.invoke()
+            signOutUseCase.invoke(navigate)
         }
     }
 

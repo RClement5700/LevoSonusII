@@ -49,7 +49,6 @@ fun ScannersScreen(navController: NavController) {
 
     BackHandler {
         navController.popBackStack()
-        navController.navigate(LevoSonusScreens.EquipmentScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -65,13 +64,12 @@ fun ScannersScreen(navController: NavController) {
                     title = stringResource(id = R.string.scanners_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                     }
                 )
             }

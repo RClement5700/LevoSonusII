@@ -16,7 +16,8 @@ data class LSUserInfo(
     val headsetId: String = "",
     val departmentId: String = "",
     val operatorType: String = "",
-    val messengerIds: ArrayList<String> = arrayListOf()
+    val messengerIds: ArrayList<String> = arrayListOf(),
+    val voiceProfile: Map<String, List<String>> = hashMapOf()
 )
 
 @Serializable
@@ -32,7 +33,8 @@ data class LSUserDto(
     val headsetId: String = "",
     val departmentId: String = "",
     val operatorType: String = "",
-    val messengerIds: ArrayList<String> = arrayListOf()
+    val messengerIds: ArrayList<String> = arrayListOf(),
+    val voiceProfile: Map<String, List<String>> = hashMapOf()
 )
 
 fun LSUserInfo.toDto():LSUserDto =
@@ -46,7 +48,8 @@ fun LSUserInfo.toDto():LSUserDto =
         machineId = machineId,
         scannerId = scannerId,
         headsetId = headsetId,
-        departmentId = departmentId
+        departmentId = departmentId,
+        voiceProfile = voiceProfile
     )
 
 fun LSUserDto.toMap(): MutableMap<String, Any> {
@@ -61,6 +64,7 @@ fun LSUserDto.toMap(): MutableMap<String, Any> {
         "operatorType" to operatorType,
         "messengerIds" to messengerIds,
         "profilePicUrl" to profilePicUrl,
+        "voiceProfile" to voiceProfile
     )
 }
 

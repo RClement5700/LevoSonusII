@@ -46,10 +46,8 @@ fun HeadsetsScreen(navController: NavController) {
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
     val uiState = viewModel.equipmentScreenEventsFlow.collectAsStateWithLifecycle().value
 //    viewModel.retrieveHeadsetsData()
-
     BackHandler {
         navController.popBackStack()
-        navController.navigate(LevoSonusScreens.EquipmentScreen.name)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -65,13 +63,12 @@ fun HeadsetsScreen(navController: NavController) {
                     title = stringResource(id = R.string.headsets_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        viewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                     }
                 )
             }

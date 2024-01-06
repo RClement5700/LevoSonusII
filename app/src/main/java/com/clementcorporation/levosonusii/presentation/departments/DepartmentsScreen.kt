@@ -62,11 +62,12 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
-    val departmentsViewModel: DepartmentsViewModel = hiltViewModel()
-    val uiState: DepartmentsScreenUiState by departmentsViewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle()
+    val viewModel: DepartmentsViewModel = hiltViewModel()
+    val uiState: DepartmentsScreenUiState by viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle()
     BackHandler {
-        navController.popBackStack()
-        navController.navigate(LevoSonusScreens.HomeScreen.name)
+        viewModel.signOut {
+            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+        }
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -78,18 +79,16 @@ fun DepartmentsScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize(),
             backgroundColor = Color.White,
             topBar = {
-                LSAppBar(navController = navController, expandMenu = departmentsViewModel.expandMenu,
+                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.departments_screen_title_text),
                     profilePicUrl = null,
                     onClickSignOut = {
-                        departmentsViewModel.signOut()
-                        navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
-
+                        viewModel.signOut {
+                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        }
                     },
                     onClickLeftIcon = {
                         navController.popBackStack()
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }
@@ -136,7 +135,7 @@ fun DepartmentsScreen(navController: NavController) {
                                     it.isSelected.value = false
                                 }
                                 department.isSelected.value = !department.isSelected.value
-                                departmentsViewModel.setSelectedDepartment(department.id)
+                                viewModel.setSelectedDepartment(department.id)
                             }
                         }
                     }
@@ -153,7 +152,7 @@ fun DepartmentsScreen(navController: NavController) {
                         disabledBackgroundColor = Color.Gray
                     ),
                     onClick = {
-                        departmentsViewModel.updateUserDepartment()
+                        viewModel.updateUserDepartment()
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if (uiState is DepartmentsScreenUiState.Loading) {

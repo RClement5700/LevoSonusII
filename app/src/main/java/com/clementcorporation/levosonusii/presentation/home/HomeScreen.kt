@@ -68,7 +68,6 @@ fun HomeScreen(navController: NavController) {
     val profilePicUrl = ""
     BackHandler {
         viewModel.signOut {
-            navController.popBackStack()
             navController.navigate(LevoSonusScreens.LoadingScreen.name)
         }
     }
@@ -87,7 +86,6 @@ fun HomeScreen(navController: NavController) {
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.popBackStack()
                             navController.navigate(LevoSonusScreens.LoadingScreen.name)
                         }
                     },

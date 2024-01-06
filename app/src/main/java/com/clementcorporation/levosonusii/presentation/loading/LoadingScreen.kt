@@ -114,7 +114,7 @@ fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocati
                         Toast.makeText(
                             context,
                             context.getString(R.string.organization_name_failed_toast_message),
-                            Toast.LENGTH_LONG
+                            Toast.LENGTH_SHORT
                         ).show()
                     }
                 }

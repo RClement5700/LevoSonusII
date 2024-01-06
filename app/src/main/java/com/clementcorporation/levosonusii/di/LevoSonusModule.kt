@@ -16,6 +16,7 @@ import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepositor
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
+import com.clementcorporation.levosonusii.domain.use_cases.GetCompanyAddressUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
@@ -39,6 +40,10 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
+    fun providesGetCompanyAddressUseCase(): GetCompanyAddressUseCase = GetCompanyAddressUseCase()
+
+    @Provides
+    @Singleton
     fun providesSignInUseCase(): SignInUseCase = SignInUseCase()
 
     @Provides
@@ -58,7 +63,8 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesLoadingRepository(): LoadingRepository = LoadingRepositoryImpl()
+    fun providesLoadingRepository(getCompanyAddressUseCase: GetCompanyAddressUseCase
+        ): LoadingRepository = LoadingRepositoryImpl(getCompanyAddressUseCase)
 
     @Provides
     @Singleton

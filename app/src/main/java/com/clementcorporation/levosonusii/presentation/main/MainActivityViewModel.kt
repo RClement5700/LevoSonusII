@@ -26,9 +26,9 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
+    fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
-            signOutUseCase.invoke()
+            signOutUseCase.invoke(navigate)
         }
     }
 }

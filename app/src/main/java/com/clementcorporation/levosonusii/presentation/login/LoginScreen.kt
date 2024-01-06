@@ -25,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,6 +49,8 @@ import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import com.clementcorporation.levosonusii.util.Constants.VALID_EMPLOYEE_ID_LENGTH
+import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
 import com.clementcorporation.levosonusii.util.LSTextField
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
@@ -55,6 +58,8 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val viewModel: LoginViewModel = hiltViewModel()
     val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
@@ -64,7 +69,6 @@ fun LoginScreen(navController: NavController) {
         backgroundColor = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
-        val configuration = LocalConfiguration.current
         Column(
             modifier = Modifier
                 .padding(
@@ -72,13 +76,16 @@ fun LoginScreen(navController: NavController) {
                         Configuration.ORIENTATION_LANDSCAPE -> 8.dp
                         else -> 50.dp
                     }
-                ).verticalScroll(rememberScrollState()),
+                )
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
             LevoSonusLogo(LOGO_SIZE.dp)
             LSTextField(
-                modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(PADDING.dp)
+                    .fillMaxWidth(),
                 userInput = viewModel.employeeId,
                 label = stringResource(id = R.string.label_employee_id),
                 keyboardType = KeyboardType.Number,
@@ -86,17 +93,19 @@ fun LoginScreen(navController: NavController) {
                     defaultKeyboardAction(ImeAction.Next)
                 }
             ) {
-                viewModel.employeeId.value = it
+                if (it.length <= VALID_EMPLOYEE_ID_LENGTH) viewModel.employeeId.value = it
             }
             LSPasswordTextField(
-                modifier = Modifier.padding(PADDING.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(PADDING.dp)
+                    .fillMaxWidth(),
                 userInput = viewModel.password,
                 label = stringResource(id = R.string.label_password),
                 onAction = KeyboardActions {
                     viewModel.signIn()
                 }
             ) {
-                viewModel.password.value = it
+                if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password.value = it
             }
             when (configuration.orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
@@ -119,11 +128,16 @@ fun LoginScreen(navController: NavController) {
                 }
                 is LoginScreenUiState.OnFailedToLoadUser -> {
                     //TODO: find out why this isn't being triggered when invalid credentials are entered
-                    isLoading.value = false
-                    Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
+                    SideEffect {
+                        isLoading.value = false
+                        Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
+                    }
+
                 }
                 is LoginScreenUiState.OnLoading -> {
-                    isLoading.value = uiState.isLoading
+                    SideEffect {
+                        isLoading.value = uiState.isLoading
+                    }
                 }
                 else -> {}
             }

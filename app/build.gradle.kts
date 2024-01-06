@@ -86,15 +86,15 @@ dependencies {
     ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
 
     // Coil
-    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     //material icons - use with caution!
     implementation ("androidx.compose.material:material-icons-extended:1.5.4")
     implementation ("androidx.appcompat:appcompat:1.6.1")
-    implementation ("com.google.android.material:material:1.10.0")
+    implementation ("com.google.android.material:material:1.11.0")
     implementation ("androidx.compose.material:material:1.5.4")
-    implementation ("androidx.navigation:navigation-compose:2.7.5")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0-rc01")
+    implementation ("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0-rc02")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
@@ -106,7 +106,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation ("androidx.datastore:datastore:1.0.0")
     implementation ("androidx.datastore:datastore-core:1.0.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation ("com.google.accompanist:accompanist-permissions:0.21.1-beta")
     testImplementation("junit:junit:4.13.2")
