@@ -25,6 +25,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -100,7 +101,10 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                     )
                 }
                 if (viewModel.showWarningDialog.value) {
-                    VoiceProfileWarningDialog(viewModel, showVoiceCommandActivity)
+                    VoiceProfileWarningDialog(
+                        viewModel,
+                        showVoiceCommandActivity
+                    )
                 }
                 Column(
                     modifier = Modifier.verticalScroll(
@@ -129,8 +133,9 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
 }
 
 @Composable
-fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarningDialog: MutableState<Boolean>,
-                              viewModel: VoiceProfileViewModel, showVoiceCommandActivity: (String) -> Unit
+fun VoiceProfileWarningDialog(
+    viewModel: VoiceProfileViewModel,
+    showVoiceCommandActivity: (String) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -192,8 +197,8 @@ fun VoiceProfileWarningDialog(warningDialogTitle: MutableState<String>, showWarn
                             disabledBackgroundColor = Color.LightGray
                         ),
                         onClick = {
-                            showVoiceCommandActivity(warningDialogTitle.value)
-                            showWarningDialog.value = false
+                            showVoiceCommandActivity(viewModel.warningDialogTitle.value)
+                            viewModel.showWarningDialog.value = false
                         }) {
                         if(viewModel.showProgressBar.value) {
                             CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)

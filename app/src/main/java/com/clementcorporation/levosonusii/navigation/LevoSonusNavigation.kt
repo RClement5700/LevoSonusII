@@ -25,9 +25,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 
 @Composable
 fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>,
-                        lifecycleOwner: LifecycleOwner, showVoiceCommandActivity: (String) -> Unit) {
-    NavHost(navController = navController, startDestination = LevoSonusScreens.SplashScreen.name) {
-        composable(LevoSonusScreens.SplashScreen.name){
+                        fusedLocationClient: FusedLocationProviderClient, showVoiceCommandActivity: (String) -> Unit) {
+    NavHost(navController = navController, startDestination = LevoSonusScreens.LoadingScreen.name) {
+        composable(LevoSonusScreens.LoadingScreen.name){
             LoadingScreen(navController, fusedLocationClient)
             showFab.value = false
         }

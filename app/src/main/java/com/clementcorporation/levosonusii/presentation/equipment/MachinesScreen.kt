@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,6 +47,7 @@ private const val TAG = "MachinesScreen"
 fun MachinesScreen(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
+    val uiState = viewModel.equipmentScreenEventsFlow.collectAsStateWithLifecycle().value
 
     BackHandler {
         navController.popBackStack()

@@ -34,8 +34,6 @@ class HomeScreenViewModel @Inject constructor(
     val inflateProfilePic = mutableStateOf(false)
     val operatorType = mutableStateOf("")
 
-    fun getUserInfo() = sessionDataStore
-
     fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
             showProgressBar.value = true
