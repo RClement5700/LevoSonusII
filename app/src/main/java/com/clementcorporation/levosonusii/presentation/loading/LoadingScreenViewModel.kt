@@ -2,6 +2,9 @@ package com.clementcorporation.levosonusii.presentation.loading
 
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import com.android.volley.RequestQueue
@@ -36,9 +39,9 @@ class LoadingScreenViewModel @Inject constructor(
         LoadingScreenUiState.OnLoading
     )
     val loadingScreenUiState = _loadingScreenUiState.asStateFlow()
+    var address by mutableStateOf("")
 
     fun getAddressWhenGeocoderOffline(queue: RequestQueue, lat: String, long: String) {
-        var address: String?
         val url = resources.getString(R.string.google_maps_location_api_url, lat, long, BuildConfig.PLACES_API_KEY)
         val jsonRequest = JsonObjectRequest(
             url,
@@ -47,18 +50,19 @@ class LoadingScreenViewModel @Inject constructor(
                     .getJSONObject(0)
                     .getString(FORMATTED_ADDRESS_KEY)
                 Log.e(TAG, "Current Location Received: $address")
-                getBusinessByAddress(address ?: "")
+                getBusinessByAddress()
                 queue.stop()
             },
             {
                 Log.e(TAG, "Current Location Error: ${it.message}")
+                getBusinessByAddress()
             })
         queue.add(jsonRequest)
         queue.start()
     }
 
-    fun getBusinessByAddress(addressFromGeocoder: String) {
-        repo.getBusinessByAddress(addressFromGeocoder).onEach { business ->
+    fun getBusinessByAddress() {
+        repo.getBusinessByAddress(address).onEach { business ->
             _loadingScreenUiState.value = if (business != null) {
                 Log.d(TAG, "Business retrieved: ${business.name}")
                 sessionDataStore.updateData {
