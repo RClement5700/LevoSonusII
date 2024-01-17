@@ -25,7 +25,8 @@ class SignInUseCase {
             .addOnSuccessListener { users ->
                 val userObjects = users.toObjects(LSUserInfo::class.java)
                 val user = userObjects.find { it.employeeId == employeeId }
-                user?.emailAddress?.let { email ->
+                if (user?.emailAddress?.isNotEmpty() == true) {
+                    val email = user.emailAddress
                     FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                         .addOnSuccessListener {
                             Log.d(TAG, "Sign In Success: ${user.name}")
@@ -34,6 +35,9 @@ class SignInUseCase {
                             trySend(Response.Error("Email or password are incorrect"))
                             Log.d(TAG, "Email or password are incorrect:\n${it.message}")
                         }
+                } else {
+                    trySend(Response.Error("Failed to retrieve user credentials"))
+                    Log.d(TAG, "Failed to retrieve user $employeeId")
                 }
             }.addOnFailureListener {
                 trySend(Response.Error("Failed to retrieve user credentials"))

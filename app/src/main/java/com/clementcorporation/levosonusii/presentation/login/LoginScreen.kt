@@ -121,13 +121,12 @@ fun LoginScreen(navController: NavController) {
             }
             when (uiState) {
                 is LoginScreenUiState.OnUserDataRetrieved -> {
-                    isLoading.value = false
                     SideEffect {
+                        isLoading.value = false
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }
                 is LoginScreenUiState.OnFailedToLoadUser -> {
-                    //TODO: find out why this isn't being triggered when invalid credentials are entered
                     SideEffect {
                         isLoading.value = false
                         Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
