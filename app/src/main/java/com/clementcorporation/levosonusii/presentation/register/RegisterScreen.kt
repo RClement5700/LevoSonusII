@@ -125,10 +125,10 @@ fun RegisterScreen(navController: NavController) {
                         mutableStateOf(
                             context.getString(
                                 R.string.register_screen_new_user_dialog_body,
-                                viewModel.firstName.value,
-                                viewModel.lastName.value,
-                                viewModel.email.value,
-                                viewModel.employeeId.value
+                                viewModel.firstName,
+                                viewModel.lastName,
+                                viewModel.email,
+                                viewModel.employeeId
                             )
                         )
                     },
@@ -188,7 +188,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        viewModel.email.value = it
+        viewModel.email = it
     }
     LSTextField(
         modifier = Modifier
@@ -201,7 +201,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        viewModel.firstName.value = it
+        viewModel.firstName = it
     }
 
     LSTextField(
@@ -214,7 +214,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             defaultKeyboardAction(ImeAction.Next)
         }
     ) {
-        viewModel.lastName.value = it
+        viewModel.lastName = it
     }
     LSPasswordTextField(
         modifier = Modifier
@@ -226,7 +226,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             viewModel.createNewUser()
         }
     ) {
-        if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password.value = it
+        if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
     }
     Button(
         modifier = Modifier
@@ -291,7 +291,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            viewModel.firstName.value = it
+            viewModel.firstName = it
         }
         LSTextField(
             userInput = viewModel.lastName,
@@ -300,7 +300,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            viewModel.lastName.value = it
+            viewModel.lastName = it
         }
     }
     Row(
@@ -316,7 +316,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 defaultKeyboardAction(ImeAction.Next)
             }
         ) {
-            viewModel.email.value = it
+            viewModel.email = it
         }
         LSPasswordTextField(
             userInput = viewModel.password,
@@ -325,7 +325,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 viewModel.createNewUser()
             }
         ) {
-            viewModel.password.value = it
+            viewModel.password = it
         }
     }
     Row(

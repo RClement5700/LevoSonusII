@@ -13,7 +13,9 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
@@ -41,22 +43,22 @@ class LoginViewModel @Inject constructor(
     private val repo: LoginRepository,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
-    val employeeId = mutableStateOf("")
-    val password = mutableStateOf("")
+    var employeeId by mutableStateOf("")
+    var password by mutableStateOf("")
     private val _loginScreenUiState = MutableStateFlow<LoginScreenUiState>(
         LoginScreenUiState.OnScreenCreated
     )
     val loginScreenUiState = _loginScreenUiState.asStateFlow()
 
     fun validateInputs(): Boolean =
-        employeeId.value.length >= VALID_EMPLOYEE_ID_LENGTH && password.value.length == VALID_PASSWORD_LENGTH
+        employeeId.length >= VALID_EMPLOYEE_ID_LENGTH && password.length == VALID_PASSWORD_LENGTH
 
     fun signIn() {
         viewModelScope.launch {
             _loginScreenUiState.value = LoginScreenUiState.OnLoading(true)
             sessionDataStore.data.collectLatest {
                 val businessId = it.organization.id
-                repo.signIn(businessId, employeeId.value, password.value).collectLatest { response ->
+                repo.signIn(businessId, employeeId, password).collectLatest { response ->
                     when(response) {
                         is Response.Success -> {
                             response.data?.let { user ->

@@ -1,6 +1,8 @@
 package com.clementcorporation.levosonusii.presentation.register
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.text.isDigitsOnly
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
@@ -34,21 +36,21 @@ class RegisterViewModel @Inject constructor(
     private val repo: RegisterRepository,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
-    val employeeId = mutableStateOf("")
-    val email = mutableStateOf("")
-    val password = mutableStateOf("")
-    val firstName = mutableStateOf("")
-    val lastName = mutableStateOf("")
+    var employeeId by mutableStateOf("")
+    var email by mutableStateOf("")
+    var password by mutableStateOf("")
+    var firstName by mutableStateOf("")
+    var lastName by mutableStateOf("")
     private val _registerScreenUiState = MutableStateFlow<RegisterScreenUiState>(
         RegisterScreenUiState.OnScreenCreated
     )
     val registerScreenUiState get() = _registerScreenUiState.asStateFlow()
     
     fun validateInputs(): Boolean {
-        return email.value.contains(EMAIL_VALIDATOR_AT) && email.value.contains(EMAIL_VALIDATOR_COM)
-                && password.value.isNotEmpty() && password.value.isDigitsOnly()
-                && password.value.length == VALID_PASSWORD_LENGTH
-                && firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && email.value.isNotEmpty()
+        return email.contains(EMAIL_VALIDATOR_AT) && email.contains(EMAIL_VALIDATOR_COM)
+                && password.isNotEmpty() && password.isDigitsOnly()
+                && password.length == VALID_PASSWORD_LENGTH
+                && firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty()
     }
 
     fun signIn(isCreatingVoiceProfile: Boolean) {
@@ -56,7 +58,7 @@ class RegisterViewModel @Inject constructor(
             _registerScreenUiState.value = RegisterScreenUiState.OnLoading(true)
             sessionDataStore.data.collectLatest { userInfo ->
                 val businessId = userInfo.organization.id
-                repo.signIn(businessId, employeeId.value.trim(), password.value.trim()).collectLatest {
+                repo.signIn(businessId, employeeId.trim(), password.trim()).collectLatest {
                     response ->
                     when (response) {
                         is Response.Success -> {
@@ -90,15 +92,15 @@ class RegisterViewModel @Inject constructor(
                 sessionDataStore.data.collectLatest { userInfo ->
                     repo.register(
                         userInfo.organization,
-                        firstName.value.trim(),
-                        lastName.value.trim(),
-                        password.value.trim(),
-                        email.value.trim()
+                        firstName.trim(),
+                        lastName.trim(),
+                        password.trim(),
+                        email.trim()
                     ).collectLatest { response ->
                         when(response) {
                             is Response.Success -> {
                                 response.data?.let { newUser ->
-                                    employeeId.value = newUser.employeeId
+                                    employeeId = newUser.employeeId
                                     _registerScreenUiState.value =
                                         RegisterScreenUiState.OnUserDataRetrieved(newUser)
                                     cancel()

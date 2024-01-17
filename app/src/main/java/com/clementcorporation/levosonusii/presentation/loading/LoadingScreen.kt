@@ -5,16 +5,24 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Snackbar
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -128,16 +136,31 @@ fun LoadingScreen(navController: NavController, fusedLocationClient: FusedLocati
                         elevation = 4.dp,
                         actionOnNewLine = true,
                         action = {
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        viewModel.getBusinessByAddress()
-                                    },
-                                text = stringResource(id = R.string.organization_name_failed_snackbar_action),
-                                textAlign = TextAlign.Center,
-                                color = Color.LightGray
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            viewModel.getBusinessByAddress()
+                                        },
+                                    text = stringResource(id = R.string.organization_name_failed_snackbar_action),
+                                    textAlign = TextAlign.Center,
+                                    color = Color.LightGray
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(
+                                    modifier = Modifier.size(24.dp),
+                                    onClick = { viewModel.getBusinessByAddress()}) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Refresh,
+                                            contentDescription = "Refresh Loading Screen"
+                                        )
+                                    }
+                            }
                         }
                     ) {
                         Text(

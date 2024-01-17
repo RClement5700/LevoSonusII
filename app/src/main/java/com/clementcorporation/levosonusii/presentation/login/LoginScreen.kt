@@ -93,7 +93,7 @@ fun LoginScreen(navController: NavController) {
                     defaultKeyboardAction(ImeAction.Next)
                 }
             ) {
-                if (it.length <= VALID_EMPLOYEE_ID_LENGTH) viewModel.employeeId.value = it
+                if (it.length <= VALID_EMPLOYEE_ID_LENGTH) viewModel.employeeId = it
             }
             LSPasswordTextField(
                 modifier = Modifier
@@ -105,7 +105,7 @@ fun LoginScreen(navController: NavController) {
                     viewModel.signIn()
                 }
             ) {
-                if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password.value = it
+                if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
             }
             when (configuration.orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
@@ -122,7 +122,7 @@ fun LoginScreen(navController: NavController) {
             when (uiState) {
                 is LoginScreenUiState.OnUserDataRetrieved -> {
                     isLoading.value = false
-                    LaunchedEffect(key1 = !isLoading.value) {
+                    SideEffect {
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }
