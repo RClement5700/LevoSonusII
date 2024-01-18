@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 object Constants {
     const val BUSINESSES_ENDPOINT = "businesses"
     const val USERS_ENDPOINT = "users"
+    const val EQUIPMENT_ENDPOINT = "equipment"
+    const val DEPARTMENTS_ENDPOINT = "departments"
     const val VALID_PASSWORD_LENGTH = 6
     const val VALID_EMPLOYEE_ID_LENGTH = 4
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"
@@ -18,10 +20,7 @@ object Constants {
     const val BTN_HEIGHT = 50
     const val BTN_WIDTH = 200
     val LS_BLUE = Color(0xFF32527B)
-    const val USERS = "users"
-    const val ORGANIZATION_ID = "organizationId"
     const val DEPARTMENT_ID = "departmentId"
-    const val DEPARTMENTS = "departments"
     const val MACHINE_ID = "machineId"
     const val SCANNER_ID = "scannerId"
     const val HEADSET_ID = "headsetId"
@@ -30,21 +29,8 @@ object Constants {
     const val PIC_URL = "profilePicUrl"
     const val USER_ID = "userId"
     const val VOICE_PROFILE = "voiceProfile"
-    const val MESSENGER_IDS = "messengerIds"
     const val OP_TYPE = "operatorType"
-    const val OPERATOR_TYPE_FORKLIFT = "forklift"
-    const val OPERATOR_TYPE_ELECTRIC_PALLET_JACK = "electricPalletJack"
     const val MESSENGER = "messenger"
-    const val EQUIPMENT = "equipment"
-    const val ELECTRIC_PALLET_JACK = "ELECTRIC_PALLET_JACK"
-    const val FORKLIFT = "FORKLIFT"
-    const val SCANNER = "SCANNER"
-    const val HEADSET = "HEADSET"
-    const val FORKLIFT_COUNT = "forkliftCount"
-    const val OP_COUNT = "orderPickerCount"
-    const val TITLE = "title"
-    const val REMAINING_ORDERS = "remainingOrders"
-    const val ICON_URL = "icon"
     const val USER_1 = "USER_1"
     const val USER_2 = "USER_2"
     const val USER_1_MESSAGES = "USER_1_MESSAGES"

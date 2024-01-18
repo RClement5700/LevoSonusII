@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -37,14 +38,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 
-private const val LOGO_DESCRIPTION = "Levo Sonus Logo"
+private const val LOGO_DESCRIPTION = "LevoSonus Logo"
 @Composable
 fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
     Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -149,14 +151,12 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
 fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
     Image(
         modifier = modifier,
-        painter = if (imageUrl.isNullOrEmpty()) {
-            painterResource(id = R.drawable.levosonus_rocket_logo)
-        } else {
-            rememberImagePainter(data = imageUrl, builder = {
-                crossfade(false)
-                placeholder(R.drawable.levosonus_rocket_logo)
-            })
-        },
+        painter = rememberAsyncImagePainter(
+                ImageRequest.Builder(LocalContext.current).data(data = imageUrl).apply(block = fun ImageRequest.Builder.() {
+                    crossfade(true)
+                    placeholder(R.drawable.levosonus_rocket_logo)
+                }).build()
+            ),
         contentDescription = "Profile Picture",
         contentScale = ContentScale.Crop
     )
@@ -196,7 +196,9 @@ fun SelectionTile(title: String? = null, icon: Int? = null,
         ) {
             icon?.let {
                 Icon(
-                    modifier = Modifier.size(50.dp).padding(PADDING.dp),
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(PADDING.dp),
                     tint = LS_BLUE,
                     painter = painterResource(id = it),
                     contentDescription = ""
@@ -224,43 +226,6 @@ fun SelectionTile(title: String? = null, icon: Int? = null,
 }
 
 @Composable
-fun SelectableTile(title: String, icon: Int = R.drawable.scanner_icon, isSelected: MutableState<Boolean>,
-                   onClick: () -> Unit = {}) {
-    val backgroundColor = if (isSelected.value) Color.Cyan else Color.White
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(PADDING.dp)
-            .clickable(onClick = onClick),
-        elevation = ELEVATION.dp,
-        shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = backgroundColor
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Icon(
-                modifier = Modifier.size(50.dp).padding(PADDING.dp),
-                tint = LS_BLUE,
-                painter = painterResource(id = icon),
-                contentDescription = ""
-            )
-            Text(
-                modifier = Modifier.padding(PADDING.dp),
-                text = title,
-                color = LS_BLUE,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 12.sp,
-                fontStyle = FontStyle.Italic,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
 fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: MutableState<Boolean> = mutableStateOf(false), onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
@@ -278,7 +243,9 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
         ) {
             if (showIcon.value) {
                 Icon(
-                    modifier = Modifier.size(50.dp).padding(PADDING.dp),
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(PADDING.dp),
                     tint = LS_BLUE,
                     painter = painterResource(id = icon),
                     contentDescription = ""
@@ -383,8 +350,10 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
     AlertDialog(
         modifier = Modifier
             .fillMaxWidth(.9f)
-            .fillMaxHeight(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
-            0.6f else 0.33f),
+            .fillMaxHeight(
+                if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                    0.6f else 0.33f
+            ),
         backgroundColor = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp),
         properties = DialogProperties(),

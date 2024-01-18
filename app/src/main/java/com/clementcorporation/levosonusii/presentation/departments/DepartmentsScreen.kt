@@ -2,8 +2,6 @@ package com.clementcorporation.levosonusii.presentation.departments
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,42 +13,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.domain.models.Department
-import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
@@ -63,10 +52,10 @@ private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val viewModel: DepartmentsViewModel = hiltViewModel()
-    val uiState: DepartmentsScreenUiState by viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle()
+    val uiState = viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle().value
     BackHandler {
         viewModel.signOut {
-            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+            navController.popBackStack()
         }
     }
     Surface(
@@ -84,7 +73,7 @@ fun DepartmentsScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                            navController.popBackStack()
                         }
                     },
                     onClickLeftIcon = {
@@ -124,19 +113,23 @@ fun DepartmentsScreen(navController: NavController) {
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LazyColumn(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.9f)) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.9f)) {
                     if (uiState is DepartmentsScreenUiState.DataRetrieved) {
-                        val departments = (uiState as DepartmentsScreenUiState.DataRetrieved).data
-                        items(departments) { department ->
-                            DepartmentTile(department) {
-                                departments.forEach {
-                                    it.isSelected.value = false
-                                }
-                                department.isSelected.value = !department.isSelected.value
-                                viewModel.setSelectedDepartment(department.id)
-                            }
+                        val departments = uiState.data
+                        itemsIndexed(departments) { index, department ->
+                            DepartmentTile(
+                                index = index,
+                                title = department.title,
+                                icon = department.icon,
+                                totalOrders = department.totalOrders,
+                                remainingOrders = department.remainingOrders,
+                                forklifts = department.forklifts,
+                                orderPickers = department.orderPickers,
+                                viewModel = viewModel
+                            )
                         }
                     }
                 }
@@ -152,7 +145,7 @@ fun DepartmentsScreen(navController: NavController) {
                         disabledBackgroundColor = Color.Gray
                     ),
                     onClick = {
-                        viewModel.updateUserDepartment()
+                        viewModel.updateUsersDepartment()
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if (uiState is DepartmentsScreenUiState.Loading) {
@@ -171,142 +164,86 @@ fun DepartmentsScreen(navController: NavController) {
 }
 
 @Composable
-fun DepartmentIcon(modifier: Modifier, url: String) {
-    Image(
-        modifier = modifier,
-        painter = rememberImagePainter(data = url, builder = {
-                crossfade(false)
-                placeholder(R.drawable.levosonus_rocket_logo)
-        }),
-        contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description),
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
-fun DepartmentTile(department: Department, onClick: () -> Unit = {}) {
-    val backgroundColor = if (department.isSelected.value) Color.Cyan else Color.White
-    Card(
+fun DepartmentTile(
+    index: Int,
+    icon: Int = R.drawable.scanner_icon,
+    title: String,
+    forklifts: String,
+    orderPickers: String,
+    remainingOrders: String,
+    totalOrders: String,
+    viewModel: DepartmentsViewModel
+) {
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(PADDING.dp)
-            .clickable(onClick = onClick),
-        elevation = ELEVATION.dp,
-        shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = backgroundColor
+            .padding(8.dp)
+            .selectable(
+                selected = index == viewModel.selectedIndex,
+                onClick = {
+                    if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
+                    else viewModel.selectedIndex = -1
+                }
+            ),
+        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
+        elevation = 8.dp,
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            Column(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.9f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    DepartmentIcon(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(Constants.PADDING.dp),
-                        url = department.iconUrl
-                    )
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = department.title,
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 16.sp,
-                        fontStyle = FontStyle.Italic,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .padding(PADDING.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Image(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(id = R.drawable.electric_pallet_jack_icon),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
-                    )
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label),
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = department.orderPickersCount,
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 12.sp,
-                    )
-
-                    Image(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(id = R.drawable.forklift_icon),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(id = R.string.departments_screen_forklift_icon_content_description)
-                    )
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = stringResource(id = R.string.departments_screen_department_forklift_operator_label),
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = department.forkliftCount,
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 12.sp,
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.9f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = stringResource(id = R.string.departments_screen_department_remaining_orders_label),
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        modifier = Modifier.padding(Constants.PADDING.dp),
-                        text = department.remainingOrders,
-                        color = LS_BLUE,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-            IconButton(
-                onClick = onClick
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
                 Icon(
-                    tint = LS_BLUE,
-                    imageVector = Icons.Default.ArrowRight,
-                    contentDescription = ""
+                    modifier = Modifier.size(48.dp),
+                    painter = painterResource(id = icon),
+                    contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.h6
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_forklift_operator_label, forklifts),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.body1
+                )
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_remaining_orders_label, remainingOrders),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.body1
+                )
+
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label, orderPickers),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.body1
+                )
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_total_orders_label, totalOrders),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.body1
                 )
             }
         }

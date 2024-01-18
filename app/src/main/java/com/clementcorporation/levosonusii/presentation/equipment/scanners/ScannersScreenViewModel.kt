@@ -1,4 +1,4 @@
-package com.clementcorporation.levosonusii.presentation.equipment
+package com.clementcorporation.levosonusii.presentation.equipment.scanners
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class EquipmentScreenViewModel @Inject constructor(
+class ScannersScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
 

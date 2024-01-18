@@ -7,9 +7,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.clementcorporation.levosonusii.presentation.departments.DepartmentsScreen
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreen
-import com.clementcorporation.levosonusii.presentation.equipment.HeadsetsScreen
-import com.clementcorporation.levosonusii.presentation.equipment.MachinesScreen
-import com.clementcorporation.levosonusii.presentation.equipment.ScannersScreen
+import com.clementcorporation.levosonusii.presentation.equipment.headsets.HeadsetsScreen
+import com.clementcorporation.levosonusii.presentation.equipment.machines.MachinesScreen
+import com.clementcorporation.levosonusii.presentation.equipment.scanners.ScannersScreen
 import com.clementcorporation.levosonusii.presentation.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.presentation.home.HomeScreen
 import com.clementcorporation.levosonusii.presentation.loading.LoadingScreen

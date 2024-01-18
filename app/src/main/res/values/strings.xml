@@ -51,14 +51,14 @@
     <string name="homescreen_tile_game_center_label">GAME CENTER</string>
 
     <!-- Departments Screen -->
-    <string name="departments_screen_error_message">Failed to retrieve departments\' data</string>
     <string name="departments_screen_title_text">Departments</string>
     <string name="departments_screen_department_icon_content_description">Department Icon</string>
     <string name="departments_screen_electric_pallet_jack_icon_content_description">Electric Pallet Jack Icon</string>
     <string name="departments_screen_forklift_icon_content_description">Forklift Icon</string>
-    <string name="departments_screen_department_forklift_operator_label">Forklifts:</string>
-    <string name="departments_screen_department_electric_pallet_jack_operator_label">Order Pickers:</string>
-    <string name="departments_screen_department_remaining_orders_label">Remaining Orders:</string>
+    <string name="departments_screen_department_forklift_operator_label">Forklifts: %s</string>
+    <string name="departments_screen_department_electric_pallet_jack_operator_label">Order Pickers: %s</string>
+    <string name="departments_screen_department_remaining_orders_label">Remaining Orders: %s</string>
+    <string name="departments_screen_department_total_orders_label">Total Orders: %s</string>
 
     <!--Equipment Screen -->
     <string name="equipment_screen_toolbar_title_text">Equipment</string>

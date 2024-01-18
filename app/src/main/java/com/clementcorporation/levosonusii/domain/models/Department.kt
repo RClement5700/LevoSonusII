@@ -1,13 +1,41 @@
 package com.clementcorporation.levosonusii.domain.models
 
-import androidx.compose.runtime.MutableState
+import com.clementcorporation.levosonusii.R
 
-data class Department(
+data class DepartmentUiModel(
     val id: String,
     val title: String,
     val remainingOrders: String,
-    val orderPickersCount: String,
-    val forkliftCount: String,
-    val iconUrl: String,
-    var isSelected: MutableState<Boolean>
+    val totalOrders: String,
+    val orderPickers: String,
+    val forklifts: String,
+    val icon: Int,
 )
+
+data class DepartmentDto(
+    val id: String = "",
+    val title: String = "",
+    val remainingOrders: String = "",
+    val totalOrders: String = "",
+    val orderPickers: String = "",
+    val forklifts: String = "",
+)
+
+fun DepartmentDto.toDepartmentUiModel(): DepartmentUiModel =
+    DepartmentUiModel(
+        id = id,
+        title = title,
+        remainingOrders = remainingOrders,
+        totalOrders = totalOrders,
+        forklifts = forklifts,
+        orderPickers = orderPickers,
+        icon = when (title) {
+            "Grocery" -> R.drawable.grocery_icon
+            "Produce" -> R.drawable.produce_icon
+            "Meat" -> R.drawable.meat_icon2
+            "Seafood" -> R.drawable.seafood_icon
+            "Dairy" -> R.drawable.dairy_icon
+            "Freezer" -> R.drawable.freezer_icon
+            else -> 0
+        }
+    )
