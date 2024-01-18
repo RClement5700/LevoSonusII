@@ -1,7 +1,6 @@
 package com.clementcorporation.levosonusii.presentation.login
 
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,9 +20,9 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
@@ -32,11 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,7 +57,6 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val viewModel: LoginViewModel = hiltViewModel()
     val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
@@ -127,9 +125,18 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
                 is LoginScreenUiState.OnFailedToLoadUser -> {
-                    SideEffect {
-                        isLoading.value = false
-                        Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
+                    isLoading.value = false
+                    Snackbar(
+                        modifier = Modifier.fillMaxWidth(0.9f),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = 4.dp
+                    ) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = uiState.message,
+                            textAlign = TextAlign.Center,
+                            color = Color.White
+                        )
                     }
                 }
                 is LoginScreenUiState.OnLoading -> {

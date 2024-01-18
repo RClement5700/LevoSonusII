@@ -32,8 +32,8 @@ class SignInUseCase {
                             Log.d(TAG, "Sign In Success: ${user.name}")
                             trySend(Response.Success(data = user))
                         }.addOnFailureListener {
-                            trySend(Response.Error("Email or password are incorrect"))
-                            Log.d(TAG, "Email or password are incorrect:\n${it.message}")
+                            trySend(Response.Error("Employee ID or password are incorrect"))
+                            Log.d(TAG, "Employee ID or password are incorrect:\n${it.message}")
                         }
                 } else {
                     trySend(Response.Error("Failed to retrieve user credentials"))
