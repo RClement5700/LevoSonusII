@@ -7,6 +7,7 @@ object Constants {
     const val USERS_ENDPOINT = "users"
     const val EQUIPMENT_ENDPOINT = "equipment"
     const val DEPARTMENTS_ENDPOINT = "departments"
+    const val ORDER_PICKERS_PARAM = "orderPickers"
     const val VALID_PASSWORD_LENGTH = 6
     const val VALID_EMPLOYEE_ID_LENGTH = 4
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"

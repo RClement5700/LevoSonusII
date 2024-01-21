@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.departments
 
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,12 +53,11 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
+    val context = LocalContext.current
     val viewModel: DepartmentsViewModel = hiltViewModel()
     val uiState = viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle().value
     BackHandler {
-        viewModel.signOut {
-            navController.popBackStack()
-        }
+        navController.popBackStack()
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -73,7 +74,7 @@ fun DepartmentsScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.popBackStack()
+                            navController.navigate(LevoSonusScreens.LoadingScreen.name)
                         }
                     },
                     onClickLeftIcon = {
@@ -146,6 +147,7 @@ fun DepartmentsScreen(navController: NavController) {
                     ),
                     onClick = {
                         viewModel.updateUsersDepartment()
+                        Toast.makeText(context, "Department: ${viewModel.getCurrentDepartment().title}", Toast.LENGTH_SHORT).show()
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }) {
                     if (uiState is DepartmentsScreenUiState.Loading) {
@@ -182,7 +184,6 @@ fun DepartmentTile(
                 selected = index == viewModel.selectedIndex,
                 onClick = {
                     if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
-                    else viewModel.selectedIndex = -1
                 }
             ),
         color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,

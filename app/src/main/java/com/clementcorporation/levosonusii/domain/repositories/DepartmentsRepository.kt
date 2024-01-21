@@ -5,7 +5,7 @@ import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface DepartmentsRepository {
-    fun fetchDepartmentsData(businessId: String): Flow<Response<List<DepartmentUiModel>>>
-    fun subtractOrderPickerFromDepartment()
-    fun addOrderPickerToDepartment()
+    suspend fun fetchDepartmentsData(): Response<List<DepartmentUiModel>>?
+    suspend fun subtractOrderPickerFromDepartment(): Response<String>?
+    suspend fun addOrderPickerToDepartment(departmentId: String): Response<String>?
 }

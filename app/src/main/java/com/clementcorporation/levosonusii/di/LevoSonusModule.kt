@@ -2,12 +2,14 @@ package com.clementcorporation.levosonusii.di
 
 import android.content.Context
 import android.content.res.Resources
+import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import com.clementcorporation.levosonusii.data.remote.DepartmentsRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.EquipmentRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.LoadingRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.LoginRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.RegisterRepositoryImpl
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
@@ -66,8 +68,8 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesDepartmentsRepository(): DepartmentsRepository =
-        DepartmentsRepositoryImpl()
+    fun providesDepartmentsRepository(sessionDataStore: DataStore<LSUserInfo>): DepartmentsRepository =
+        DepartmentsRepositoryImpl(sessionDataStore = sessionDataStore)
 
     @Provides
     fun providesResources(@ApplicationContext context: Context): Resources = context.resources

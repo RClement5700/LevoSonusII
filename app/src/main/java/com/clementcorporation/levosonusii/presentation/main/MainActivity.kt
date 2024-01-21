@@ -130,7 +130,6 @@ class MainActivity : ComponentActivity(){
                 }
             }
         }
-        startVoiceCommandService()
     }
 
     private fun executeVoiceCommand(command: String) {
@@ -175,28 +174,7 @@ class MainActivity : ComponentActivity(){
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        startVoiceCommandService()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopService()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        stopService()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopService()
-        bManager.unregisterReceiver(bReceiver)
-    }
-
-    private fun stopService() {
+    private fun stopVoiceCommandService() {
         try {
             stopService(Intent(this, LevoSonusService::class.java))
         } catch(e: Exception) {

@@ -1,5 +1,6 @@
 package com.clementcorporation.levosonusii.presentation.departments
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,16 +16,18 @@ import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "DepartmentsViewModel"
 @HiltViewModel
 class DepartmentsViewModel @Inject constructor(
     private val repo: DepartmentsRepository,
     private val signOutUseCase: SignOutUseCase,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
+    private lateinit var departments: List<DepartmentUiModel>
     private val _departmentsScreenEventsStateFlow = MutableStateFlow<DepartmentsScreenUiState>(
         DepartmentsScreenUiState.Loading
     )
@@ -45,43 +48,70 @@ class DepartmentsViewModel @Inject constructor(
         }
     }
 
-    private fun fetchDepartmentsData() {
+    fun getCurrentDepartment(): DepartmentUiModel = departments[selectedIndex]
+
+    fun updateUsersDepartment() {
         viewModelScope.launch {
-            sessionDataStore.data.collectLatest { userInfo ->
-                val businessId = userInfo.organization.id
-                repo.fetchDepartmentsData(businessId).collectLatest { response ->
-                    when (response) {
-                        is Response.Success -> {
-                            response.data?.let { departments ->
-                                departments.find {
-                                    it.id == userInfo.departmentId
-                                }?.let { department ->
-                                    selectedIndex = departments.indexOf(department)
-                                }
-                                _departmentsScreenEventsStateFlow.value =
-                                    DepartmentsScreenUiState.DataRetrieved(departments)
-                            }
-                        }
-                        is Response.Error -> {
-                            response.message?.let {
-                                _departmentsScreenEventsStateFlow.value =
-                                    DepartmentsScreenUiState.Error(it)
-                            }
-                        }
-                        is Response.Loading -> {
-                            _departmentsScreenEventsStateFlow.value =
-                                DepartmentsScreenUiState.Loading
-                        }
-                    }
-                }
+            val userInfo = sessionDataStore.data.first()
+            val currentDepartmentId = userInfo.departmentId
+            val newDepartment = departments[selectedIndex]
+            val newDepartmentId = newDepartment.id
+            if (currentDepartmentId != newDepartmentId) {
+                addOrderPickerToDepartment(newDepartmentId)
+                removeOrderPickerFromDepartment()
             }
         }
     }
 
-    fun updateUsersDepartment() {
-
+    private fun fetchDepartmentsData() {
+        viewModelScope.launch {
+            val userInfo = sessionDataStore.data.first()
+            val response = repo.fetchDepartmentsData()
+            if (response != null) {
+                when (response) {
+                    is Response.Success -> {
+                        response.data?.let { departmentsData ->
+                            departments = departmentsData
+                            departments.find {
+                                it.id == userInfo.departmentId
+                            }?.let { department ->
+                                selectedIndex = departments.indexOf(department)
+                            }
+                            _departmentsScreenEventsStateFlow.value =
+                                DepartmentsScreenUiState.DataRetrieved(departments)
+                        }
+                    }
+                    is Response.Error -> {
+                        response.message?.let {
+                            _departmentsScreenEventsStateFlow.value =
+                                DepartmentsScreenUiState.Error(it)
+                        }
+                    }
+                    is Response.Loading -> {
+                        _departmentsScreenEventsStateFlow.value =
+                            DepartmentsScreenUiState.Loading
+                    }
+                }
+            } else {
+                _departmentsScreenEventsStateFlow.value =
+                    DepartmentsScreenUiState.Error("Failed to load departments' data")
+            }
+        }
     }
 
+    private fun addOrderPickerToDepartment(newDepartmentId: String) {
+        viewModelScope.launch {
+            val response = repo.addOrderPickerToDepartment(newDepartmentId)
+            response?.data?.let { Log.d(TAG, it) }
+        }
+    }
+
+    private fun removeOrderPickerFromDepartment() {
+        viewModelScope.launch {
+            val response = repo.subtractOrderPickerFromDepartment()
+            response?.data?.let { Log.d(TAG, it) }
+        }
+    }
 }
 
 sealed class DepartmentsScreenUiState {
