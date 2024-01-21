@@ -26,7 +26,6 @@ data class LSUserDto(
     val firebaseId: String = "",
     val name: String = "",
     val emailAddress: String = "",
-    val password: String = "",
     val profilePicUrl: String = "",
     val machineId: String = "",
     val scannerId: String = "",
@@ -43,13 +42,14 @@ fun LSUserInfo.toDto():LSUserDto =
         firebaseId = firebaseId,
         name = name,
         emailAddress = emailAddress,
-        password = password,
         profilePicUrl = profilePicUrl,
         machineId = machineId,
         scannerId = scannerId,
         headsetId = headsetId,
         departmentId = departmentId,
-        voiceProfile = voiceProfile
+        operatorType = operatorType,
+        voiceProfile = voiceProfile,
+        messengerIds = messengerIds
     )
 
 fun LSUserDto.toMap(): MutableMap<String, Any> {
