@@ -52,7 +52,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
     override suspend fun addOrderPickerToDepartment(departmentId: String): Response<String>? {
         val userInfo = sessionDataStore.data.first()
         val businessId = userInfo.organization.id
-        val firebaseId = "0001"//userInfo.firebaseId
+        val firebaseId = userInfo.firebaseId
         db.document(businessId)
             .collection(USERS_ENDPOINT)
             .document(firebaseId)
