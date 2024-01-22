@@ -8,6 +8,7 @@ object Constants {
     const val EQUIPMENT_ENDPOINT = "equipment"
     const val DEPARTMENTS_ENDPOINT = "departments"
     const val ORDER_PICKERS_PARAM = "orderPickers"
+    const val FORKLIFTS_PARAM = "forklifts"
     const val VALID_PASSWORD_LENGTH = 6
     const val VALID_EMPLOYEE_ID_LENGTH = 4
     const val USER_INPUT = "com.clementcorporation.levosonusii.USER_INPUT"
@@ -41,6 +42,11 @@ object Constants {
     const val BODY = "BODY"
     const val TIME_FORMAT = "hh:mm aa"
     const val DATE_FORMAT = "MM/dd/yyyy"
+}
+
+object OperatorTypes {
+    const val FORKLIFT = "Forklift"
+    const val ORDER_PICKER = "Order Picker"
 }
 
 enum class VoiceProfileConstants {

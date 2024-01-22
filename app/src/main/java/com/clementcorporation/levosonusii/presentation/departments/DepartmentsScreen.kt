@@ -170,8 +170,8 @@ fun DepartmentTile(
     index: Int,
     icon: Int = R.drawable.scanner_icon,
     title: String,
-    forklifts: String,
-    orderPickers: String,
+    forklifts: Int,
+    orderPickers: Int,
     remainingOrders: String,
     totalOrders: String,
     viewModel: DepartmentsViewModel

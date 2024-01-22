@@ -7,8 +7,8 @@ data class DepartmentUiModel(
     val title: String,
     val remainingOrders: String,
     val totalOrders: String,
-    val orderPickers: String,
-    val forklifts: String,
+    val orderPickers: Int,
+    val forklifts: Int,
     val icon: Int,
 )
 
@@ -17,8 +17,8 @@ data class DepartmentDto(
     val title: String = "",
     val remainingOrders: String = "",
     val totalOrders: String = "",
-    val orderPickers: String = "",
-    val forklifts: String = "",
+    val orderPickers: Int = 0,
+    val forklifts: Int = 0,
 )
 
 fun DepartmentDto.toDepartmentUiModel(): DepartmentUiModel =

@@ -9,9 +9,12 @@ import com.clementcorporation.levosonusii.domain.repositories.DepartmentsReposit
 import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.DEPARTMENTS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.DEPARTMENT_ID
+import com.clementcorporation.levosonusii.util.Constants.FORKLIFTS_PARAM
 import com.clementcorporation.levosonusii.util.Constants.ORDER_PICKERS_PARAM
 import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
+import com.clementcorporation.levosonusii.util.OperatorTypes
 import com.clementcorporation.levosonusii.util.Response
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.first
@@ -35,21 +38,21 @@ class DepartmentsRepositoryImpl @Inject constructor(
         }.firstOrNull()
     }
 
-    override suspend fun subtractOrderPickerFromDepartment(): Response<String>? {
+    override suspend fun subtractOperatorFromDepartment(): Response<String>? {
         val userInfo = sessionDataStore.data.first()
         val businessId = userInfo.organization.id
         val departmentId = userInfo.departmentId
+        val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
         val departmentsRef = db.document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
         return departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
-            val newOrderPickerCount = department?.orderPickers?.toInt()?.minus(1).toString()
-            if (departmentsRef.update(ORDER_PICKERS_PARAM, newOrderPickerCount).isSuccessful)
+            if (departmentsRef.update(if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM, FieldValue.increment(-1.0)).isSuccessful)
                 Response.Success("${department?.title} updated successfully")
             else Response.Error("${department?.title} failed to update...")
         }.firstOrNull()
     }
 
-    override suspend fun addOrderPickerToDepartment(departmentId: String): Response<String>? {
+    override suspend fun addOperatorToDepartment(departmentId: String): Response<String>? {
         val userInfo = sessionDataStore.data.first()
         val businessId = userInfo.organization.id
         val firebaseId = userInfo.firebaseId
@@ -73,11 +76,12 @@ class DepartmentsRepositoryImpl @Inject constructor(
                 messengerIds = it.messengerIds
             )
         }
-        val departmentsRef = db.document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
+        val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
+        val departmentsRef =
+            db.document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
         return departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
-            val newOrderPickerCount = department?.orderPickers?.toInt()?.plus(1).toString()
-            if (departmentsRef.update(ORDER_PICKERS_PARAM, newOrderPickerCount).isSuccessful)
+            if (departmentsRef.update(if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM, FieldValue.increment(1.0)).isSuccessful)
                 Response.Success("${department?.title} updated successfully")
             else Response.Error("${department?.title} failed to update...")
         }.firstOrNull()

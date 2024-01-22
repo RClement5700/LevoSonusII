@@ -101,14 +101,14 @@ class DepartmentsViewModel @Inject constructor(
 
     private fun addOrderPickerToDepartment(newDepartmentId: String) {
         viewModelScope.launch {
-            val response = repo.addOrderPickerToDepartment(newDepartmentId)
+            val response = repo.addOperatorToDepartment(newDepartmentId)
             response?.data?.let { Log.d(TAG, it) }
         }
     }
 
     private fun removeOrderPickerFromDepartment() {
         viewModelScope.launch {
-            val response = repo.subtractOrderPickerFromDepartment()
+            val response = repo.subtractOperatorFromDepartment()
             response?.data?.let { Log.d(TAG, it) }
         }
     }
