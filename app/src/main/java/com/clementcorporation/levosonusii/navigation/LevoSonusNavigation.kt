@@ -12,7 +12,6 @@ import com.clementcorporation.levosonusii.presentation.equipment.machines.Machin
 import com.clementcorporation.levosonusii.presentation.equipment.scanners.ScannersScreen
 import com.clementcorporation.levosonusii.presentation.healthandwellness.HealthAndWellnessScreen
 import com.clementcorporation.levosonusii.presentation.home.HomeScreen
-import com.clementcorporation.levosonusii.presentation.loading.LoadingScreen
 import com.clementcorporation.levosonusii.presentation.login.LoginScreen
 import com.clementcorporation.levosonusii.presentation.messenger.MessengerScreen
 import com.clementcorporation.levosonusii.presentation.orders.OrdersScreen
@@ -21,16 +20,10 @@ import com.clementcorporation.levosonusii.presentation.register.RegisterScreen
 import com.clementcorporation.levosonusii.presentation.voiceprofile.VoiceProfileScreen
 import com.clementcorporation.levosonusii.screens.GameCenterScreen
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
-import com.google.android.gms.location.FusedLocationProviderClient
 
 @Composable
-fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>,
-                        fusedLocationClient: FusedLocationProviderClient, showVoiceCommandActivity: (String) -> Unit) {
-    NavHost(navController = navController, startDestination = LevoSonusScreens.LoadingScreen.name) {
-        composable(LevoSonusScreens.LoadingScreen.name){
-            LoadingScreen(navController, fusedLocationClient)
-            showFab.value = false
-        }
+fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<Boolean>, showVoiceCommandActivity: (String) -> Unit) {
+    NavHost(navController = navController, startDestination = LevoSonusScreens.LoginScreen.name) {
         composable(LevoSonusScreens.LoginScreen.name){
             LoginScreen(navController = navController)
             showFab.value = true

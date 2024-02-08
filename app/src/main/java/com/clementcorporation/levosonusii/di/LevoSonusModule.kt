@@ -6,20 +6,21 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import com.clementcorporation.levosonusii.data.remote.DepartmentsRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.EquipmentRepositoryImpl
-import com.clementcorporation.levosonusii.data.remote.LoadingRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.LoginRepositoryImpl
 import com.clementcorporation.levosonusii.data.remote.RegisterRepositoryImpl
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
-import com.clementcorporation.levosonusii.domain.repositories.LoadingRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
-import com.clementcorporation.levosonusii.domain.use_cases.GetCompanyAddressUseCase
+import com.clementcorporation.levosonusii.domain.use_cases.GetBusinessesUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
+import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,11 +40,16 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesGetCompanyAddressUseCase(): GetCompanyAddressUseCase = GetCompanyAddressUseCase()
+    fun providesGetBusinessesUseCase(db: CollectionReference): GetBusinessesUseCase =
+        GetBusinessesUseCase(db)
 
     @Provides
     @Singleton
-    fun providesSignInUseCase(): SignInUseCase = SignInUseCase()
+    fun providesFirestoreDatabase(): CollectionReference = FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT)
+
+    @Provides
+    @Singleton
+    fun providesSignInUseCase(db: CollectionReference): SignInUseCase = SignInUseCase(db)
 
     @Provides
     @Singleton
@@ -55,12 +61,8 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesRegisterRepository(signInUseCase: SignInUseCase): RegisterRepository = RegisterRepositoryImpl(signInUseCase)
-
-    @Provides
-    @Singleton
-    fun providesLoadingRepository(getCompanyAddressUseCase: GetCompanyAddressUseCase
-        ): LoadingRepository = LoadingRepositoryImpl(getCompanyAddressUseCase)
+    fun providesRegisterRepository(db: CollectionReference, signInUseCase: SignInUseCase
+    ): RegisterRepository = RegisterRepositoryImpl(db, signInUseCase)
 
     @Provides
     @Singleton

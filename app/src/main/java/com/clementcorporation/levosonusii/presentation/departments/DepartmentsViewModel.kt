@@ -57,8 +57,8 @@ class DepartmentsViewModel @Inject constructor(
             val newDepartment = departments[selectedIndex]
             val newDepartmentId = newDepartment.id
             if (currentDepartmentId != newDepartmentId) {
-                addOrderPickerToDepartment(newDepartmentId)
-                removeOrderPickerFromDepartment()
+                addOperatorToDepartment(newDepartmentId)
+                removeOperatorFromDepartment()
             }
         }
     }
@@ -99,14 +99,14 @@ class DepartmentsViewModel @Inject constructor(
         }
     }
 
-    private fun addOrderPickerToDepartment(newDepartmentId: String) {
+    private fun addOperatorToDepartment(newDepartmentId: String) {
         viewModelScope.launch {
             val response = repo.addOperatorToDepartment(newDepartmentId)
             response?.data?.let { Log.d(TAG, it) }
         }
     }
 
-    private fun removeOrderPickerFromDepartment() {
+    private fun removeOperatorFromDepartment() {
         viewModelScope.launch {
             val response = repo.subtractOperatorFromDepartment()
             response?.data?.let { Log.d(TAG, it) }

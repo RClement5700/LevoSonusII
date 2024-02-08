@@ -51,7 +51,7 @@ fun EquipmentScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                            navController.navigate(LevoSonusScreens.LoginScreen.name)
                         }
                     },
                     onClickLeftIcon = {

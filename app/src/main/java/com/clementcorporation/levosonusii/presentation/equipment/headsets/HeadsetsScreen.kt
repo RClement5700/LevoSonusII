@@ -41,7 +41,7 @@ fun HeadsetsScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                            navController.clearBackStack(LevoSonusScreens.LoginScreen.name)
                         }
                     },
                     onClickLeftIcon = {

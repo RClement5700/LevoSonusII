@@ -11,19 +11,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,6 +70,7 @@ fun RegisterScreen(navController: NavController) {
     val viewModel: RegisterViewModel = hiltViewModel()
     val uiState = viewModel.registerScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
+    val centerContent = remember { mutableStateOf(false) }
     val showNewUserDialog = remember { mutableStateOf(false) }
     val showVoiceProfileDialog = remember { mutableStateOf(false) }
     Card(
@@ -78,21 +89,51 @@ fun RegisterScreen(navController: NavController) {
                 )
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = if (centerContent.value) Arrangement.Center else Arrangement.Top
         ) {
-            LevoSonusLogo(LOGO_SIZE.dp)
             when(uiState) {
                 is RegisterScreenUiState.OnLoading -> {
+                    centerContent.value = true
                     isLoading.value = true
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = LS_BLUE,
+                        strokeWidth = 4.dp
+                    )
+                }
+                is RegisterScreenUiState.OnFailedToLoadBusinesses -> {
+                    isLoading.value = false
+                    centerContent.value = true
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clickable { viewModel.fetchBusinesses() },
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.failed_to_load_error_message),
+                            textAlign = TextAlign.Center,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Icon(
+                            modifier = Modifier.size(48.dp),
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Try Again",
+                            tint = Color.Green
+                        )
+                    }
                 }
                 is RegisterScreenUiState.OnUserDataRetrieved -> {
-                    LaunchedEffect(key1 = true) {
-                        showNewUserDialog.value = true
-                        isLoading.value = false
-                    }
+                    viewModel.onNewUserCreated()
+                    showNewUserDialog.value = true
                 }
                 is RegisterScreenUiState.OnFailedToLoadUser -> {
                     isLoading.value = false
+                    centerContent.value = true
                     Toast.makeText(
                         context,
                         uiState.message,
@@ -101,7 +142,7 @@ fun RegisterScreen(navController: NavController) {
                 }
                 is RegisterScreenUiState.OnSignInSuccess -> {
                     isLoading.value = false
-                    LaunchedEffect(key1 = true) {
+                    SideEffect {
                         if (uiState.isCreatingVoiceProfile)
                             navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                         else navController.navigate(LevoSonusScreens.HomeScreen.name)
@@ -109,6 +150,7 @@ fun RegisterScreen(navController: NavController) {
                 }
                 is RegisterScreenUiState.OnSignInFailure -> {
                     isLoading.value = false
+                    centerContent.value = true
                     Toast.makeText(
                         context,
                         uiState.message,
@@ -146,6 +188,7 @@ fun RegisterScreen(navController: NavController) {
                 )
             }
             if (showVoiceProfileDialog.value) {
+                showNewUserDialog.value = false
                 LSAlertDialog(
                     showAlertDialog = showVoiceProfileDialog,
                     dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
@@ -160,24 +203,79 @@ fun RegisterScreen(navController: NavController) {
                 )
             }
             when(configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> LandscapeContent(
-                    viewModel = viewModel,
-                    navController = navController,
-                    isLoading = isLoading
-                )
-                else -> PortraitContent(
-                    viewModel = viewModel,
-                    navController = navController,
-                    isLoading = isLoading
-                )
+                Configuration.ORIENTATION_LANDSCAPE -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        LevoSonusLogo(LOGO_SIZE.dp)
+                        BusinessIdInputField(
+                            viewModel = viewModel,
+                            modifier = Modifier.fillMaxWidth(0.55f)
+                        )
+                    }
+                    LandscapeContent(
+                        viewModel = viewModel,
+                        navController = navController,
+                        isLoading = isLoading.value
+                    )
+                }
+                else -> {
+                    LevoSonusLogo(LOGO_SIZE.dp)
+                    PortraitContent(
+                        viewModel = viewModel,
+                        navController = navController,
+                        isLoading = isLoading.value
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
+fun BusinessIdInputField(viewModel: RegisterViewModel, modifier: Modifier) {
+    OutlinedTextField(
+        modifier = modifier,
+        value = viewModel.businessId,
+        onValueChange = { query ->
+            viewModel.businessId = query
+            viewModel.onQueryChange()
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.VerifiedUser,
+                tint = if (viewModel.isVerifiedBusinessId) Color.Green else Color.Gray,
+                contentDescription = "Business ID Verification"
+            )
+        },
+        label = {
+            Text(
+                text = stringResource(id = R.string.label_business_id),
+                color = Color.LightGray
+            )
+        },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            unfocusedBorderColor = Color.Black,
+            focusedBorderColor = Color.Blue,
+            textColor = Color.Black
+        ),
+        shape = RoundedCornerShape(CURVATURE.dp),
+        singleLine = true,
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions.Default
+    )
+}
+
+@Composable
 fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
-                    isLoading: MutableState<Boolean>) {
+                    isLoading: Boolean) {
+    BusinessIdInputField(
+        viewModel = viewModel,
+        modifier = Modifier.fillMaxWidth().padding(PADDING.dp)
+    )
     LSTextField(
         modifier = Modifier
             .padding(PADDING.dp)
@@ -242,7 +340,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
         onClick = {
             viewModel.createNewUser()
         }) {
-        if(isLoading.value) {
+        if (isLoading) {
             CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
         } else {
             Text(
@@ -276,7 +374,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
 
 @Composable
 fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
-                     isLoading: MutableState<Boolean>) {
+                     isLoading: Boolean) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -349,7 +447,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             onClick = {
                 viewModel.createNewUser()
             }) {
-            if(isLoading.value) {
+            if (isLoading) {
                 CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
             } else {
                 Text(

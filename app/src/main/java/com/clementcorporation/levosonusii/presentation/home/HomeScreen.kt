@@ -58,7 +58,7 @@ fun HomeScreen(navController: NavController) {
     val profilePicUrl = userState.profilePicUrl
     BackHandler {
         viewModel.signOut {
-            navController.navigate(LevoSonusScreens.LoadingScreen.name)
+            navController.navigate(LevoSonusScreens.LoginScreen.name)
         }
     }
     Surface(
@@ -76,7 +76,7 @@ fun HomeScreen(navController: NavController) {
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.navigate(LevoSonusScreens.LoadingScreen.name)
+                            navController.navigate(LevoSonusScreens.LoginScreen.name)
                         }
                     },
                     onClickLeftIcon = {

@@ -120,7 +120,6 @@ class MainActivity : ComponentActivity(){
                         showFab = showFAB,
                         navController = navController,
                         showVoiceCommandActivity = viewModel::showVoiceCommandActivity,
-                        fusedLocationClient = fusedLocationClient
                     )
                     if (showFAB.value) {
                         LSFAB {
@@ -164,7 +163,7 @@ class MainActivity : ComponentActivity(){
                 }
                 VoiceCommands.SIGN_OUT -> {
                     viewModel.signOut {
-                        navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                        navController.navigate(LevoSonusScreens.LoginScreen.name)
                     }
                 }
                 VoiceCommands.VOICE_PROFILE -> {

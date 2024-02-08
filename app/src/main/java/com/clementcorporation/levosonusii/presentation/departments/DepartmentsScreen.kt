@@ -74,7 +74,7 @@ fun DepartmentsScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.navigate(LevoSonusScreens.LoadingScreen.name)
+                            navController.navigate(LevoSonusScreens.LoginScreen.name)
                         }
                     },
                     onClickLeftIcon = {

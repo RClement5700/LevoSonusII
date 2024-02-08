@@ -15,9 +15,11 @@
     <string name="label_password">6 Digit Pin</string>
     <string name="login_navigation_pretext">New User?</string>
     <string name="login_navigation_link_text">Sign Up</string>
+    <string name="failed_to_load_error_message">Failed to load\nTap to retry</string>
 
     <!-- Register Screen -->
     <string name="btn_text_register">Register</string>
+    <string name="label_business_id">Business ID</string>
     <string name="label_email_address">Email Address</string>
     <string name="label_first_name">First Name</string>
     <string name="label_last_name">Last Name</string>

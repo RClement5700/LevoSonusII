@@ -21,6 +21,9 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 private const val TAG = "MachinesScreen"
 @Composable
 fun MachinesScreen(navController: NavController) {
+    //TODO: Add a searchbar that filters the list with a typing delay of 3 seconds because operators
+    //      will likely find their machine then want to match the serial number on the machine
+    //      to a corresponding number on screen rather than scrolling through a list
     val viewModel: MachinesScreenViewModel = hiltViewModel()
 
     BackHandler {
@@ -41,7 +44,7 @@ fun MachinesScreen(navController: NavController) {
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.clearBackStack(LevoSonusScreens.LoadingScreen.name)
+                            navController.clearBackStack(LevoSonusScreens.LoginScreen.name)
                         }
                     },
                     onClickLeftIcon = {

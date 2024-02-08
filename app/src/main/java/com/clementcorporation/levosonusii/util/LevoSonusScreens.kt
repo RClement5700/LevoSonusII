@@ -1,7 +1,6 @@
 package com.clementcorporation.levosonusii.util
 
 enum class LevoSonusScreens {
-    LoadingScreen,
     LoginScreen,
     RegisterScreen,
     VoiceProfileScreen,

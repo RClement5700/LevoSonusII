@@ -10,18 +10,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -48,10 +57,9 @@ import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LOGO_SIZE
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
-import com.clementcorporation.levosonusii.util.Constants.VALID_EMPLOYEE_ID_LENGTH
+import com.clementcorporation.levosonusii.util.Constants.VALID_BUSINESS_ID_LENGTH
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
-import com.clementcorporation.levosonusii.util.LSTextField
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
@@ -61,6 +69,7 @@ fun LoginScreen(navController: NavController) {
     val viewModel: LoginViewModel = hiltViewModel()
     val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
+    val centerContent = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxSize(),
         elevation = ELEVATION.dp,
@@ -77,55 +86,19 @@ fun LoginScreen(navController: NavController) {
                 )
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            LevoSonusLogo(LOGO_SIZE.dp)
-            LSTextField(
-                modifier = Modifier
-                    .padding(PADDING.dp)
-                    .fillMaxWidth(),
-                userInput = viewModel.employeeId,
-                label = stringResource(id = R.string.label_employee_id),
-                keyboardType = KeyboardType.Number,
-                onAction = KeyboardActions {
-                    defaultKeyboardAction(ImeAction.Next)
-                }
+            verticalArrangement = if (centerContent.value) Arrangement.Center else Arrangement.Top
             ) {
-                if (it.length <= VALID_EMPLOYEE_ID_LENGTH) viewModel.employeeId = it
-            }
-            LSPasswordTextField(
-                modifier = Modifier
-                    .padding(PADDING.dp)
-                    .fillMaxWidth(),
-                userInput = viewModel.password,
-                label = stringResource(id = R.string.label_password),
-                onAction = KeyboardActions {
-                    viewModel.signIn()
-                }
-            ) {
-                if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
-            }
-            when (configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
-                    viewModel = viewModel,
-                    navController = navController,
-                    isLoading = isLoading
-                )
-                else -> PortraitButtonAndRegistrationContent(
-                    viewModel = viewModel,
-                    navController = navController,
-                    isLoading = isLoading
-                )
-            }
             when (uiState) {
                 is LoginScreenUiState.OnUserDataRetrieved -> {
                     SideEffect {
                         isLoading.value = false
+                        centerContent.value = false
                         navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 }
                 is LoginScreenUiState.OnFailedToLoadUser -> {
                     isLoading.value = false
+                    centerContent.value = false
                     Snackbar(
                         modifier = Modifier.fillMaxWidth(0.9f),
                         shape = RoundedCornerShape(8.dp),
@@ -139,15 +112,117 @@ fun LoginScreen(navController: NavController) {
                         )
                     }
                 }
-                is LoginScreenUiState.OnLoading -> {
-                    SideEffect {
-                        isLoading.value = uiState.isLoading
+                is LoginScreenUiState.OnFailedToLoadBusinesses -> {
+                    isLoading.value = false
+                    centerContent.value = true
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clickable { viewModel.fetchBusinesses() },
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.failed_to_load_error_message),
+                            textAlign = TextAlign.Center,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Icon(
+                            modifier = Modifier.size(48.dp),
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Try Again",
+                            tint = Color.Green
+                        )
                     }
                 }
-                else -> {}
+                is LoginScreenUiState.OnLoading -> {
+                    centerContent.value = true
+                    isLoading.value = true
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = LS_BLUE,
+                        strokeWidth = 4.dp
+                    )
+                }
+
+                is LoginScreenUiState.OnBusinessesRetrieved -> {
+                    isLoading.value = false
+                    centerContent.value = false
+                    viewModel.onBusinessRetrieved()
+                    LevoSonusLogo(LOGO_SIZE.dp)
+                    EmployeeIdInputField(
+                        viewModel = viewModel,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(PADDING.dp)
+                    )
+                    LSPasswordTextField(
+                        modifier = Modifier
+                            .padding(PADDING.dp)
+                            .fillMaxWidth(),
+                        userInput = viewModel.password,
+                        label = stringResource(id = R.string.label_password),
+                        onAction = KeyboardActions {
+                            viewModel.signIn()
+                        }
+                    ) {
+                        if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
+                    }
+                    when (configuration.orientation) {
+                        Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
+                            viewModel = viewModel,
+                            navController = navController,
+                            isLoading = isLoading
+                        )
+
+                        else -> PortraitButtonAndRegistrationContent(
+                            viewModel = viewModel,
+                            navController = navController,
+                            isLoading = isLoading
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+fun EmployeeIdInputField(viewModel: LoginViewModel, modifier: Modifier) {
+    OutlinedTextField(
+        modifier = modifier,
+        value = viewModel.employeeId,
+        onValueChange = { query ->
+            viewModel.employeeId = query
+            if (viewModel.employeeId.length >= VALID_BUSINESS_ID_LENGTH) viewModel.onQueryChange()
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.VerifiedUser,
+                tint = if (viewModel.isVerifiedEmployeeId) Color.Green else Color.Gray,
+                contentDescription = "Employee ID Verification"
+            )
+        },
+        label = {
+            Text(
+                text = stringResource(id = R.string.label_employee_id),
+                color = Color.LightGray
+            )
+        },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            unfocusedBorderColor = Color.Black,
+            focusedBorderColor = Color.Blue,
+            textColor = Color.Black
+        ),
+        shape = RoundedCornerShape(CURVATURE.dp),
+        singleLine = true,
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions.Default
+    )
 }
 
 @Composable
