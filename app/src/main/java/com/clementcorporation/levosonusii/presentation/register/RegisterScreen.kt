@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -101,6 +102,38 @@ fun RegisterScreen(navController: NavController) {
                         strokeWidth = 4.dp
                     )
                 }
+                is RegisterScreenUiState.OnBusinessesRetrieved -> {
+                    isLoading.value = false
+                    centerContent.value = false
+                    when(configuration.orientation) {
+                        Configuration.ORIENTATION_LANDSCAPE -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                LevoSonusLogo(LOGO_SIZE.dp)
+                                BusinessIdInputField(
+                                    viewModel = viewModel,
+                                    modifier = Modifier.fillMaxWidth(0.55f)
+                                )
+                            }
+                            LandscapeContent(
+                                viewModel = viewModel,
+                                navController = navController,
+                                isLoading = isLoading
+                            )
+                        }
+                        else -> {
+                            LevoSonusLogo(LOGO_SIZE.dp)
+                            PortraitContent(
+                                viewModel = viewModel,
+                                navController = navController,
+                                isLoading = isLoading
+                            )
+                        }
+                    }
+                }
                 is RegisterScreenUiState.OnFailedToLoadBusinesses -> {
                     isLoading.value = false
                     centerContent.value = true
@@ -157,7 +190,6 @@ fun RegisterScreen(navController: NavController) {
                         Toast.LENGTH_LONG
                     ).show()
                 }
-                else -> {}
             }
             if (showNewUserDialog.value) {
                 LSAlertDialog(
@@ -202,34 +234,6 @@ fun RegisterScreen(navController: NavController) {
                     }
                 )
             }
-            when(configuration.orientation) {
-                Configuration.ORIENTATION_LANDSCAPE -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        LevoSonusLogo(LOGO_SIZE.dp)
-                        BusinessIdInputField(
-                            viewModel = viewModel,
-                            modifier = Modifier.fillMaxWidth(0.55f)
-                        )
-                    }
-                    LandscapeContent(
-                        viewModel = viewModel,
-                        navController = navController,
-                        isLoading = isLoading.value
-                    )
-                }
-                else -> {
-                    LevoSonusLogo(LOGO_SIZE.dp)
-                    PortraitContent(
-                        viewModel = viewModel,
-                        navController = navController,
-                        isLoading = isLoading.value
-                    )
-                }
-            }
         }
     }
 }
@@ -271,7 +275,8 @@ fun BusinessIdInputField(viewModel: RegisterViewModel, modifier: Modifier) {
 
 @Composable
 fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
-                    isLoading: Boolean) {
+                    isLoading: MutableState<Boolean>
+) {
     BusinessIdInputField(
         viewModel = viewModel,
         modifier = Modifier.fillMaxWidth().padding(PADDING.dp)
@@ -340,7 +345,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
         onClick = {
             viewModel.createNewUser()
         }) {
-        if (isLoading) {
+        if (isLoading.value) {
             CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
         } else {
             Text(
@@ -374,7 +379,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
 
 @Composable
 fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
-                     isLoading: Boolean) {
+                     isLoading: MutableState<Boolean>) {
     Row(
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -447,7 +452,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             onClick = {
                 viewModel.createNewUser()
             }) {
-            if (isLoading) {
+            if (isLoading.value) {
                 CircularProgressIndicator(strokeWidth = 4.dp, color = Color.White)
             } else {
                 Text(
