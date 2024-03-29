@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetBusinessesUseCase @Inject constructor(
+open class GetBusinessesUseCase @Inject constructor(
     private val db: CollectionReference
 ) {
     operator fun invoke(): Flow<Response<List<Business?>>> =

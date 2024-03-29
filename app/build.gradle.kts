@@ -63,14 +63,14 @@ android {
 
 dependencies {
     val daggerVersion = "2.48"
-    val lifecycleVersion = "2.6.2"
+    val lifecycleVersion = "2.7.0"
     val hiltVersion = "1.1.0"
 
     //Volley
     implementation ("com.android.volley:volley:1.2.1")
 
     //Location
-    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation ("com.google.android.gms:play-services-location:21.1.0")
 
     //firebase/firestore
     implementation (platform("com.google.firebase:firebase-bom:32.6.0"))
@@ -88,17 +88,16 @@ dependencies {
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    //material icons - use with caution!
-    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
-    implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation ("com.google.android.material:material:1.11.0")
-    implementation ("androidx.compose.material:material:1.5.4")
-    implementation ("androidx.navigation:navigation-compose:2.7.6")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0-rc02")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.1")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("androidx.compose.material:material:1.6.1")
+    implementation ("androidx.navigation:navigation-compose:2.7.7")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation ("androidx.core:core-ktx:1.12.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -110,6 +109,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation ("com.google.accompanist:accompanist-permissions:0.21.1-beta")
     testImplementation("junit:junit:4.13.2")
+    testImplementation ("org.mockito:mockito-core:4.5.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))

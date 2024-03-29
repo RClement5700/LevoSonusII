@@ -76,7 +76,9 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun filterBusinesses(): Business? =
-        businesses.find { it?.id == employeeId.substring(0, VALID_BUSINESS_ID_LENGTH) }
+        if (employeeId.isNotEmpty())
+            businesses.find { it?.id == employeeId.substring(0, VALID_BUSINESS_ID_LENGTH) }
+        else null
 
     fun onBusinessRetrieved() {
         ioJob.cancel()
