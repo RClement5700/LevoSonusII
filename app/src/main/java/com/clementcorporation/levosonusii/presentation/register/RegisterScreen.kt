@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,6 +77,7 @@ fun RegisterScreen(navController: NavController) {
     LSSurface {
         Column(
             modifier = Modifier
+                .imePadding()
                 .padding(
                     top = when (configuration.orientation) {
                         Configuration.ORIENTATION_LANDSCAPE -> 8.dp
@@ -335,8 +337,9 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
         enabled = viewModel.validateInputs(),
         colors = ButtonDefaults.buttonColors(
-//            backgroundColor = LS_BLUE,
-//            disabledBackgroundColor = Color.LightGray
+            containerColor = LS_BLUE,
+            disabledContainerColor = Color.LightGray,
+            contentColor = Color.White
         ),
         onClick = {
             viewModel.createNewUser()
@@ -442,8 +445,9 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
             elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
             enabled = viewModel.validateInputs(),
             colors = ButtonDefaults.buttonColors(
-//                backgroundColor = LS_BLUE,
-//                disabledBackgroundColor = Color.LightGray
+                containerColor = LS_BLUE,
+                disabledContainerColor = Color.LightGray,
+                contentColor = Color.White
             ),
             onClick = {
                 viewModel.createNewUser()
