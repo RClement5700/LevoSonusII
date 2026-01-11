@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,18 +17,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -46,7 +44,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
@@ -60,6 +58,7 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSAlertDialog
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
+import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LSTextField
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
@@ -74,12 +73,7 @@ fun RegisterScreen(navController: NavController) {
     val centerContent = remember { mutableStateOf(false) }
     val showNewUserDialog = remember { mutableStateOf(false) }
     val showVoiceProfileDialog = remember { mutableStateOf(false) }
-    Card(
-        modifier = Modifier.fillMaxSize(),
-        elevation = ELEVATION.dp,
-        backgroundColor = Color.White,
-        shape = RoundedCornerShape(CURVATURE.dp)
-    ) {
+    LSSurface {
         Column(
             modifier = Modifier
                 .padding(
@@ -192,19 +186,19 @@ fun RegisterScreen(navController: NavController) {
                 }
             }
             if (showNewUserDialog.value) {
+                val newUserDialog = stringResource(
+                    R.string.register_screen_new_user_dialog_body,
+                    viewModel.firstName,
+                    viewModel.lastName,
+                    viewModel.email,
+                    viewModel.employeeId
+                )
+                val screenshotMessage = stringResource(R.string.register_screen_take_screenshot_toast_message)
                 LSAlertDialog(
                     showAlertDialog = showNewUserDialog,
                     dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
                     dialogBody = remember {
-                        mutableStateOf(
-                            context.getString(
-                                R.string.register_screen_new_user_dialog_body,
-                                viewModel.firstName,
-                                viewModel.lastName,
-                                viewModel.email,
-                                viewModel.employeeId
-                            )
-                        )
+                        mutableStateOf(newUserDialog)
                     },
                     onPositiveButtonClicked = {
                         showNewUserDialog.value = false
@@ -213,7 +207,7 @@ fun RegisterScreen(navController: NavController) {
                     onNegativeButtonClicked = {
                         Toast.makeText(
                             context,
-                            context.getString(R.string.register_screen_take_screenshot_toast_message),
+                            screenshotMessage,
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -260,10 +254,12 @@ fun BusinessIdInputField(viewModel: RegisterViewModel, modifier: Modifier) {
                 color = Color.LightGray
             )
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = Color.Black,
             focusedBorderColor = Color.Blue,
-            textColor = Color.Black
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = LS_BLUE
         ),
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
@@ -336,11 +332,11 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             .height(BTN_HEIGHT.dp)
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE.dp),
-        elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
         enabled = viewModel.validateInputs(),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = LS_BLUE,
-            disabledBackgroundColor = Color.LightGray
+//            backgroundColor = LS_BLUE,
+//            disabledBackgroundColor = Color.LightGray
         ),
         onClick = {
             viewModel.createNewUser()
@@ -443,11 +439,11 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 .height(BTN_HEIGHT.dp)
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE.dp),
-            elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
             enabled = viewModel.validateInputs(),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = LS_BLUE,
-                disabledBackgroundColor = Color.LightGray
+//                backgroundColor = LS_BLUE,
+//                disabledBackgroundColor = Color.LightGray
             ),
             onClick = {
                 viewModel.createNewUser()

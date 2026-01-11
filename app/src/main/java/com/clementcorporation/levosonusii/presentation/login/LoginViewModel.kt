@@ -76,7 +76,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun filterBusinesses(): Business? =
-        if (employeeId.isNotEmpty())
+        if (employeeId.length >= VALID_BUSINESS_ID_LENGTH)
             businesses.find { it?.id == employeeId.substring(0, VALID_BUSINESS_ID_LENGTH) }
         else null
 

@@ -13,6 +13,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,12 +23,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -96,6 +98,7 @@ class VoiceCommandActivity: ComponentActivity(), VoiceCommandRecognitionListener
             }
             Card(
                 modifier = Modifier
+                    .background(color = Color.Transparent.copy(0.8f))
                     .clickable {
                         finish()
                     }
@@ -103,8 +106,7 @@ class VoiceCommandActivity: ComponentActivity(), VoiceCommandRecognitionListener
                     .fillMaxHeight(height)
                     .padding(PADDING.dp),
                 shape = RoundedCornerShape(Constants.CURVATURE.dp),
-                backgroundColor = Color.Transparent.copy(0.8f),
-                elevation = ELEVATION.dp
+                elevation = CardDefaults.elevatedCardElevation(ELEVATION.dp)
             ) {
                 Column(verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(modifier = Modifier.padding(PADDING.dp), color = Color.White, text = prompt)

@@ -81,7 +81,7 @@ class LevoSonusService: Service(), VoiceCommandRecognitionListener {
             it?.first()?.let { result ->
                 wordsSpoken.value = result.trim()
                 if (wordsSpoken.value.contentEquals(VoiceProfileConstants.JARVIS.name, true)) {
-                    unmuteSystem()
+                    //unmuteSystem()
                     startActivity(Intent(this, VoiceCommandActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         .putExtra(PROMPT_KEYWORD, DEFAULT_VOICE_COMMAND_PROMPT)
@@ -97,8 +97,8 @@ class LevoSonusService: Service(), VoiceCommandRecognitionListener {
         aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, AudioManager.ADJUST_MUTE)
         aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.ADJUST_MUTE)
     }
-    private fun unmuteSystem() {
-        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 4, AudioManager.ADJUST_UNMUTE)
-        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 4, AudioManager.ADJUST_UNMUTE)
-    }
+//    private fun unmuteSystem() {
+//        aManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 4, AudioManager.ADJUST_UNMUTE)
+//        aManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 4, AudioManager.ADJUST_UNMUTE)
+//    }
 }

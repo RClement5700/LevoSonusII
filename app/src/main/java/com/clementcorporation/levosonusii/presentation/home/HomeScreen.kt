@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,13 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -63,13 +64,14 @@ fun HomeScreen(navController: NavController) {
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
-        elevation = ELEVATION.dp,
+        shadowElevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            backgroundColor = Color.White,
+            modifier = Modifier
+                .background(color = Color.White)
+                .fillMaxSize(),
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = title,
@@ -96,7 +98,7 @@ fun HomeScreen(navController: NavController) {
 fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
     val configuration = LocalConfiguration.current
     Surface(
-        elevation = 8.dp,
+        shadowElevation = 8.dp,
         shape = RoundedCornerShape(8.dp),
         modifier = when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
@@ -115,7 +117,7 @@ fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
         Box(
             contentAlignment = Alignment.TopEnd
         ) {
-            IconButton(
+            IconButton (
                 modifier = Modifier
                     .padding(PADDING.dp)
                     .size(25.dp)

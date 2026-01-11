@@ -3,6 +3,7 @@ package com.clementcorporation.levosonusii.presentation.departments
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,15 +20,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
@@ -61,13 +62,14 @@ fun DepartmentsScreen(navController: NavController) {
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
-        elevation = ELEVATION.dp,
+        shadowElevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(CURVATURE.dp)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            backgroundColor = Color.White,
+            modifier = Modifier
+                .background(color = Color.White)
+                .fillMaxSize(),
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.departments_screen_title_text),
@@ -100,7 +102,7 @@ fun DepartmentsScreen(navController: NavController) {
             }
             Column {
                 Spacer(modifier = Modifier.height(4.dp))
-                Divider(
+                HorizontalDivider(
                     color = LS_BLUE,
                     thickness = 2.dp,
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp)
@@ -140,10 +142,10 @@ fun DepartmentsScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(BTN_HEIGHT.dp),
                     shape = RoundedCornerShape(CURVATURE),
-                    elevation = ButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = LS_BLUE,
-                        disabledBackgroundColor = Color.Gray
+//                        backgroundColor = LS_BLUE,
+//                        disabledBackgroundColor = Color.Gray
                     ),
                     onClick = {
                         viewModel.updateUsersDepartment()
@@ -187,7 +189,7 @@ fun DepartmentTile(
                 }
             ),
         color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
-        elevation = 8.dp,
+        shadowElevation = 8.dp,
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
@@ -211,7 +213,7 @@ fun DepartmentTile(
                 Text(
                     text = title,
                     color = Color.Black,
-                    style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             Row(
@@ -222,12 +224,12 @@ fun DepartmentTile(
                 Text(
                     text = stringResource(id = R.string.departments_screen_department_forklift_operator_label, forklifts),
                     color = Color.Black,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodySmall
                 )
                 Text(
                     text = stringResource(id = R.string.departments_screen_department_remaining_orders_label, remainingOrders),
                     color = Color.Black,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodySmall
                 )
 
             }
@@ -239,12 +241,12 @@ fun DepartmentTile(
                 Text(
                     text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label, orderPickers),
                     color = Color.Black,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodySmall
                 )
                 Text(
                     text = stringResource(id = R.string.departments_screen_department_total_orders_label, totalOrders),
                     color = Color.Black,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }

@@ -1,6 +1,5 @@
 package com.clementcorporation.levosonusii.util
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,20 +10,50 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipDefaults.caretShape
+import androidx.compose.material3.TooltipDefaults.rememberTooltipPositionProvider
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +74,7 @@ import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import kotlinx.coroutines.launch
 
 private const val LOGO_DESCRIPTION = "LevoSonus Logo"
 @Composable
@@ -53,7 +83,7 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
         Card(
             modifier = Modifier.size(size),
             shape = CircleShape,
-            elevation = 2.dp
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.levosonus_rocket_logo),
@@ -64,7 +94,7 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
         if (showText) {
             Text(
                 text = stringResource(id = R.string.app_name),
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.bodyMedium,
                 fontStyle = FontStyle.Italic,
                 color = Color.Gray
             )
@@ -72,7 +102,6 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
     }
 }
 
-@SuppressLint("PrivateResource")
 @Composable
 fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, title: String,
              profilePicUrl: String?, onClickLeftIcon: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
@@ -96,16 +125,27 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
                 imageUrl = profilePicUrl
             )
         } else {
-            Image(
-                modifier = Modifier
-                    .rotate(180f)
-                    .size(35.dp)
-                    .clip(CircleShape)
-                    .clickable(onClick = onClickLeftIcon),
-                painter = painterResource(id = androidx.constraintlayout.widget.R.drawable.abc_ic_arrow_drop_right_black_24dp),
-                contentDescription = "Profile Picture",
-                contentScale = ContentScale.Crop
-            )
+            IconButton(
+                onClick = {},
+                modifier = Modifier,
+                enabled = true,
+                colors = IconButtonDefaults.iconButtonColors(),
+                interactionSource = null,
+                shape = CircleShape
+            ) {
+                Icon(imageVector = Icons.Default.ArrowCircleLeft, contentDescription = "Back Button")
+
+            }
+//            Image(
+//                modifier = Modifier
+//                    .rotate(180f)
+//                    .size(35.dp)
+//                    .clip(CircleShape)
+//                    .clickable(onClick = onClickLeftIcon),
+//                painter = painterResource(id = android.),
+//                contentDescription = "Profile Picture",
+//                contentScale = ContentScale.Crop
+//            )
         }
         Text(
             modifier = Modifier.padding(PADDING.dp),
@@ -132,16 +172,19 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
                 expanded = expandMenu.value,
                 onDismissRequest = { expandMenu.value = false }
             ) {
-                DropdownMenuItem(onClick = { /* Handle refresh! */ }) {
-                    Text(stringResource(id = R.string.menu_item_account_label))
-                }
-                DropdownMenuItem(onClick = { /* Handle settings! */ }) {
-                    Text(stringResource(id = R.string.menu_item_settings_label))
-                }
-                Divider()
-                DropdownMenuItem(onClick = onClickSignOut) {
-                    Text(stringResource(id = R.string.menu_item_sign_out_label))
-                }
+                DropdownMenuItem(
+                    text = { Text(stringResource(id = R.string.menu_item_account_label)) },
+                    onClick = { /* Handle refresh! */ }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(id = R.string.menu_item_settings_label)) },
+                    onClick = { /* Handle settings! */ }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(id = R.string.menu_item_sign_out_label)) },
+                    onClick = onClickSignOut
+                )
             }
         }
     } 
@@ -162,17 +205,72 @@ fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LSFAB(onClick: () -> Unit = {}) {
-    FloatingActionButton(
-        modifier = Modifier.zIndex(1f),
-        onClick = onClick,
-        shape = CircleShape,
-        backgroundColor = LS_BLUE,
-        elevation = FloatingActionButtonDefaults.elevation(),
-        ) {
-        LevoSonusLogo(size = 50.dp, showText = false)
+fun LSFAB(onClick: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.Top
+    ){
+        val infoNote = stringResource(R.string.ls_fab_tooltip_note)
+        val tooltipState = rememberTooltipState(
+            initialIsVisible = true,
+            isPersistent = true
+        )
+        val coroutineScope = rememberCoroutineScope()
+        TooltipBox(
+            positionProvider = rememberTooltipPositionProvider(TooltipAnchorPosition.Start),
+            tooltip = {
+                PlainTooltip(
+                    shape = RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp),
+                    containerColor = Color.White,
+                    shadowElevation = 2.dp
+                ) {
+                    Text(
+                        text = infoNote,
+                        color = LS_BLUE
+                    )
+                }
+            },
+            state = tooltipState
+        ) {}
+        SideEffect {
+            coroutineScope.launch {
+                tooltipState.show()
+            }
+        }
+        Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(LS_BLUE)
+                    .blur(radius = 20.dp)
+                    .alpha(0.7f)
+            )
+            FloatingActionButton(
+                modifier = Modifier.zIndex(1f),
+                shape = FloatingActionButtonDefaults.largeShape,
+                onClick = onClick,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = ELEVATION.dp),
+            ) {
+                LevoSonusLogo(size = 56.dp, showText = false)
+            }
+        }
     }
+}
+
+@Composable
+fun LSSurface(content : @Composable () -> Unit) {
+    Surface (
+        modifier = Modifier
+            .background(color = Color.White)
+            .fillMaxSize()
+            .padding(top = 16.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars),
+        shadowElevation = ELEVATION.dp,
+        shape = RoundedCornerShape(CURVATURE.dp),
+        content = content
+    )
 }
 
 @Composable
@@ -181,10 +279,10 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
         modifier = Modifier
             .fillMaxWidth()
             .padding(PADDING.dp)
+            .background(color = Color.White)
             .clickable(onClick = onClick),
-        elevation = ELEVATION.dp,
+        elevation = CardDefaults.elevatedCardElevation(ELEVATION.dp),
         shape = RoundedCornerShape(CURVATURE.dp),
-        backgroundColor = Color.White
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -215,7 +313,7 @@ fun NavTile(title: String, icon: Int = R.drawable.scanner_icon, showIcon: Mutabl
             ) {
                 Icon(
                     tint = LS_BLUE,
-                    imageVector = Icons.Default.ArrowRight,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
                     contentDescription = ""
                 )
             }
@@ -239,10 +337,12 @@ fun LSTextField(modifier: Modifier = Modifier, userInput: String = "",
                 color = Color.LightGray
             )
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = Color.Black,
             focusedBorderColor = Color.Blue,
-            textColor = Color.Black
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = LS_BLUE
         ),
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
@@ -278,10 +378,12 @@ fun LSPasswordTextField(modifier: Modifier = Modifier, userInput: String = "", l
                 color = Color.LightGray
             )
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = Color.Black,
             focusedBorderColor = Color.Blue,
-            textColor = Color.Black
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = LS_BLUE
         ),
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
@@ -292,25 +394,29 @@ fun LSPasswordTextField(modifier: Modifier = Modifier, userInput: String = "", l
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
     dialogBody: MutableState<String> = mutableStateOf(""), onPositiveButtonClicked: () -> Unit = {},
                   onNegativeButtonClicked: () -> Unit = {}
 ) {
-    AlertDialog(
+    BasicAlertDialog(
         modifier = Modifier
+            .background(color = Color.White)
+            .clip(RoundedCornerShape(CURVATURE.dp))
             .fillMaxWidth(.9f)
             .fillMaxHeight(
                 if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
                     0.6f else 0.33f
             ),
-        backgroundColor = Color.White,
-        shape = RoundedCornerShape(CURVATURE.dp),
-        properties = DialogProperties(),
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        ),
         onDismissRequest = {
             showAlertDialog.value = false
         },
-        buttons = {
+        content = {
             Column(modifier = Modifier.padding(PADDING.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 LevoSonusLogo(size = 40.dp, showText = true)
                 Spacer(modifier = Modifier.weight(1f))
@@ -332,7 +438,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             .padding(2.dp)
                             .weight(1f),
                         onClick = onPositiveButtonClicked,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = LS_BLUE)
+                        colors = ButtonDefaults.buttonColors()//(backgroundColor = LS_BLUE)
                     ) {
                         Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
                     }
@@ -341,7 +447,7 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                             .padding(2.dp)
                             .weight(1f),
                         onClick = onNegativeButtonClicked,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = LS_BLUE)
+                        colors = ButtonDefaults.buttonColors()//(backgroundColor = LS_BLUE)
                     ) {
                         Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
                     }

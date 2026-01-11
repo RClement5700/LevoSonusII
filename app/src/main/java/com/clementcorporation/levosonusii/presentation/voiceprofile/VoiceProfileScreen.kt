@@ -3,6 +3,7 @@ package com.clementcorporation.levosonusii.presentation.voiceprofile
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,30 +17,31 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants
+import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
@@ -60,13 +62,14 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
-        elevation = Constants.ELEVATION.dp,
+        shadowElevation = ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(Constants.CURVATURE.dp)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            backgroundColor = Color.White,
+            modifier = Modifier
+                .background(color = Color.White)
+                .fillMaxSize(),
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.voice_profile_screen_toolbar_title),
@@ -113,7 +116,7 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                     verticalArrangement = Arrangement.Top
                 ) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Divider(
+                    HorizontalDivider(
                         color = LS_BLUE,
                         thickness = 2.dp,
                         modifier = Modifier.padding(start = 8.dp, end = 8.dp)
@@ -145,13 +148,13 @@ fun VoiceProfileWarningDialog(
     ) {
         Card(
             modifier = Modifier
+                .background(color = Color.White)
                 .fillMaxWidth(0.8f)
                 .fillMaxHeight(0.33f)
                 .padding(Constants.PADDING.dp)
                 .zIndex(1f),
-            elevation = Constants.ELEVATION.dp,
+            elevation = CardDefaults.elevatedCardElevation(ELEVATION.dp),
             shape = RoundedCornerShape(Constants.CURVATURE.dp),
-            backgroundColor = Color.White,
             border = BorderStroke(2.dp, LS_BLUE)
         ) {
             Column(
@@ -159,9 +162,8 @@ fun VoiceProfileWarningDialog(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val context = LocalContext.current
                 Text(
-                    text = context.getString(
+                    text = stringResource(
                         R.string.voice_profile_are_you_sure_dialog_title
                     ),
                     color = Color.Gray,
@@ -174,7 +176,7 @@ fun VoiceProfileWarningDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Divider(
+                HorizontalDivider(
                     color = LS_BLUE,
                     thickness = 2.dp,
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp)
@@ -190,10 +192,10 @@ fun VoiceProfileWarningDialog(
                             .fillMaxWidth()
                             .height(48.dp),
                         shape = RoundedCornerShape(Constants.CURVATURE),
-                        elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
+                        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = LS_BLUE,
-                            disabledBackgroundColor = Color.LightGray
+//                            backgroundColor = LS_BLUE,
+//                            disabledBackgroundColor = Color.LightGray
                         ),
                         onClick = {
                             showVoiceCommandActivity(viewModel.warningDialogTitle.value)
@@ -216,10 +218,10 @@ fun VoiceProfileWarningDialog(
                             .height(48.dp),
                         shape = RoundedCornerShape(Constants.CURVATURE),
                         border = BorderStroke(2.dp, LS_BLUE),
-                        elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
+                        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color.White,
-                            disabledBackgroundColor = Color.LightGray
+//                            backgroundColor = Color.White,
+//                            disabledBackgroundColor = Color.LightGray
                         ),
                         onClick = {
                             viewModel.showWarningDialog.value = false

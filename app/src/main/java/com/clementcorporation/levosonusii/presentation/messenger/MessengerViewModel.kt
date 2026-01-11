@@ -1,8 +1,6 @@
 package com.clementcorporation.levosonusii.presentation.messenger
 
 import android.icu.text.SimpleDateFormat
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -64,23 +62,23 @@ class MessengerViewModel @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
-    fun showBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
-        viewModelScope.launch {
-            withContext(coroutineScope.coroutineContext) {
-                bottomSheetState.show()
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterialApi::class)
-    fun hideBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
-        viewModelScope.launch {
-            withContext(coroutineScope.coroutineContext) {
-                bottomSheetState.hide()
-            }
-        }
-    }
+//    @OptIn(ExperimentalMaterialApi::class)
+//    fun showBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
+//        viewModelScope.launch {
+//            withContext(coroutineScope.coroutineContext) {
+//                bottomSheetState.show()
+//            }
+//        }
+//    }
+//
+//    @OptIn(ExperimentalMaterialApi::class)
+//    fun hideBottomSheet(coroutineScope: CoroutineScope, bottomSheetState: ModalBottomSheetState) {
+//        viewModelScope.launch {
+//            withContext(coroutineScope.coroutineContext) {
+//                bottomSheetState.hide()
+//            }
+//        }
+//    }
 
     private fun retrieveMessages() {
         viewModelScope.launch {

@@ -2,6 +2,7 @@ package com.clementcorporation.levosonusii.presentation.equipment
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants
@@ -38,13 +39,14 @@ fun EquipmentScreen(navController: NavController) {
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
-        elevation = Constants.ELEVATION.dp,
+        shadowElevation = Constants.ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(Constants.CURVATURE.dp)
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            backgroundColor = Color.White,
+            modifier = Modifier
+                .background(color = Color.White)
+                .fillMaxSize(),
             topBar = {
                 LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.equipment_screen_toolbar_title_text),
@@ -63,7 +65,7 @@ fun EquipmentScreen(navController: NavController) {
             Log.e(TAG, it.toString())
             Column(modifier = Modifier.verticalScroll(enabled = true, state = rememberScrollState())) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Divider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
+                HorizontalDivider(color = LS_BLUE, thickness = 2.dp, modifier = Modifier.padding(start = 8.dp, end = 8.dp))
                 Spacer(modifier = Modifier.height(8.dp))
                 NavTile(title = stringResource(id = R.string.equipment_screen_headsets_tile_title_text), icon = R.drawable.headset_icon, showIcon = remember {
                     mutableStateOf(true)

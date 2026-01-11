@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,20 +16,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ButtonDefaults.elevation
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Snackbar
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -46,7 +43,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
@@ -60,6 +57,7 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.Constants.VALID_BUSINESS_ID_LENGTH
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
+import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 
@@ -70,12 +68,7 @@ fun LoginScreen(navController: NavController) {
     val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
     val centerContent = remember { mutableStateOf(false) }
-    Card(
-        modifier = Modifier.fillMaxSize(),
-        elevation = ELEVATION.dp,
-        backgroundColor = Color.White,
-        shape = RoundedCornerShape(CURVATURE.dp)
-    ) {
+    LSSurface {
         Column(
             modifier = Modifier
                 .padding(
@@ -102,7 +95,6 @@ fun LoginScreen(navController: NavController) {
                     Snackbar(
                         modifier = Modifier.fillMaxWidth(0.9f),
                         shape = RoundedCornerShape(8.dp),
-                        elevation = 4.dp
                     ) {
                         Text(
                             modifier = Modifier.fillMaxWidth(),
@@ -212,10 +204,12 @@ fun EmployeeIdInputField(viewModel: LoginViewModel, modifier: Modifier) {
                 color = Color.LightGray
             )
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = Color.Black,
             focusedBorderColor = Color.Blue,
-            textColor = Color.Black
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = LS_BLUE
         ),
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
@@ -236,11 +230,12 @@ fun PortraitButtonAndRegistrationContent(
             .height(BTN_HEIGHT.dp)
             .width(BTN_WIDTH.dp),
         shape = RoundedCornerShape(CURVATURE),
-        elevation = elevation(defaultElevation = ELEVATION.dp),
+        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
         enabled = viewModel.validateInputs(),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = LS_BLUE,
-            disabledBackgroundColor = Color.LightGray
+            containerColor = LS_BLUE,
+            disabledContainerColor = Color.LightGray,
+            contentColor = Color.White
         ),
         onClick = {
             viewModel.signIn()
@@ -295,11 +290,13 @@ fun LandscapeButtonAndRegistrationContent(
                 .height(BTN_HEIGHT.dp)
                 .width(BTN_WIDTH.dp),
             shape = RoundedCornerShape(CURVATURE),
-            elevation = elevation(defaultElevation = ELEVATION.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
             enabled = viewModel.validateInputs(),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = LS_BLUE,
-                disabledBackgroundColor = Color.LightGray
+                containerColor = LS_BLUE,
+                disabledContainerColor = Color.LightGray,
+                contentColor = Color.White,
+                disabledContentColor = Color.Black
             ),
             onClick = {
                 viewModel.signIn()

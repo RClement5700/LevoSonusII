@@ -7,6 +7,7 @@
     <string name="organization_name_failed_snackbar_message">Failed to Geolocate User</string>
     <string name="organization_name_failed_snackbar_action">Tap To Retry\n</string>
     <string name="google_maps_location_api_url">https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&amp;key=%s</string>
+    <string name="ls_fab_tooltip_note">Click the Floating Action Button to give LevoSonus voice commands!</string>
 
     <!-- Login Screen -->
     <string name="btn_text_login">Login</string>

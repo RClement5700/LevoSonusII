@@ -10,18 +10,19 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
 }
 
 android {
     namespace = "com.clementcorporation.levosonusii"
-    compileSdk = 34
+    compileSdk = 35
     val localPropertiesFile = rootProject.file("local.properties")
     val localProperties = Properties()
     localProperties.load(FileInputStream(localPropertiesFile))
     defaultConfig {
         applicationId = "com.clementcorporation.levosonusii"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         buildConfigField("String", "PLACES_API_KEY", localProperties["placesApiKey"] as String)
@@ -62,18 +63,19 @@ android {
 }
 
 dependencies {
-    val daggerVersion = "2.48"
-    val lifecycleVersion = "2.7.0"
-    val hiltVersion = "1.1.0"
+    val daggerVersion = "2.57.2"
+    val lifecycleVersion = "2.10.0"
+    val hiltVersion = "1.3.0"
+    val composeBom = platform("androidx.compose:compose-bom:2025.12.00")
 
     //Volley
     implementation ("com.android.volley:volley:1.2.1")
 
     //Location
-    implementation ("com.google.android.gms:play-services-location:21.1.0")
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
 
     //firebase/firestore
-    implementation (platform("com.google.firebase:firebase-bom:32.6.0"))
+    implementation (platform("com.google.firebase:firebase-bom:33.0.0"))
     implementation ("com.google.firebase:firebase-auth-ktx")
     implementation ("com.google.firebase:firebase-firestore-ktx")
     implementation ("com.google.firebase:firebase-database-ktx")
@@ -85,35 +87,42 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:$hiltVersion")
     ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
 
+    //Accompanist
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.27.0")
+    implementation ("com.google.accompanist:accompanist-permissions:0.21.1-beta")
+
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    implementation ("com.google.android.material:material:1.11.0")
-    implementation ("androidx.compose.material:material-icons-extended:1.6.1")
-    implementation ("androidx.appcompat:appcompat:1.6.1")
-    implementation ("androidx.compose.material:material:1.6.1")
-    implementation ("androidx.navigation:navigation-compose:2.7.7")
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
-    implementation ("androidx.core:core-ktx:1.12.0")
-    implementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    // Compose
+    implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation ("androidx.datastore:datastore:1.0.0")
-    implementation ("androidx.datastore:datastore-core:1.0.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation ("androidx.navigation:navigation-compose:2.9.6")
+
+    // Lifecycle
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+
+    // Datastore
+    implementation ("androidx.datastore:datastore:1.2.0")
+    implementation ("androidx.datastore:datastore-core:1.2.0")
+
+    implementation ("androidx.appcompat:appcompat:1.7.1")
+    implementation ("androidx.core:core-ktx:1.16.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
-    implementation ("com.google.accompanist:accompanist-permissions:0.21.1-beta")
     testImplementation("junit:junit:4.13.2")
     testImplementation ("org.mockito:mockito-core:4.5.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(composeBom)
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

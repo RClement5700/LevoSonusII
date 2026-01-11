@@ -1,15 +1,14 @@
 package com.clementcorporation.levosonusii.presentation.messenger
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,26 +16,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRight
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.icons.filled.ArrowCircleRight
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -45,7 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -54,132 +50,129 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.MessengerListItem
 import com.clementcorporation.levosonusii.util.Constants
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
-import com.clementcorporation.levosonusii.util.LSAppBar
-import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import kotlinx.coroutines.CoroutineScope
 
 private const val TAG = "MessengerScreen"
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessengerScreen(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel: MessengerViewModel = hiltViewModel()
     val bottomSheetScope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden
-    )
+    val bottomSheetState = rememberModalBottomSheetState()
     BackHandler {
         navController.popBackStack()
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
-        elevation = Constants.ELEVATION.dp,
+        shadowElevation = Constants.ELEVATION.dp,
         color = Color.White,
         shape = RoundedCornerShape(Constants.CURVATURE.dp)
     ) {
-        ModalBottomSheetLayout(
+        ModalBottomSheet(
             sheetState = bottomSheetState,
-            sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            sheetContent = {
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            content = {
                     ThreadBottomSheetContent(
                         viewModel.showProgressBar,
                         lifecycleOwner,
                         viewModel,
                         bottomSheetScope,
-                        bottomSheetState,
+                        //bottomSheetState,
                         ""
                     )
             },
-            content = {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    backgroundColor = Color.White,
-                    topBar = {
-                        LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
-                            title = stringResource(id = R.string.messenger_screen_toolbar_title),
-                            profilePicUrl = null,
-                            onClickSignOut = {
-                                viewModel.signOut {
-                                    navController.clearBackStack(LevoSonusScreens.LoginScreen.name)
-                                }
-                            },
-                            onClickLeftIcon = {
-                                navController.popBackStack()
-                            }
-                        )
-                    },
-                ) { paddingValues ->
-                    Log.e(TAG, paddingValues.toString())
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (viewModel.showProgressBar.value) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .zIndex(1f)
-                                    .size(50.dp),
-                                strokeWidth = 2.dp,
-                                color = Constants.LS_BLUE
-                            )
-                        }
-                    }
-                    Column {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Divider(
-                            color = Constants.LS_BLUE,
-                            thickness = 2.dp,
-                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
-                        viewModel.messengerEventsLiveData.observe(lifecycleOwner) { event ->
-                            when (event) {
-                                is MessengerEvents.OnMessageSent -> {}
-                                is MessengerEvents.OnMessageReceived -> {}
-                                is MessengerEvents.OnMessagesRetrieved -> {
-                                    items(event.messages) { message ->
-                                        MessageListItemTile(
-                                            viewModel = viewModel,
-                                            messengerListItem = message
-                                        ) {
-                                            viewModel.showBottomSheet(bottomSheetScope, bottomSheetState)
-                                        }
-                                    }
-                                }
-                                else -> {}
-                            }
-                        }
-                    }
-                }
-
-            }
+            onDismissRequest = {}
+//            content = {
+//                Scaffold(
+//                    modifier = Modifier.fillMaxSize(),
+//                    backgroundColor = Color.White,
+//                    topBar = {
+//                        LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+//                            title = stringResource(id = R.string.messenger_screen_toolbar_title),
+//                            profilePicUrl = null,
+//                            onClickSignOut = {
+//                                viewModel.signOut {
+//                                    navController.clearBackStack(LevoSonusScreens.LoginScreen.name)
+//                                }
+//                            },
+//                            onClickLeftIcon = {
+//                                navController.popBackStack()
+//                            }
+//                        )
+//                    },
+//                ) { paddingValues ->
+//                    Log.e(TAG, paddingValues.toString())
+//                    Box(
+//                        modifier = Modifier.fillMaxSize(),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        if (viewModel.showProgressBar.value) {
+//                            CircularProgressIndicator(
+//                                modifier = Modifier
+//                                    .zIndex(1f)
+//                                    .size(50.dp),
+//                                strokeWidth = 2.dp,
+//                                color = Constants.LS_BLUE
+//                            )
+//                        }
+//                    }
+//                    Column {
+//                        Spacer(modifier = Modifier.height(4.dp))
+//                        Divider(
+//                            color = Constants.LS_BLUE,
+//                            thickness = 2.dp,
+//                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                    }
+//                    LazyColumn(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .fillMaxHeight()
+//                    ) {
+//                        viewModel.messengerEventsLiveData.observe(lifecycleOwner) { event ->
+//                            when (event) {
+//                                is MessengerEvents.OnMessageSent -> {}
+//                                is MessengerEvents.OnMessageReceived -> {}
+//                                is MessengerEvents.OnMessagesRetrieved -> {
+//                                    items(event.messages) { message ->
+//                                        MessageListItemTile(
+//                                            viewModel = viewModel,
+//                                            messengerListItem = message
+//                                        ) {
+//                                            viewModel.showBottomSheet(bottomSheetScope, bottomSheetState)
+//                                        }
+//                                    }
+//                                }
+//                                else -> {}
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ThreadBottomSheetContent(
     showProgressBar: MutableState<Boolean>,
     lifecycleOwner: LifecycleOwner,
     viewModel: MessengerViewModel,
     bottomSheetScope: CoroutineScope,
-    bottomSheetState: ModalBottomSheetState,
+    //bottomSheetState: ModalBottomSheetState,
     receiverPicUrl: String
 ) {
     Column(
@@ -195,13 +188,16 @@ fun ThreadBottomSheetContent(
                 .size(35.dp)
                 .clip(CircleShape)
                 .border(2.dp, LS_BLUE, CircleShape),
-            painter = if (receiverPicUrl.isNullOrEmpty()) {
+            painter = if (receiverPicUrl.isEmpty()) {
                 painterResource(id = R.drawable.levosonus_rocket_logo)
             } else {
-                rememberImagePainter(data = receiverPicUrl, builder = {
-                    crossfade(false)
-                    placeholder(R.drawable.levosonus_rocket_logo)
-                })
+                rememberAsyncImagePainter(
+                    ImageRequest.Builder(LocalContext.current).data(data = receiverPicUrl)
+                        .apply(block = fun ImageRequest.Builder.() {
+                            crossfade(false)
+                            placeholder(R.drawable.levosonus_rocket_logo)
+                        }).build()
+                )
             },
             contentDescription = "Receiver Picture",
             contentScale = ContentScale.Crop,
@@ -211,7 +207,7 @@ fun ThreadBottomSheetContent(
             color = LS_BLUE,
             fontWeight = FontWeight.Bold,
         )
-        Divider(
+        HorizontalDivider(
             color = LS_BLUE,
             thickness = 2.dp,
             modifier = Modifier.padding(start = 8.dp, end = 8.dp)
@@ -253,10 +249,10 @@ fun ThreadBottomSheetContent(
                     .fillMaxWidth()
                     .height(Constants.BTN_HEIGHT.dp),
                 shape = RoundedCornerShape(Constants.CURVATURE),
-                elevation = ButtonDefaults.elevation(defaultElevation = Constants.ELEVATION.dp),
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = Constants.ELEVATION.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = LS_BLUE,
-                    disabledBackgroundColor = Color.LightGray
+//                    backgroundColor = LS_BLUE,
+//                    disabledBackgroundColor = Color.LightGray
                 ),
                 onClick = { }) {
                 if (showProgressBar.value) {
@@ -278,10 +274,12 @@ fun ThreadBottomSheetContent(
 fun SendersUserIcon(modifier: Modifier, url: String) {
     Image(
         modifier = modifier,
-        painter = rememberImagePainter(data = url, builder = {
-            crossfade(false)
-            placeholder(R.drawable.levosonus_rocket_logo)
-        }),
+        painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current).data(data = url).apply(block = fun ImageRequest.Builder.() {
+                crossfade(false)
+                placeholder(R.drawable.levosonus_rocket_logo)
+            }).build()
+        ),
         contentDescription = "Sender\'s Icon",
         contentScale = ContentScale.Crop
     )
@@ -291,12 +289,12 @@ fun SendersUserIcon(modifier: Modifier, url: String) {
 fun MessageListItemTile(viewModel: MessengerViewModel, messengerListItem: MessengerListItem, onClick: () -> Unit = {}) {
     Card(
         modifier = Modifier
+            .background(color = Color.White)
             .fillMaxWidth()
-            .padding(Constants.PADDING.dp)
+            .padding(PADDING.dp)
             .clickable(onClick = onClick),
-        elevation = Constants.ELEVATION.dp,
+        elevation = CardDefaults.elevatedCardElevation(Constants.ELEVATION.dp),
         shape = RoundedCornerShape(Constants.CURVATURE.dp),
-        backgroundColor = Color.White
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -371,8 +369,8 @@ fun MessageListItemTile(viewModel: MessengerViewModel, messengerListItem: Messen
                 onClick = onClick
             ) {
                 Icon(
-                    tint = Constants.LS_BLUE,
-                    imageVector = Icons.Default.ArrowRight,
+                    tint = LS_BLUE,
+                    imageVector = Icons.Default.ArrowCircleRight,
                     contentDescription = ""
                 )
             }
