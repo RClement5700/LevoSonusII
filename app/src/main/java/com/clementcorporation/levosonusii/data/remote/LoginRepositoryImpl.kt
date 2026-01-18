@@ -10,6 +10,6 @@ import javax.inject.Inject
 class LoginRepositoryImpl @Inject constructor(private val signInUseCase: SignInUseCase
 ): LoginRepository {
     //TODO: add VoiceProfile to LSUserInfo and a corresponding counterpart in the Firestore database
-    override fun signIn(businessId: String, employeeId: String, password: String): Flow<Response<LSUserInfo>> =
-        signInUseCase.invoke(businessId, employeeId, password)
+    override fun signIn(businessId: String, employeeId: String): Flow<Response<LSUserInfo>> =
+        signInUseCase.invoke(businessId, employeeId)
 }

@@ -15,4 +15,17 @@
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the background color for the entire splash screen -->
+        <item name="windowSplashScreenBackground">@color/metallic_blue</item>
+
+        <!-- Set the icon to be displayed in the center -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/levo_sonus_rocket_logo</item>
+
+        <!-- Set the theme to use after the splash screen is dismissed -->
+        <item name="postSplashScreenTheme">@style/Theme.LevoSonusII</item>
+
+        <!-- Optional: Background color for the icon's circular cutout (API 31+) -->
+        <!-- <item name="windowSplashScreenIconBackgroundColor">@color/icon_background_color</item> -->
+    </style>
 </resources>

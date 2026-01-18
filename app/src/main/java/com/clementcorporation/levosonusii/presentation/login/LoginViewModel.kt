@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.Business
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
+import com.clementcorporation.levosonusii.domain.use_cases.AuthenticateUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.GetBusinessesUseCase
 import com.clementcorporation.levosonusii.util.Constants.VALID_BUSINESS_ID_LENGTH
 import com.clementcorporation.levosonusii.util.Constants.VALID_EMPLOYEE_ID_LENGTH
@@ -37,12 +38,14 @@ sealed class LoginScreenUiState {
 class LoginViewModel @Inject constructor(
     private val repo: LoginRepository,
     private val getBusinessesUseCase: GetBusinessesUseCase,
+    private val authenticateUseCase: AuthenticateUseCase,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
     var isVerifiedEmployeeId by mutableStateOf(false)
     var employeeId by mutableStateOf("")
     var password by mutableStateOf("")
     private lateinit var businesses: List<Business?>
+    private var businessId: String? = null
     private val ioJob = CoroutineScope(Job() + Dispatchers.IO)
     private var searchJob: Job? = null
     private val _loginScreenUiState = MutableStateFlow<LoginScreenUiState>(
@@ -83,12 +86,14 @@ class LoginViewModel @Inject constructor(
     fun onBusinessRetrieved() {
         ioJob.cancel()
     }
+
     fun onQueryChange() {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(500L)
             val businessMatch = filterBusinesses()
             isVerifiedEmployeeId = businessMatch != null
+            if (isVerifiedEmployeeId) businessId = businessMatch?.id
         }
     }
 
@@ -99,43 +104,40 @@ class LoginViewModel @Inject constructor(
 
     fun signIn() {
         viewModelScope.launch {
-            sessionDataStore.data.collectLatest {
-                val businessId = it.organization.id
-                repo.signIn(businessId, employeeId, password).collectLatest { response ->
-                    when(response) {
-                        is Response.Success -> {
-                            response.data?.let { user ->
-                                _loginScreenUiState.value =
-                                    LoginScreenUiState.OnUserDataRetrieved(user)
-                                sessionDataStore.updateData {
-                                    it.copy(
-                                        organization = it.organization,
-                                        name = user.name,
-                                        emailAddress = user.emailAddress,
-                                        employeeId = user.employeeId,
-                                        firebaseId = user.firebaseId,
-                                        profilePicUrl = user.profilePicUrl,
-                                        headsetId = user.headsetId,
-                                        machineId = user.machineId,
-                                        departmentId = user.departmentId,
-                                        scannerId = user.scannerId,
-                                        operatorType = user.operatorType,
-                                        messengerIds = user.messengerIds,
-                                        voiceProfile = user.voiceProfile
-                                    )
-                                }
+            repo.signIn(businessId.orEmpty(), employeeId).collect { signInResponse ->
+                val user = signInResponse.data
+                if (user != null) {
+                    val email = user.emailAddress
+                    authenticateUseCase.invoke(email, password).collect { authResponse ->
+                        val authData = authResponse.data
+                        if (authData != null) {
+                            sessionDataStore.updateData {
+                                it.copy(
+                                    organization = it.organization,
+                                    name = user.name,
+                                    emailAddress = user.emailAddress,
+                                    employeeId = user.employeeId,
+                                    firebaseId = user.firebaseId,
+                                    profilePicUrl = user.profilePicUrl,
+                                    headsetId = user.headsetId,
+                                    machineId = user.machineId,
+                                    departmentId = user.departmentId,
+                                    scannerId = user.scannerId,
+                                    operatorType = user.operatorType,
+                                    messengerIds = user.messengerIds,
+                                    voiceProfile = user.voiceProfile
+                                )
                             }
-                        }
-                        is Response.Error -> {
-                            response.message?.let { errorMessage ->
-                                _loginScreenUiState.value =
-                                    LoginScreenUiState.OnFailedToLoadUser(errorMessage)
-                            }
-                        }
-                        is Response.Loading -> {
-                            _loginScreenUiState.value = LoginScreenUiState.OnLoading
+                            _loginScreenUiState.value =
+                                LoginScreenUiState.OnUserDataRetrieved(user)
+                        } else {
+                            val errorMessage = authResponse.message.orEmpty()
+                            LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                         }
                     }
+                } else {
+                    val errorMessage = signInResponse.message.orEmpty()
+                    LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                 }
             }
         }

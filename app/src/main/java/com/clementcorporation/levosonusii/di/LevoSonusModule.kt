@@ -13,13 +13,12 @@ import com.clementcorporation.levosonusii.domain.repositories.DepartmentsReposit
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
+import com.clementcorporation.levosonusii.domain.use_cases.AuthenticateUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.GetBusinessesUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
-import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
 import com.clementcorporation.levosonusii.util.VoiceProfileSerializer
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -40,16 +39,20 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesGetBusinessesUseCase(db: CollectionReference): GetBusinessesUseCase =
+    fun providesFirestoreDatabase(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun providesGetBusinessesUseCase(db: FirebaseFirestore): GetBusinessesUseCase =
         GetBusinessesUseCase(db)
 
     @Provides
     @Singleton
-    fun providesFirestoreDatabase(): CollectionReference = FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT)
+    fun providesAuthenticatetUseCase(): AuthenticateUseCase = AuthenticateUseCase()
 
     @Provides
     @Singleton
-    fun providesSignInUseCase(db: CollectionReference): SignInUseCase = SignInUseCase(db)
+    fun providesSignInUseCase(db: FirebaseFirestore): SignInUseCase = SignInUseCase(db)
 
     @Provides
     @Singleton
@@ -61,7 +64,7 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesRegisterRepository(db: CollectionReference, signInUseCase: SignInUseCase
+    fun providesRegisterRepository(db: FirebaseFirestore, signInUseCase: SignInUseCase
     ): RegisterRepository = RegisterRepositoryImpl(db, signInUseCase)
 
     @Provides
@@ -70,11 +73,11 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesDepartmentsRepository(sessionDataStore: DataStore<LSUserInfo>): DepartmentsRepository =
-        DepartmentsRepositoryImpl(sessionDataStore = sessionDataStore)
-
-    @Provides
-    fun providesResources(@ApplicationContext context: Context): Resources = context.resources
+    fun providesDepartmentsRepository(sessionDataStore: DataStore<LSUserInfo>, db: FirebaseFirestore
+    ): DepartmentsRepository = DepartmentsRepositoryImpl(
+        sessionDataStore = sessionDataStore,
+        db = db
+    )
 
     @Provides
     @Singleton
@@ -83,4 +86,7 @@ object LevoSonusModule {
     @Provides
     @Singleton
     fun providesVoiceProfile(@ApplicationContext context: Context) = context.voiceProfileDataStore
+
+    @Provides
+    fun providesResources(@ApplicationContext context: Context): Resources = context.resources
 }

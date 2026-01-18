@@ -115,6 +115,7 @@ dependencies {
 
     implementation ("androidx.appcompat:appcompat:1.7.1")
     implementation ("androidx.core:core-ktx:1.16.0")
+    implementation ("androidx.core:core-splashscreen:1.2.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     testImplementation("junit:junit:4.13.2")

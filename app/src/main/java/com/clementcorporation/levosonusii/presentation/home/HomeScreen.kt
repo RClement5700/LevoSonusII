@@ -1,21 +1,18 @@
 package com.clementcorporation.levosonusii.presentation.home
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,27 +31,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.util.Constants.CURVATURE
-import com.clementcorporation.levosonusii.util.Constants.ELEVATION
+import com.clementcorporation.levosonusii.domain.models.NavTileData
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
+import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.NavTile
+import kotlinx.coroutines.Dispatchers
 
-
-//TODO: Cache the profile pic into a bitmap and store in dataStore for memory purposes
-private const val TAG = "HomeScreen"
+//TODO: Cache the profile pic into a bitmap and store the bitmap in dataStore for memory purposes
+// Look into the lengthy load times
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
-    val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(initialValue = LSUserInfo()).value
+    val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
+        initialValue = LSUserInfo(),
+        lifecycle = LocalLifecycleOwner.current.lifecycle,
+        context = Dispatchers.IO
+    ).value
     val title = userState.name
     val profilePicUrl = userState.profilePicUrl
     BackHandler {
@@ -62,18 +64,15 @@ fun HomeScreen(navController: NavController) {
             navController.navigate(LevoSonusScreens.LoginScreen.name)
         }
     }
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        shadowElevation = ELEVATION.dp,
-        color = Color.White,
-        shape = RoundedCornerShape(CURVATURE.dp)
-    ) {
+    LSSurface {
         Scaffold(
             modifier = Modifier
                 .background(color = Color.White)
                 .fillMaxSize(),
             topBar = {
-                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                LSAppBar(
+                    navController = navController,
+                    expandMenu = viewModel.expandMenu,
                     title = title,
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
@@ -86,10 +85,14 @@ fun HomeScreen(navController: NavController) {
                     }
                 )
             }
-        ) { paddingValues ->
-            Log.e(TAG, paddingValues.toString())
+        )
+        { paddingValues ->
             if (viewModel.inflateProfilePic) InflatableProfilePic(viewModel = viewModel, imageUrl = profilePicUrl)
-            HomeScreenContent(navController = navController, viewModel = viewModel)
+            HomeScreenContent(
+                modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
+                navController = navController,
+                viewModel = viewModel
+            )
         }
     }
 }
@@ -149,9 +152,9 @@ fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
 }
 
 @Composable
-fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewModel) {
+fun HomeScreenContent(modifier: Modifier, navController: NavController, viewModel: HomeScreenViewModel) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         if (viewModel.showProgressBar) {
@@ -163,39 +166,61 @@ fun HomeScreenContent(navController: NavController, viewModel: HomeScreenViewMod
                 color = LS_BLUE
             )
         }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(state = rememberScrollState()),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            NavTile(title = stringResource(id = R.string.homescreen_tile_voice_profile_label)) {
+        val appsDataList = listOf(
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_voice_profile_label)
+            ) {
                 navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_equipment_label)) { //SearchBar: filters equipment based on number input; display list of equipment in use; attach forklift/EPJ icon
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_equipment_label)
+            ) {
                 navController.navigate(LevoSonusScreens.EquipmentScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_departments_label)) { //choose department, display remaining orders & number of users in each department
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_departments_label)
+            ) {
                 navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_health_wellness_label)) { //breaks; lunch; rewards; time-off; biometrics: steps, heartrate, etc
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_health_wellness_label)
+            ) {
                 navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)) {//in app text messaging
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)
+            ) {
                 navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_orders_label)) { //currentOrder: remaining picks, goBacks, currentPick, nextPick; PastOrders
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_orders_label)
+            ) {
                 navController.navigate(LevoSonusScreens.OrdersScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_messages_label)) {//in app text messaging
-                navController.navigate(LevoSonusScreens.MessengerScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_announcements_label)) {//company wide & local announcements
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_messages_label)
+            ) {
+                navController.navigate(LevoSonusScreens.MessagesScreen.name)
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_announcements_label)
+            ) {
                 navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
-            }
-            NavTile(title = stringResource(id = R.string.homescreen_tile_game_center_label)) {//Casino where employees can place wagers using points accumulated by various tasks
+            },
+            NavTileData(
+                title = stringResource(id = R.string.homescreen_tile_game_center_label)
+            ) {
                 navController.navigate(LevoSonusScreens.GameCenterScreen.name)
+            }
+        ).sortedBy { data -> data.title }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(appsDataList) { tileData ->
+                NavTile(
+                    title = tileData.title,
+                    onClick = tileData.navigate
+                )
             }
         }
     }

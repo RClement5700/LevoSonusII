@@ -23,14 +23,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DepartmentsRepositoryImpl @Inject constructor(
-    private val sessionDataStore: DataStore<LSUserInfo>
+    private val sessionDataStore: DataStore<LSUserInfo>,
+    private val db: FirebaseFirestore
 ): DepartmentsRepository {
-    val db = FirebaseFirestore.getInstance().collection(BUSINESSES_ENDPOINT)
 
     override suspend fun fetchDepartmentsData(): Response<List<DepartmentUiModel>>? {
         val userInfo = sessionDataStore.data.first()
         val businessId = userInfo.organization.id
-        return db.document(businessId).collection(DEPARTMENTS_ENDPOINT).snapshots().map { snapshot ->
+        return db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(DEPARTMENTS_ENDPOINT).snapshots().map { snapshot ->
             val departmentDtos = snapshot.toObjects(DepartmentDto::class.java)
             val departments = departmentDtos.map { it.toDepartmentUiModel() }.sortedBy { it.title }
             if (departments.isNotEmpty()) Response.Success(departments)
@@ -43,7 +43,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
         val businessId = userInfo.organization.id
         val departmentId = userInfo.departmentId
         val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
-        val departmentsRef = db.document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
+        val departmentsRef = db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
         return departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
             if (departmentsRef.update(if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM, FieldValue.increment(-1.0)).isSuccessful)
@@ -56,7 +56,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
         val userInfo = sessionDataStore.data.first()
         val businessId = userInfo.organization.id
         val firebaseId = userInfo.firebaseId
-        db.document(businessId)
+        db.collection(BUSINESSES_ENDPOINT).document(businessId)
             .collection(USERS_ENDPOINT)
             .document(firebaseId)
             .update(DEPARTMENT_ID, departmentId)
@@ -78,7 +78,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
         }
         val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
         val departmentsRef =
-            db.document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
+            db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(DEPARTMENTS_ENDPOINT).document(departmentId)
         return departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
             if (departmentsRef.update(if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM, FieldValue.increment(1.0)).isSuccessful)

@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -52,7 +53,7 @@ import dagger.hilt.android.AndroidEntryPoint
 private const val TAG = "MainActivity"
 @AndroidEntryPoint
 @ExperimentalPermissionsApi
-class MainActivity : ComponentActivity(){
+class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -87,6 +88,7 @@ class MainActivity : ComponentActivity(){
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         checkForLocationPermission()
         setContent {

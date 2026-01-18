@@ -109,7 +109,8 @@ class RegisterViewModel @Inject constructor(
 
     fun signIn(isCreatingVoiceProfile: Boolean) {
         viewModelScope.launch {
-            repo.signIn(businessId, employeeId.trim(), password.trim()).collectLatest { response ->
+            //TODO: mimick invoke call from LoginViewModel; need authenticateUseCase
+            repo.signIn(businessId, employeeId.trim()).collectLatest { response ->
                 when (response) {
                     is Response.Success -> {
                         response.data?.let { user ->
