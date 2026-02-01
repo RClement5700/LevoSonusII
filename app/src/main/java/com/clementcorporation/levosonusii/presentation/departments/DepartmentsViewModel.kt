@@ -12,11 +12,11 @@ import com.clementcorporation.levosonusii.domain.models.DepartmentUiModel
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.DepartmentsRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
+import com.clementcorporation.levosonusii.util.OperatorTypes
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,64 +52,81 @@ class DepartmentsViewModel @Inject constructor(
 
     fun updateUsersDepartment() {
         viewModelScope.launch {
-            val userInfo = sessionDataStore.data.first()
-            val currentDepartmentId = userInfo.departmentId
-            val newDepartment = departments[selectedIndex]
-            val newDepartmentId = newDepartment.id
-            if (currentDepartmentId != newDepartmentId) {
-                addOperatorToDepartment(newDepartmentId)
-                removeOperatorFromDepartment()
+            sessionDataStore.data.collect { userInfo ->
+                val currentDepartmentId = userInfo.departmentId
+                val newDepartment = departments[selectedIndex]
+                val newDepartmentId = newDepartment.id
+                if (currentDepartmentId != newDepartmentId) {
+                    addOperatorToDepartment(newDepartmentId)
+                    removeOperatorFromDepartment()
+                }
             }
         }
     }
 
     private fun fetchDepartmentsData() {
         viewModelScope.launch {
-            val userInfo = sessionDataStore.data.first()
-            val response = repo.fetchDepartmentsData()
-            if (response != null) {
-                when (response) {
-                    is Response.Success -> {
-                        response.data?.let { departmentsData ->
-                            departments = departmentsData
-                            departments.find {
-                                it.id == userInfo.departmentId
-                            }?.let { department ->
-                                selectedIndex = departments.indexOf(department)
+            sessionDataStore.data.collect { userInfo ->
+                repo.fetchDepartmentsData(userInfo.organization.id).collect { response ->
+                    when (response) {
+                        is Response.Success -> {
+                            response.data?.let { departmentsData ->
+                                departments = departmentsData
+                                departments.find {
+                                    it.id == userInfo.departmentId
+                                }?.let { department ->
+                                    selectedIndex = departments.indexOf(department)
+                                }
+                                _departmentsScreenEventsStateFlow.value =
+                                    DepartmentsScreenUiState.DataRetrieved(departments)
                             }
-                            _departmentsScreenEventsStateFlow.value =
-                                DepartmentsScreenUiState.DataRetrieved(departments)
                         }
-                    }
-                    is Response.Error -> {
-                        response.message?.let {
-                            _departmentsScreenEventsStateFlow.value =
-                                DepartmentsScreenUiState.Error(it)
+                        is Response.Error -> {
+                            response.message?.let {
+                                _departmentsScreenEventsStateFlow.value =
+                                    DepartmentsScreenUiState.Error(it)
+                            }
                         }
-                    }
-                    is Response.Loading -> {
-                        _departmentsScreenEventsStateFlow.value =
-                            DepartmentsScreenUiState.Loading
+                        is Response.Loading -> {
+                            _departmentsScreenEventsStateFlow.value =
+                                DepartmentsScreenUiState.Loading
+                        }
                     }
                 }
-            } else {
-                _departmentsScreenEventsStateFlow.value =
-                    DepartmentsScreenUiState.Error("Failed to load departments' data")
             }
         }
     }
 
     private fun addOperatorToDepartment(newDepartmentId: String) {
         viewModelScope.launch {
-            val response = repo.addOperatorToDepartment(newDepartmentId)
-            response?.data?.let { Log.d(TAG, it) }
+            sessionDataStore.data.collect { userInfo ->
+                val businessId = userInfo.organization.id
+                val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
+                repo.addOperatorToDepartment(
+                    newDepartmentId,
+                    businessId,
+                    isOrderPicker
+                ).collect { response ->
+                    response.data?.let { Log.d(TAG, it) }
+                }
+            }
         }
     }
 
     private fun removeOperatorFromDepartment() {
         viewModelScope.launch {
-            val response = repo.subtractOperatorFromDepartment()
-            response?.data?.let { Log.d(TAG, it) }
+            sessionDataStore.data.collect { userInfo ->
+                val businessId = userInfo.organization.id
+                val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
+                val departmentId = userInfo.departmentId
+                repo.subtractOperatorFromDepartment(
+                    departmentId,
+                    businessId,
+                    isOrderPicker
+                ).collect { response ->
+                    response.data?.let { Log.d(TAG, it) }
+                }
+            }
         }
     }
 }
