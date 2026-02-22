@@ -18,6 +18,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -27,17 +28,22 @@ class DepartmentsRepositoryImpl @Inject constructor(
     private val db: FirebaseFirestore
 ): DepartmentsRepository {
 
-    override suspend fun fetchDepartmentsData(businessId: String): Flow<Response<List<DepartmentUiModel>>> {
-        val departmentsRef = db.collection(BUSINESSES_ENDPOINT)
-            .document(businessId)
-            .collection(DEPARTMENTS_ENDPOINT)
-        return departmentsRef.snapshots().map { snapshot ->
-            val departmentDtos = snapshot.toObjects(DepartmentDto::class.java)
-            val departments = departmentDtos.map { it.toDepartmentUiModel() }.sortedBy { it.title }
-            if (departments.isNotEmpty()) Response.Success(departments)
-            else Response.Error("Failed to retrieve departments data")
+    override suspend fun fetchDepartmentsData(businessId: String): Flow<Response<List<DepartmentUiModel>>> =
+        callbackFlow {
+            db.collection(BUSINESSES_ENDPOINT)
+                .document(businessId)
+                .collection(DEPARTMENTS_ENDPOINT).get()
+                .addOnSuccessListener { result ->
+                    val departmentDtos = result.toObjects(DepartmentDto::class.java)
+                    val departments = departmentDtos.map { it.toDepartmentUiModel() }.sortedBy { it.title }
+                    if (departments.isNotEmpty()) Response.Success(departments)
+                    else trySend(Response.Error("Failed to retrieve departments data"))
+                }.addOnFailureListener { failure ->
+                    trySend(Response.Error(failure.message.orEmpty()))
+                }
         }
-    }
+
+
 
     override suspend fun subtractOperatorFromDepartment(
         departmentId: String,
@@ -50,7 +56,10 @@ class DepartmentsRepositoryImpl @Inject constructor(
             .document(departmentId)
         return departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
-            if (departmentsRef.update(if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM, FieldValue.increment(-1.0)).isSuccessful)
+            if (departmentsRef.update(
+                    if (isOrderPicker) ORDER_PICKERS_PARAM
+                    else FORKLIFTS_PARAM, FieldValue.increment(-1.0)).isSuccessful
+                )
                 Response.Success("${department?.title} updated successfully")
             else Response.Error("${department?.title} failed to update...")
         }
