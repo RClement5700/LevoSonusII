@@ -45,6 +45,7 @@ class LoginViewModel @Inject constructor(
     var employeeId by mutableStateOf("")
     var password by mutableStateOf("")
     private lateinit var businesses: List<Business?>
+    private lateinit var business: Business
     private var businessId: String? = null
     private val ioJob = CoroutineScope(Job() + Dispatchers.IO)
     private var searchJob: Job? = null
@@ -74,6 +75,7 @@ class LoginViewModel @Inject constructor(
                         _loginScreenUiState.value = LoginScreenUiState.OnLoading
                     }
                 }
+                ioJob.cancel()
             }
         }
     }
@@ -83,17 +85,16 @@ class LoginViewModel @Inject constructor(
             businesses.find { it?.id == employeeId.substring(0, VALID_BUSINESS_ID_LENGTH) }
         else null
 
-    fun onBusinessRetrieved() {
-        ioJob.cancel()
-    }
-
     fun onQueryChange() {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(500L)
             val businessMatch = filterBusinesses()
             isVerifiedEmployeeId = businessMatch != null
-            if (isVerifiedEmployeeId) businessId = businessMatch?.id
+            if (isVerifiedEmployeeId) {
+                businessMatch?.let { match -> business = match }
+                businessId = businessMatch?.id
+            }
         }
     }
 
@@ -104,40 +105,42 @@ class LoginViewModel @Inject constructor(
 
     fun signIn() {
         viewModelScope.launch {
-            repo.signIn(businessId.orEmpty(), employeeId).collect { signInResponse ->
-                val user = signInResponse.data
-                if (user != null) {
-                    val email = user.emailAddress
-                    authenticateUseCase.invoke(email, password).collect { authResponse ->
-                        val authData = authResponse.data
-                        if (authData != null) {
-                            sessionDataStore.updateData {
-                                it.copy(
-                                    organization = it.organization,
-                                    name = user.name,
-                                    emailAddress = user.emailAddress,
-                                    employeeId = user.employeeId,
-                                    firebaseId = user.firebaseId,
-                                    profilePicUrl = user.profilePicUrl,
-                                    headsetId = user.headsetId,
-                                    machineId = user.machineId,
-                                    departmentId = user.departmentId,
-                                    scannerId = user.scannerId,
-                                    operatorType = user.operatorType,
-                                    messengerIds = user.messengerIds,
-                                    voiceProfile = user.voiceProfile
-                                )
+            businessId?.let { id ->
+                repo.signIn(id, employeeId).collect { signInResponse ->
+                    val user = signInResponse.data
+                    if (user != null) {
+                        val email = user.emailAddress
+                        authenticateUseCase.invoke(email, password).collect { authResponse ->
+                            val authData = authResponse.data
+                            if (authData != null) {
+                                sessionDataStore.updateData {
+                                    it.copy(
+                                        organization = business,
+                                        name = user.name,
+                                        emailAddress = user.emailAddress,
+                                        employeeId = user.employeeId,
+                                        firebaseId = user.firebaseId,
+                                        profilePicUrl = user.profilePicUrl,
+                                        headsetId = user.headsetId,
+                                        machineId = user.machineId,
+                                        departmentId = user.departmentId,
+                                        scannerId = user.scannerId,
+                                        operatorType = user.operatorType,
+                                        messengerIds = user.messengerIds,
+                                        voiceProfile = user.voiceProfile
+                                    )
+                                }
+                                _loginScreenUiState.value =
+                                    LoginScreenUiState.OnUserDataRetrieved(user)
+                            } else {
+                                val errorMessage = authResponse.message.orEmpty()
+                                _loginScreenUiState.value = LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                             }
-                            _loginScreenUiState.value =
-                                LoginScreenUiState.OnUserDataRetrieved(user)
-                        } else {
-                            val errorMessage = authResponse.message.orEmpty()
-                            LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                         }
+                    } else {
+                        val errorMessage = signInResponse.message.orEmpty()
+                        _loginScreenUiState.value = LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                     }
-                } else {
-                    val errorMessage = signInResponse.message.orEmpty()
-                    LoginScreenUiState.OnFailedToLoadUser(errorMessage)
                 }
             }
         }

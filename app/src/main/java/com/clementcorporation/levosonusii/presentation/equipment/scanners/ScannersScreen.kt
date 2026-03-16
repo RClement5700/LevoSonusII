@@ -39,7 +39,8 @@ fun ScannersScreen(navController: NavController) {
                 .background(color = Color.White)
                 .fillMaxSize(),
             topBar = {
-                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                LSAppBar(
+                    expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.scanners_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {

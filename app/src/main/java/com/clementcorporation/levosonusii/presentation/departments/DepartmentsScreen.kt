@@ -1,6 +1,5 @@
 package com.clementcorporation.levosonusii.presentation.departments
 
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +28,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,118 +49,140 @@ import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
+import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-private const val TAG = "DepartmentsScreen"
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val context = LocalContext.current
     val viewModel: DepartmentsViewModel = hiltViewModel()
     val uiState = viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle().value
+    val isHandlingDbUpdate = remember { mutableStateOf(false) }
     BackHandler {
         navController.popBackStack()
     }
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        shadowElevation = ELEVATION.dp,
-        color = Color.White,
-        shape = RoundedCornerShape(CURVATURE.dp)
-    ) {
+    LSSurface {
         Scaffold(
             modifier = Modifier
                 .background(color = Color.White)
                 .fillMaxSize(),
             topBar = {
-                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                LSAppBar(
+                    expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.departments_screen_title_text),
                     profilePicUrl = null,
                     onClickSignOut = {
                         viewModel.signOut {
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
+                            CoroutineScope(Dispatchers.Main).launch {
+                                navController.navigate(LevoSonusScreens.LoginScreen.name) {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
                         }
                     },
                     onClickLeftIcon = {
-                        navController.popBackStack()
+                        navController.navigate(LevoSonusScreens.HomeScreen.name)
                     }
                 )
             }
         ) { paddingValue ->
-            Log.e(TAG, paddingValue.toString())
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (uiState is DepartmentsScreenUiState.Loading) {
-                    CircularProgressIndicator(
+            when (uiState) {
+
+                is DepartmentsScreenUiState.Loading -> {
+                    Box(
                         modifier = Modifier
-                            .zIndex(1f)
-                            .size(50.dp),
-                        strokeWidth = 2.dp,
-                        color = LS_BLUE
-                    )
+                            .fillMaxSize()
+                            .padding(top = paddingValue.calculateTopPadding()),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .zIndex(1f)
+                                .size(50.dp),
+                            strokeWidth = 2.dp,
+                            color = LS_BLUE
+                        )
+                    }
                 }
-            }
-            Column {
-                Spacer(modifier = Modifier.height(4.dp))
-                HorizontalDivider(
-                    color = LS_BLUE,
-                    thickness = 2.dp,
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(0.dp, 4.dp, 0.dp, 0.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.9f)) {
-                    if (uiState is DepartmentsScreenUiState.DataRetrieved) {
-                        val departments = uiState.data
-                        itemsIndexed(departments) { index, department ->
-                            DepartmentTile(
-                                index = index,
-                                title = department.title,
-                                icon = department.icon,
-                                totalOrders = department.totalOrders,
-                                remainingOrders = department.remainingOrders,
-                                forklifts = department.forklifts,
-                                orderPickers = department.orderPickers,
-                                viewModel = viewModel
-                            )
+
+                is DepartmentsScreenUiState.DataRetrieved -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = paddingValue.calculateTopPadding()),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        HorizontalDivider(
+                            color = LS_BLUE,
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            val departments = uiState.data
+                            itemsIndexed(departments) { index, department ->
+                                DepartmentTile(
+                                    index = index,
+                                    title = department.title,
+                                    icon = department.icon,
+                                    totalOrders = department.totalOrders,
+                                    remainingOrders = department.remainingOrders,
+                                    forklifts = department.forklifts,
+                                    orderPickers = department.orderPickers,
+                                    viewModel = viewModel
+                                )
+                            }
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(PADDING.dp)
+                                .fillMaxWidth()
+                                .height(BTN_HEIGHT.dp),
+                            shape = RoundedCornerShape(CURVATURE),
+                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = LS_BLUE,
+                                contentColor = LS_BLUE,
+                                disabledContainerColor = Color.Gray,
+                                disabledContentColor = Color.Gray
+                            ),
+                            onClick = {
+                                viewModel.updateUsersDepartment()
+                                Toast.makeText(context, "Department: ${viewModel.getCurrentDepartment().title}", Toast.LENGTH_SHORT).show()
+                                navController.navigate(LevoSonusScreens.HomeScreen.name)
+                            }) {
+                            if (isHandlingDbUpdate.value) {
+                                CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
+                            } else {
+                                Text(
+                                    text = stringResource(id = R.string.btn_text_apply),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
-                Button(
-                    modifier = Modifier
-                        .padding(PADDING.dp)
-                        .fillMaxWidth()
-                        .height(BTN_HEIGHT.dp),
-                    shape = RoundedCornerShape(CURVATURE),
-                    elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
-                    colors = ButtonDefaults.buttonColors(
-//                        backgroundColor = LS_BLUE,
-//                        disabledBackgroundColor = Color.Gray
-                    ),
-                    onClick = {
-                        viewModel.updateUsersDepartment()
-                        Toast.makeText(context, "Department: ${viewModel.getCurrentDepartment().title}", Toast.LENGTH_SHORT).show()
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    }) {
-                    if (uiState is DepartmentsScreenUiState.Loading) {
-                        CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
-                    } else {
-                        Text(
-                            text = stringResource(id = R.string.btn_text_apply),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+
+                is DepartmentsScreenUiState.Error -> {
+                    //TODO: ADD ERROR MESSAGE FOR SCREEN WITH TRY AGAIN BUTTON ON TEXT
+                }
+
+                is DepartmentsScreenUiState.OnApplyButtonClicked -> {
+                    isHandlingDbUpdate.value = true
+                }
+
+                is DepartmentsScreenUiState.OnDataUpdated -> {
+                    isHandlingDbUpdate.value = true
                 }
             }
         }
@@ -170,7 +192,7 @@ fun DepartmentsScreen(navController: NavController) {
 @Composable
 fun DepartmentTile(
     index: Int,
-    icon: Int = R.drawable.scanner_icon,
+    icon: Int,
     title: String,
     forklifts: Int,
     orderPickers: Int,
@@ -207,6 +229,7 @@ fun DepartmentTile(
                 Icon(
                     modifier = Modifier.size(48.dp),
                     painter = painterResource(id = icon),
+                    tint = Color.Black,
                     contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
                 )
                 Spacer(modifier = Modifier.width(8.dp))

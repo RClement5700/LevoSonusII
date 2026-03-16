@@ -71,7 +71,8 @@ fun VoiceProfileScreen(navController: NavController, showVoiceCommandActivity: (
                 .background(color = Color.White)
                 .fillMaxSize(),
             topBar = {
-                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                LSAppBar(
+                    expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.voice_profile_screen_toolbar_title),
                     profilePicUrl = null,
                     onClickSignOut = {

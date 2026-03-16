@@ -2,6 +2,7 @@ package com.clementcorporation.levosonusii.presentation.register
 
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -74,6 +75,9 @@ fun RegisterScreen(navController: NavController) {
     val centerContent = remember { mutableStateOf(false) }
     val showNewUserDialog = remember { mutableStateOf(false) }
     val showVoiceProfileDialog = remember { mutableStateOf(false) }
+    BackHandler {
+        navController.popBackStack()
+    }
     LSSurface {
         Column(
             modifier = Modifier
@@ -367,7 +371,7 @@ fun PortraitContent(viewModel: RegisterViewModel, navController: NavController,
             text = linkedText,
             modifier = Modifier
                 .clickable {
-                    navController.navigate(LevoSonusScreens.LoginScreen.name)
+                    navController.popBackStack()
                 }
                 .padding(start = 5.dp),
             fontWeight = FontWeight.Bold,
@@ -474,7 +478,7 @@ fun LandscapeContent(viewModel: RegisterViewModel, navController: NavController,
                 text = linkedText,
                 modifier = Modifier
                     .clickable {
-                        navController.navigate(LevoSonusScreens.LoginScreen.name)
+                        navController.popBackStack()
                     }
                     .padding(start = 5.dp),
                 fontWeight = FontWeight.Bold,

@@ -30,6 +30,8 @@ class SignInUseCase @Inject constructor(
             }.addOnFailureListener {
                 trySend(Response.Error("Failed to retrieve user credentials"))
                 Log.d(TAG, "Failed to retrieve user $employeeId\n${it.message}")
+            }.addOnCompleteListener {
+                close()
             }
         awaitClose {
             cancel()

@@ -17,6 +17,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
@@ -30,17 +32,29 @@ class DepartmentsRepositoryImpl @Inject constructor(
 
     override suspend fun fetchDepartmentsData(businessId: String): Flow<Response<List<DepartmentUiModel>>> =
         callbackFlow {
-            db.collection(BUSINESSES_ENDPOINT)
-                .document(businessId)
-                .collection(DEPARTMENTS_ENDPOINT).get()
+            if (businessId.isBlank()) {
+                trySend(Response.Error("Invalid business ID"))
+                close()
+                return@callbackFlow
+            }
+            val businessDocRef = db.collection(BUSINESSES_ENDPOINT).document(businessId)
+            businessDocRef.collection(DEPARTMENTS_ENDPOINT).get()
                 .addOnSuccessListener { result ->
                     val departmentDtos = result.toObjects(DepartmentDto::class.java)
                     val departments = departmentDtos.map { it.toDepartmentUiModel() }.sortedBy { it.title }
-                    if (departments.isNotEmpty()) Response.Success(departments)
-                    else trySend(Response.Error("Failed to retrieve departments data"))
+                    if (departments.isNotEmpty()) {
+                        trySend(Response.Success(departments))
+                    } else {
+                        trySend(Response.Error("Failed to retrieve departments data"))
+                    }
                 }.addOnFailureListener { failure ->
                     trySend(Response.Error(failure.message.orEmpty()))
+                }.addOnCompleteListener {
+                    close()
                 }
+            awaitClose {
+                cancel()
+            }
         }
 
 

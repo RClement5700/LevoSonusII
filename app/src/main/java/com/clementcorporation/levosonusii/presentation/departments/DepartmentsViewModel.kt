@@ -15,6 +15,8 @@ import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.OperatorTypes
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -52,6 +54,7 @@ class DepartmentsViewModel @Inject constructor(
 
     fun updateUsersDepartment() {
         viewModelScope.launch {
+            _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnApplyButtonClicked
             sessionDataStore.data.collect { userInfo ->
                 val currentDepartmentId = userInfo.departmentId
                 val newDepartment = departments[selectedIndex]
@@ -65,31 +68,41 @@ class DepartmentsViewModel @Inject constructor(
     }
 
     private fun fetchDepartmentsData() {
-        viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             sessionDataStore.data.collect { userInfo ->
-                repo.fetchDepartmentsData(userInfo.organization.id).collect { response ->
-                    when (response) {
-                        is Response.Success -> {
-                            response.data?.let { departmentsData ->
-                                departments = departmentsData
-                                departments.find {
-                                    it.id == userInfo.departmentId
-                                }?.let { department ->
-                                    selectedIndex = departments.indexOf(department)
+                val businessId = userInfo.organization?.id
+                if (businessId?.isBlank() == true) {
+                    _departmentsScreenEventsStateFlow.value =
+                        DepartmentsScreenUiState.Error("Invalid business ID. Please sign in again.")
+                    return@collect
+                }
+                businessId?.let {
+                    repo.fetchDepartmentsData(businessId).collect { response ->
+                        when (response) {
+                            is Response.Success -> {
+                                response.data?.let { departmentsData ->
+                                    departments = departmentsData
+                                    departments.find {
+                                        it.id == userInfo.departmentId
+                                    }?.let { department ->
+                                        selectedIndex = departments.indexOf(department)
+                                    }
+                                    _departmentsScreenEventsStateFlow.value =
+                                        DepartmentsScreenUiState.DataRetrieved(departments)
                                 }
-                                _departmentsScreenEventsStateFlow.value =
-                                    DepartmentsScreenUiState.DataRetrieved(departments)
                             }
-                        }
-                        is Response.Error -> {
-                            response.message?.let {
-                                _departmentsScreenEventsStateFlow.value =
-                                    DepartmentsScreenUiState.Error(it)
+
+                            is Response.Error -> {
+                                response.message?.let { errorMessage ->
+                                    _departmentsScreenEventsStateFlow.value =
+                                        DepartmentsScreenUiState.Error(errorMessage)
+                                }
                             }
-                        }
-                        is Response.Loading -> {
-                            _departmentsScreenEventsStateFlow.value =
-                                DepartmentsScreenUiState.Loading
+
+                            is Response.Loading -> {
+                                _departmentsScreenEventsStateFlow.value =
+                                    DepartmentsScreenUiState.Loading
+                            }
                         }
                     }
                 }
@@ -100,14 +113,17 @@ class DepartmentsViewModel @Inject constructor(
     private fun addOperatorToDepartment(newDepartmentId: String) {
         viewModelScope.launch {
             sessionDataStore.data.collect { userInfo ->
-                val businessId = userInfo.organization.id
+                val businessId = userInfo.organization?.id
                 val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
                 repo.addOperatorToDepartment(
                     newDepartmentId,
-                    businessId,
+                    businessId.orEmpty(),
                     isOrderPicker
                 ).collect { response ->
-                    response.data?.let { Log.d(TAG, it) }
+                    response.data?.let {
+                        Log.d(TAG, it)
+                        _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
+                    }
                 }
             }
         }
@@ -116,15 +132,18 @@ class DepartmentsViewModel @Inject constructor(
     private fun removeOperatorFromDepartment() {
         viewModelScope.launch {
             sessionDataStore.data.collect { userInfo ->
-                val businessId = userInfo.organization.id
+                val businessId = userInfo.organization?.id
                 val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
                 val departmentId = userInfo.departmentId
                 repo.subtractOperatorFromDepartment(
                     departmentId,
-                    businessId,
+                    businessId.orEmpty(),
                     isOrderPicker
                 ).collect { response ->
-                    response.data?.let { Log.d(TAG, it) }
+                    response.data?.let {
+                        Log.d(TAG, it)
+                        _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
+                    }
                 }
             }
         }
@@ -135,4 +154,6 @@ sealed class DepartmentsScreenUiState {
     data object Loading: DepartmentsScreenUiState()
     data class Error(val message: String): DepartmentsScreenUiState()
     data class DataRetrieved(val data: List<DepartmentUiModel>): DepartmentsScreenUiState()
+    data object OnApplyButtonClicked: DepartmentsScreenUiState()
+    data object OnDataUpdated: DepartmentsScreenUiState()
 }

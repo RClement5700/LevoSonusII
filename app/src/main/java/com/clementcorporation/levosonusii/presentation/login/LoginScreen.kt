@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.login
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,6 +69,9 @@ fun LoginScreen(navController: NavController) {
     val uiState = viewModel.loginScreenUiState.collectAsStateWithLifecycle().value
     val isLoading = remember { mutableStateOf(false) }
     val centerContent = remember { mutableStateOf(false) }
+    BackHandler {
+        //Do Nothing
+    }
     LSSurface {
         Column(
             modifier = Modifier
@@ -143,7 +147,6 @@ fun LoginScreen(navController: NavController) {
                 is LoginScreenUiState.OnBusinessesRetrieved -> {
                     isLoading.value = false
                     centerContent.value = false
-                    viewModel.onBusinessRetrieved()
                     LevoSonusLogo(LOGO_SIZE.dp)
                     EmployeeIdInputField(
                         viewModel = viewModel,

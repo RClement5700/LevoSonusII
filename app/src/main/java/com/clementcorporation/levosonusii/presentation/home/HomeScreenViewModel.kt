@@ -18,7 +18,8 @@ class HomeScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
     val expandMenu = mutableStateOf(false)
-    var showProgressBar by mutableStateOf(false)
+    var showProgressBar by mutableStateOf(true)
+    var showAppBar by mutableStateOf(false)
     var inflateProfilePic by mutableStateOf(false)
 
     fun signOut(navigate: () -> Unit) {

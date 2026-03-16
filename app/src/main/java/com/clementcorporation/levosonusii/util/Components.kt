@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowCircleLeft
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
@@ -34,6 +35,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,7 +71,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -84,9 +85,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
-import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import coil.compose.SubcomposeAsyncImage
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
@@ -121,9 +120,11 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
 }
 
 @Composable
-fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, title: String,
-             profilePicUrl: String?, onClickLeftIcon: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
-             onClickSignOut: () -> Unit = {}
+fun LSAppBar(
+    expandMenu: MutableState<Boolean>, title: String? = "",
+    profilePicUrl: String?, onClickLeftIcon: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
+    onClickSignOut: () -> Unit = {}, onLoading: () -> Unit = {}, onSuccess: () -> Unit = {},
+    isHomeScreen: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -133,53 +134,56 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
+        val isLoading = remember { mutableStateOf(isHomeScreen) }
         if (profilePicUrl?.isNotEmpty() == true) {
             LSProfileIcon(
                 modifier = Modifier
                     .size(35.dp)
                     .clip(CircleShape)
                     .border(2.dp, Color.LightGray, CircleShape)
-                    .clickable(onClick = onClickLeftIcon),
-                imageUrl = profilePicUrl
+                    .clickable(
+                        enabled = !isLoading.value,
+                        onClick = onClickLeftIcon
+                    ),
+                imageUrl = profilePicUrl,
+                isLoading = isLoading,
+                onSuccess = onSuccess,
+                onLoading = onLoading
             )
         } else {
             IconButton(
-                onClick = {},
+                onClick = {
+                    onClickLeftIcon()
+                },
                 modifier = Modifier,
-                enabled = true,
+                enabled = !isLoading.value,
                 colors = IconButtonDefaults.iconButtonColors(),
                 interactionSource = null,
                 shape = CircleShape
             ) {
-                Icon(imageVector = Icons.Default.ArrowCircleLeft, contentDescription = "Back Button")
-
+                Icon(
+                    imageVector = Icons.Default.ArrowCircleLeft,
+                    contentDescription = "Back Button"
+                )
             }
-//            Image(
-//                modifier = Modifier
-//                    .rotate(180f)
-//                    .size(35.dp)
-//                    .clip(CircleShape)
-//                    .clickable(onClick = onClickLeftIcon),
-//                painter = painterResource(id = android.),
-//                contentDescription = "Profile Picture",
-//                contentScale = ContentScale.Crop
-//            )
         }
         Text(
             modifier = Modifier.padding(PADDING.dp),
-            text = title,
+            text = title.orEmpty(),
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
         Spacer(Modifier.weight(1f))
         IconButton(
+            enabled = !isLoading.value,
             onClick = onClickAlertBtn
         ) {
             Icon(imageVector = Icons.Default.Notifications, contentDescription = "Alert Button")
         }
         Box(contentAlignment = Alignment.BottomEnd) {
             IconButton(
+                enabled = !isLoading.value,
                 onClick = {
                     expandMenu.value = !expandMenu.value
                 }
@@ -209,17 +213,27 @@ fun LSAppBar(navController: NavController, expandMenu: MutableState<Boolean>, ti
 }
 
 @Composable
-fun LSProfileIcon(modifier: Modifier, imageUrl: String) {
-    Image(
+fun LSProfileIcon(
+    modifier: Modifier,
+    imageUrl: String,
+    isLoading: MutableState<Boolean>,
+    onLoading: () -> Unit,
+    onSuccess: () -> Unit
+) {
+    SubcomposeAsyncImage(
         modifier = modifier,
-        painter = rememberAsyncImagePainter(
-                ImageRequest.Builder(LocalContext.current).data(data = imageUrl).apply(block = fun ImageRequest.Builder.() {
-                    crossfade(true)
-                    placeholder(R.drawable.levosonus_rocket_logo)
-                }).build()
-            ),
+        model = imageUrl,
         contentDescription = "Profile Picture",
-        contentScale = ContentScale.Crop
+        loading = { CircularProgressIndicator() },
+        error = { Icon(Icons.Default.Error, contentDescription = "Failed to load profile picture") },
+        onLoading = {
+            onLoading()
+            isLoading.value = true
+        },
+        onSuccess = {
+            onSuccess()
+            isLoading.value = false
+        }
     )
 }
 

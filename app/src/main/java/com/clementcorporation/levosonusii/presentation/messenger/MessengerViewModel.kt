@@ -46,8 +46,8 @@ class MessengerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            userInfo.data.collect {
-                collection = FirebaseFirestore.getInstance().collection(it.organization.name)
+            userInfo.data.collect { userInfo ->
+                userInfo.organization?.name?.let { name -> FirebaseFirestore.getInstance().collection(name) }
                 document = collection.document(Constants.MESSENGER)
                 retrieveMessages()
             }

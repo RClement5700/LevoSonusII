@@ -56,7 +56,8 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesSignOutUseCase(): SignOutUseCase = SignOutUseCase
+    fun providesSignOutUseCase(sessionDataStore: DataStore<LSUserInfo>): SignOutUseCase =
+        SignOutUseCase(sessionDataStore)
 
     @Provides
     @Singleton

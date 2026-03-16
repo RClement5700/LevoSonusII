@@ -1,10 +1,11 @@
 package com.clementcorporation.levosonusii.domain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.reflect.KProperty0
 
 @Serializable
 data class LSUserInfo(
-    val organization: Business = Business(),
+    val organization: Business? = null,
     val employeeId: String = "",
     val firebaseId: String = "",
     val name: String = "",
@@ -18,7 +19,9 @@ data class LSUserInfo(
     val operatorType: String = "",
     val messengerIds: ArrayList<String> = arrayListOf(),
     val voiceProfile: Map<String, List<String>> = hashMapOf()
-)
+) {
+    fun getValue(nothing: Nothing?, prop: KProperty0<*>) {}
+}
 
 @Serializable
 data class LSUserDto(
@@ -69,4 +72,4 @@ fun LSUserDto.toMap(): MutableMap<String, Any> {
 }
 
 @Serializable
-data class Business(val id: String = "", val name: String = "", val address: String = "")
+data class Business(val id: String? = null, val name: String? = null, val address: String? = null)

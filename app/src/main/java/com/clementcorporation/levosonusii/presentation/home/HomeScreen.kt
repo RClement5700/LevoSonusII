@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.presentation.home
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -24,9 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -34,10 +32,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import coil.compose.SubcomposeAsyncImage
 import com.clementcorporation.levosonusii.R
-import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.NavTileData
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
@@ -53,12 +49,12 @@ import kotlinx.coroutines.Dispatchers
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
-        initialValue = LSUserInfo(),
+        initialValue = null,
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
     ).value
-    val title = userState.name
-    val profilePicUrl = userState.profilePicUrl
+    val title = userState?.name
+    val profilePicUrl = userState?.profilePicUrl
     BackHandler {
         viewModel.signOut {
             navController.navigate(LevoSonusScreens.LoginScreen.name)
@@ -71,7 +67,7 @@ fun HomeScreen(navController: NavController) {
                 .fillMaxSize(),
             topBar = {
                 LSAppBar(
-                    navController = navController,
+                    isHomeScreen = true,
                     expandMenu = viewModel.expandMenu,
                     title = title,
                     profilePicUrl = profilePicUrl,
@@ -82,23 +78,37 @@ fun HomeScreen(navController: NavController) {
                     },
                     onClickLeftIcon = {
                         viewModel.inflateProfilePic = !viewModel.inflateProfilePic
+                    },
+                    onLoading = {
+                        viewModel.showProgressBar = true
+                        viewModel.showAppBar = false
+                    },
+                    onSuccess = {
+                        viewModel.showAppBar = true
+                        viewModel.showProgressBar = false
                     }
                 )
             }
         )
         { paddingValues ->
-            if (viewModel.inflateProfilePic) InflatableProfilePic(viewModel = viewModel, imageUrl = profilePicUrl)
+            if (viewModel.inflateProfilePic) InflatableProfilePic(
+                viewModel = viewModel,
+                imageUrl = profilePicUrl
+            )
             HomeScreenContent(
-                modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = paddingValues.calculateTopPadding()),
                 navController = navController,
                 viewModel = viewModel
             )
         }
     }
+
 }
 
 @Composable
-fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
+fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String? = null) {
     val configuration = LocalConfiguration.current
     Surface(
         shadowElevation = 8.dp,
@@ -133,19 +143,14 @@ fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
                     contentDescription = stringResource(id = R.string.home_screen_close_profile_picture_content_description)
                 )
             }
-            Image(
+            SubcomposeAsyncImage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp),
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(data = imageUrl)
-                        .apply(block = fun ImageRequest.Builder.() {
-                            crossfade(false)
-                            placeholder(R.drawable.levosonus_rocket_logo)
-                        }).build()
-                ),
-                contentDescription = stringResource(id = R.string.home_screen_profile_picture_content_description),
-                contentScale = ContentScale.FillBounds
+                model = imageUrl,
+                contentDescription = "Profile Picture",
+                loading = { CircularProgressIndicator() },
+                error = { Icon(Icons.Default.Error, contentDescription = "Failed to load profile picture") },
             )
         }
     }
@@ -154,7 +159,7 @@ fun InflatableProfilePic(viewModel: HomeScreenViewModel, imageUrl: String) {
 @Composable
 fun HomeScreenContent(modifier: Modifier, navController: NavController, viewModel: HomeScreenViewModel) {
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         if (viewModel.showProgressBar) {
@@ -165,62 +170,63 @@ fun HomeScreenContent(modifier: Modifier, navController: NavController, viewMode
                 strokeWidth = 2.dp,
                 color = LS_BLUE
             )
-        }
-        val appsDataList = listOf(
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_voice_profile_label)
+        } else {
+            val appsDataList = listOf(
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_voice_profile_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_equipment_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.EquipmentScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_departments_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_health_wellness_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_orders_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.OrdersScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_messages_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.MessagesScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_announcements_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
+                },
+                NavTileData(
+                    title = stringResource(id = R.string.homescreen_tile_game_center_label)
+                ) {
+                    navController.navigate(LevoSonusScreens.GameCenterScreen.name)
+                }
+            ).sortedBy { data -> data.title }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
             ) {
-                navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_equipment_label)
-            ) {
-                navController.navigate(LevoSonusScreens.EquipmentScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_departments_label)
-            ) {
-                navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_health_wellness_label)
-            ) {
-                navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)
-            ) {
-                navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_orders_label)
-            ) {
-                navController.navigate(LevoSonusScreens.OrdersScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_messages_label)
-            ) {
-                navController.navigate(LevoSonusScreens.MessagesScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_announcements_label)
-            ) {
-                navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
-            },
-            NavTileData(
-                title = stringResource(id = R.string.homescreen_tile_game_center_label)
-            ) {
-                navController.navigate(LevoSonusScreens.GameCenterScreen.name)
-            }
-        ).sortedBy { data -> data.title }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(appsDataList) { tileData ->
-                NavTile(
-                    title = tileData.title,
-                    onClick = tileData.navigate
-                )
+                items(appsDataList) { tileData ->
+                    NavTile(
+                        title = tileData.title,
+                        onClick = tileData.navigate
+                    )
+                }
             }
         }
     }

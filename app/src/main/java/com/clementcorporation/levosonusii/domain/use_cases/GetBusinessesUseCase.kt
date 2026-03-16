@@ -14,9 +14,11 @@ import javax.inject.Inject
 open class GetBusinessesUseCase @Inject constructor(
     private val db: FirebaseFirestore
 ) {
-    operator fun invoke(): Flow<Response<List<Business?>>> =
-        db.collection(BUSINESSES_ENDPOINT).snapshots().map {
-            val businesses = it.toObjects(Business::class.java)
+    operator fun invoke(): Flow<Response<List<Business>>> =
+        db.collection(BUSINESSES_ENDPOINT).snapshots().map { snapshot ->
+            val businesses = snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Business::class.java)?.copy(id = doc.id)
+            }
             if (businesses.isEmpty()) Response.Error("Failed to retrieve Businesses")
             else Response.Success(businesses)
         }.flowOn(Dispatchers.IO)

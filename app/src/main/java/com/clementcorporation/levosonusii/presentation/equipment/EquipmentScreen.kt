@@ -48,7 +48,8 @@ fun EquipmentScreen(navController: NavController) {
                 .background(color = Color.White)
                 .fillMaxSize(),
             topBar = {
-                LSAppBar(navController = navController, expandMenu = viewModel.expandMenu,
+                LSAppBar(
+                    expandMenu = viewModel.expandMenu,
                     title = stringResource(id = R.string.equipment_screen_toolbar_title_text),
                     profilePicUrl = null,
                     onClickSignOut = {

@@ -8,6 +8,7 @@ import com.clementcorporation.levosonusii.domain.models.toDto
 import com.clementcorporation.levosonusii.domain.models.toMap
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
+import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.auth.FirebaseAuth
@@ -35,9 +36,9 @@ class RegisterRepositoryImpl @Inject constructor(
     override fun register(businessId: String, firstName: String, lastName: String, password: String,
                           email: String): Flow<Response<LSUserInfo>> = callbackFlow {
         send(Response.Loading())
-        db.document(businessId).get().addOnSuccessListener { businessSnapshot ->
+        db.collection(BUSINESSES_ENDPOINT).document(businessId).get().addOnSuccessListener { businessSnapshot ->
             val business = businessSnapshot.toObject(Business::class.java)
-            db.document(businessId).collection(USERS_ENDPOINT).get().addOnSuccessListener { usersSnapshot ->
+            db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(USERS_ENDPOINT).get().addOnSuccessListener { usersSnapshot ->
                 val users = usersSnapshot.toObjects(LSUserDto::class.java)
                 val employeeId = "$businessId${(NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random()}"
                 val isIdInDb = users.find { it.employeeId == employeeId } != null
@@ -54,7 +55,7 @@ class RegisterRepositoryImpl @Inject constructor(
                                     emailAddress = email,
                                     organization = mBusiness
                                 )
-                                db.document(businessId).collection(USERS_ENDPOINT).add(
+                                db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(USERS_ENDPOINT).add(
                                     userInfo.toDto().toMap()
                                 ).addOnSuccessListener {
                                     Log.d(TAG, "Successfully Created A New User: ${userInfo.name}")
