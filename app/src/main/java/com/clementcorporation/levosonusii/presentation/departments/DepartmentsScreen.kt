@@ -3,6 +3,7 @@ package com.clementcorporation.levosonusii.presentation.departments
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -177,7 +181,33 @@ fun DepartmentsScreen(navController: NavController) {
                 }
 
                 is DepartmentsScreenUiState.Error -> {
-                    //TODO: ADD ERROR MESSAGE FOR SCREEN WITH TRY AGAIN BUTTON ON TEXT
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = paddingValue.calculateTopPadding()),
+                        contentAlignment = Alignment.Center
+                    )  {
+                        Column(
+                            modifier = Modifier
+                                .clickable { viewModel.fetchDepartmentsData() },
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.failed_to_load_error_message),
+                                textAlign = TextAlign.Center,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Icon(
+                                modifier = Modifier.size(48.dp),
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Try Again",
+                                tint = Color.Green
+                            )
+                        }
+                    }
                 }
 
                 is DepartmentsScreenUiState.OnApplyButtonClicked -> {

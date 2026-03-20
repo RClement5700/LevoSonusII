@@ -67,7 +67,7 @@ class DepartmentsViewModel @Inject constructor(
         }
     }
 
-    private fun fetchDepartmentsData() {
+    fun fetchDepartmentsData() {
         CoroutineScope(Dispatchers.IO).launch {
             sessionDataStore.data.collect { userInfo ->
                 val businessId = userInfo.organization?.id
