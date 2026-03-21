@@ -36,8 +36,9 @@ fun LevoSonusNavigation(navController: NavHostController, showFab: MutableState<
             VoiceProfileScreen(navController = navController, showVoiceCommandActivity)
             showFab.value = true
         }
-        composable(LevoSonusScreens.HomeScreen.name){
-            HomeScreen(navController = navController)
+        composable("${LevoSonusScreens.HomeScreen.name}/{profilePicUrl}") { backStackEntry ->
+            val imageUrl = backStackEntry.arguments?.getString("profilePicUrl")
+            HomeScreen(navController, imageUrl)
             showFab.value = true
         }
         composable(LevoSonusScreens.EquipmentScreen.name){

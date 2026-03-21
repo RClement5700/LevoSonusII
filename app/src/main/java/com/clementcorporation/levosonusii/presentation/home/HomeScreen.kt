@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.NavTileData
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
@@ -43,18 +44,15 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.NavTile
 import kotlinx.coroutines.Dispatchers
 
-//TODO: Cache the profile pic into a bitmap and store the bitmap in dataStore for memory purposes
-// Look into the lengthy load times
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, profilePicUrl: String?) {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
-        initialValue = null,
+        initialValue = LSUserInfo(),
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
     ).value
-    val title = userState?.name
-    val profilePicUrl = userState?.profilePicUrl
+    val title = userState.name
     BackHandler {
         viewModel.signOut {
             navController.navigate(LevoSonusScreens.LoginScreen.name)
@@ -104,7 +102,6 @@ fun HomeScreen(navController: NavController) {
             )
         }
     }
-
 }
 
 @Composable

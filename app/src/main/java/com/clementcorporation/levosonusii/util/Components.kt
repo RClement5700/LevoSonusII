@@ -25,7 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowCircleLeft
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
@@ -35,7 +34,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,7 +83,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
-import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
@@ -220,12 +218,12 @@ fun LSProfileIcon(
     onLoading: () -> Unit,
     onSuccess: () -> Unit
 ) {
-    SubcomposeAsyncImage(
-        modifier = modifier,
+    AsyncImage(
         model = imageUrl,
         contentDescription = "Profile Picture",
-        loading = { CircularProgressIndicator() },
-        error = { Icon(Icons.Default.Error, contentDescription = "Failed to load profile picture") },
+        modifier = modifier,
+        placeholder = painterResource(R.drawable.levosonus_rocket_logo), // Optional
+        //error = painterResource(R.drawable.error)        // Optional
         onLoading = {
             onLoading()
             isLoading.value = true

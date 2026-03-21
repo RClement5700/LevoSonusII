@@ -31,7 +31,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -61,6 +60,8 @@ import com.clementcorporation.levosonusii.util.LSPasswordTextField
 import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -87,11 +88,12 @@ fun LoginScreen(navController: NavController) {
             ) {
             when (uiState) {
                 is LoginScreenUiState.OnUserDataRetrieved -> {
-                    SideEffect {
-                        isLoading.value = false
-                        centerContent.value = false
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    }
+                    isLoading.value = false
+                    centerContent.value = false
+                    val profilePicUrl = uiState.user.profilePicUrl
+                    isLoading.value = false
+                    val encodedUrl = URLEncoder.encode(profilePicUrl, StandardCharsets.UTF_8.toString())
+                    navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
                 }
                 is LoginScreenUiState.OnFailedToLoadUser -> {
                     isLoading.value = false
