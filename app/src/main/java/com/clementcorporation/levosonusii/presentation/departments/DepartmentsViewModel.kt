@@ -29,6 +29,8 @@ class DepartmentsViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
+
+    private val scope = CoroutineScope(Dispatchers.IO)
     private lateinit var departments: List<DepartmentUiModel>
     private val _departmentsScreenEventsStateFlow = MutableStateFlow<DepartmentsScreenUiState>(
         DepartmentsScreenUiState.Loading
@@ -50,25 +52,27 @@ class DepartmentsViewModel @Inject constructor(
         }
     }
 
+    fun getSessionDataStore() = sessionDataStore
+
     fun getCurrentDepartment(): DepartmentUiModel = departments[selectedIndex]
 
     fun updateUsersDepartment() {
-        viewModelScope.launch {
+        scope.launch {
             _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnApplyButtonClicked
             sessionDataStore.data.collect { userInfo ->
                 val currentDepartmentId = userInfo.departmentId
                 val newDepartment = departments[selectedIndex]
                 val newDepartmentId = newDepartment.id
                 if (currentDepartmentId != newDepartmentId) {
-                    addOperatorToDepartment(newDepartmentId)
-                    removeOperatorFromDepartment()
+                    addOperatorToDepartment(newDepartmentId, userInfo)
+                    removeOperatorFromDepartment(userInfo)
                 }
             }
         }
     }
 
     fun fetchDepartmentsData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             sessionDataStore.data.collect { userInfo ->
                 val businessId = userInfo.organization?.id
                 if (businessId?.isBlank() == true) {
@@ -110,40 +114,35 @@ class DepartmentsViewModel @Inject constructor(
         }
     }
 
-    private fun addOperatorToDepartment(newDepartmentId: String) {
-        viewModelScope.launch {
-            sessionDataStore.data.collect { userInfo ->
-                val businessId = userInfo.organization?.id
-                val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
-                repo.addOperatorToDepartment(
-                    newDepartmentId,
-                    businessId.orEmpty(),
-                    isOrderPicker
-                ).collect { response ->
-                    response.data?.let {
-                        Log.d(TAG, it)
-                        _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
-                    }
+    private fun addOperatorToDepartment(newDepartmentId: String, userInfo: LSUserInfo) {
+        scope.launch {
+            val businessId = userInfo.organization?.id
+            val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
+            repo.addOperatorToDepartment(
+                newDepartmentId,
+                businessId.orEmpty(),
+                isOrderPicker
+            ).collect { response ->
+                response.data?.let {
+                    Log.d(TAG, it)
                 }
             }
         }
     }
 
-    private fun removeOperatorFromDepartment() {
-        viewModelScope.launch {
-            sessionDataStore.data.collect { userInfo ->
-                val businessId = userInfo.organization?.id
-                val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
-                val departmentId = userInfo.departmentId
-                repo.subtractOperatorFromDepartment(
-                    departmentId,
-                    businessId.orEmpty(),
-                    isOrderPicker
-                ).collect { response ->
-                    response.data?.let {
-                        Log.d(TAG, it)
-                        _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
-                    }
+    private fun removeOperatorFromDepartment(userInfo: LSUserInfo) {
+        scope.launch {
+            val businessId = userInfo.organization?.id
+            val isOrderPicker = userInfo.operatorType == OperatorTypes.ORDER_PICKER
+            val departmentId = userInfo.departmentId
+            repo.subtractOperatorFromDepartment(
+                departmentId,
+                businessId.orEmpty(),
+                isOrderPicker
+            ).collect { response ->
+                response.data?.let {
+                    Log.d(TAG, it)
+                    _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
                 }
             }
         }

@@ -45,9 +45,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
@@ -59,12 +61,19 @@ import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val context = LocalContext.current
     val viewModel: DepartmentsViewModel = hiltViewModel()
     val uiState = viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle().value
+    val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
+        initialValue = LSUserInfo(),
+        lifecycle = LocalLifecycleOwner.current.lifecycle,
+        context = Dispatchers.IO
+    ).value
     val isHandlingDbUpdate = remember { mutableStateOf(false) }
     BackHandler {
         navController.popBackStack()
@@ -91,7 +100,9 @@ fun DepartmentsScreen(navController: NavController) {
                         }
                     },
                     onClickLeftIcon = {
-                        navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navController.navigate(LevoSonusScreens.HomeScreen.name)
+                        }
                     }
                 )
             }
@@ -165,7 +176,10 @@ fun DepartmentsScreen(navController: NavController) {
                             onClick = {
                                 viewModel.updateUsersDepartment()
                                 Toast.makeText(context, "Department: ${viewModel.getCurrentDepartment().title}", Toast.LENGTH_SHORT).show()
-                                navController.navigate(LevoSonusScreens.HomeScreen.name)
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    val encodedUrl = URLEncoder.encode(userState.profilePicUrl, StandardCharsets.UTF_8.toString())
+                                    navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
+                                }
                             }) {
                             if (isHandlingDbUpdate.value) {
                                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
@@ -215,7 +229,7 @@ fun DepartmentsScreen(navController: NavController) {
                 }
 
                 is DepartmentsScreenUiState.OnDataUpdated -> {
-                    isHandlingDbUpdate.value = true
+                    isHandlingDbUpdate.value = false
                 }
             }
         }

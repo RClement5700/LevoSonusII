@@ -21,7 +21,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -30,6 +29,8 @@ class DepartmentsRepositoryImpl @Inject constructor(
     private val db: FirebaseFirestore
 ): DepartmentsRepository {
 
+    val businessesRef = db.collection(BUSINESSES_ENDPOINT)
+
     override suspend fun fetchDepartmentsData(businessId: String): Flow<Response<List<DepartmentUiModel>>> =
         callbackFlow {
             if (businessId.isBlank()) {
@@ -37,7 +38,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
                 close()
                 return@callbackFlow
             }
-            val businessDocRef = db.collection(BUSINESSES_ENDPOINT).document(businessId)
+            val businessDocRef = businessesRef.document(businessId)
             businessDocRef.collection(DEPARTMENTS_ENDPOINT).get()
                 .addOnSuccessListener { result ->
                     val departmentDtos = result.toObjects(DepartmentDto::class.java)
@@ -57,25 +58,31 @@ class DepartmentsRepositoryImpl @Inject constructor(
             }
         }
 
-
-
     override suspend fun subtractOperatorFromDepartment(
         departmentId: String,
         businessId: String,
         isOrderPicker: Boolean
-    ): Flow<Response<String>> {
-        val departmentsRef = db.collection(BUSINESSES_ENDPOINT)
+    ): Flow<Response<String>> = callbackFlow {
+        val departmentsRef = businessesRef
             .document(businessId)
             .collection(DEPARTMENTS_ENDPOINT)
             .document(departmentId)
-        return departmentsRef.snapshots().map { snapshot ->
+        departmentsRef.snapshots().map { snapshot ->
             val department = snapshot.toObject(DepartmentDto::class.java)
-            if (departmentsRef.update(
-                    if (isOrderPicker) ORDER_PICKERS_PARAM
-                    else FORKLIFTS_PARAM, FieldValue.increment(-1.0)).isSuccessful
-                )
-                Response.Success("${department?.title} updated successfully")
-            else Response.Error("${department?.title} failed to update...")
+            if (department != null) {
+                trySend(Response.Success("${department.title} updated successfully"))
+            } else {
+                trySend(Response.Error("${department?.title} failed to update..."))
+            }
+        }
+        departmentsRef.update(
+            if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
+            FieldValue.increment(-1.0)
+        ).addOnCompleteListener {
+            close()
+        }
+        awaitClose {
+            cancel()
         }
     }
 
@@ -83,10 +90,10 @@ class DepartmentsRepositoryImpl @Inject constructor(
         departmentId: String,
         businessId: String,
         isOrderPicker: Boolean
-    ): Flow<Response<String>> {
+    ): Flow<Response<String>> = callbackFlow {
         val firebaseUserId = FirebaseAuth.getInstance().currentUser?.uid
         firebaseUserId?.let { firebaseId ->
-            db.collection(BUSINESSES_ENDPOINT).document(businessId)
+            businessesRef.document(businessId)
                 .collection(USERS_ENDPOINT)
                 .document(firebaseId)
                 .update(DEPARTMENT_ID, departmentId)
@@ -106,20 +113,27 @@ class DepartmentsRepositoryImpl @Inject constructor(
                     messengerIds = it.messengerIds
                 )
             }
-            val departmentsRef = db.collection(BUSINESSES_ENDPOINT)
+            val departmentsRef = businessesRef
                 .document(businessId)
                 .collection(DEPARTMENTS_ENDPOINT)
                 .document(departmentId)
-            return departmentsRef.snapshots().map { snapshot ->
+            departmentsRef.snapshots().map { snapshot ->
                 val department = snapshot.toObject(DepartmentDto::class.java)
-                if (departmentsRef.update(
-                        if (isOrderPicker) ORDER_PICKERS_PARAM
-                        else FORKLIFTS_PARAM, FieldValue.increment(1.0)).isSuccessful
-                    )
-                    Response.Success("${department?.title} updated successfully")
-                else Response.Error("${department?.title} failed to update...")
+                if (department != null) {
+                    trySend(Response.Success("${department.title} updated successfully"))
+                } else {
+                    trySend(Response.Error("${department?.title} failed to update..."))
+                }
+            }
+            departmentsRef.update(
+                if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
+                FieldValue.increment(1.0)
+            ).addOnCompleteListener {
+                close()
             }
         }
-        return flowOf(Response.Error("Failed to find Firebase User Id"))
+        awaitClose {
+            cancel()
+        }
     }
 }
