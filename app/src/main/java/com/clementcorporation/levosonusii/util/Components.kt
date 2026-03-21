@@ -222,8 +222,8 @@ fun LSProfileIcon(
         model = imageUrl,
         contentDescription = "Profile Picture",
         modifier = modifier,
-        placeholder = painterResource(R.drawable.levosonus_rocket_logo), // Optional
-        //error = painterResource(R.drawable.error)        // Optional
+        placeholder = painterResource(R.drawable.levosonus_rocket_logo),
+        error = painterResource(R.drawable.error_icon),
         onLoading = {
             onLoading()
             isLoading.value = true
