@@ -119,7 +119,7 @@ fun LevoSonusLogo(size: Dp = 96.dp, showText: Boolean = true) {
 
 @Composable
 fun LSAppBar(
-    expandMenu: MutableState<Boolean>, title: String? = "",
+    expandMenu: MutableState<Boolean>, title: String,
     profilePicUrl: String?, onClickLeftIcon: () -> Unit = {}, onClickAlertBtn: () -> Unit = {},
     onClickSignOut: () -> Unit = {}, onLoading: () -> Unit = {}, onSuccess: () -> Unit = {},
     isHomeScreen: Boolean = false
@@ -167,7 +167,7 @@ fun LSAppBar(
         }
         Text(
             modifier = Modifier.padding(PADDING.dp),
-            text = title.orEmpty(),
+            text = title,
             color = Color.Gray,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp

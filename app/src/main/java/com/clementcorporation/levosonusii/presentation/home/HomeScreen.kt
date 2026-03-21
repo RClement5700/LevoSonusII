@@ -42,7 +42,17 @@ import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.NavTile
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+fun signOut(viewModel: HomeScreenViewModel, navController: NavController) {
+    viewModel.signOut {
+        CoroutineScope(Dispatchers.Main).launch {
+            navController.navigate(LevoSonusScreens.LoginScreen.name)
+        }
+    }
+}
 
 @Composable
 fun HomeScreen(navController: NavController, profilePicUrl: String?) {
@@ -52,11 +62,8 @@ fun HomeScreen(navController: NavController, profilePicUrl: String?) {
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
     ).value
-    val title = userState.name
     BackHandler {
-        viewModel.signOut {
-            navController.navigate(LevoSonusScreens.LoginScreen.name)
-        }
+        signOut(viewModel, navController)
     }
     LSSurface {
         Scaffold(
@@ -67,12 +74,10 @@ fun HomeScreen(navController: NavController, profilePicUrl: String?) {
                 LSAppBar(
                     isHomeScreen = true,
                     expandMenu = viewModel.expandMenu,
-                    title = title,
+                    title = userState.name,
                     profilePicUrl = profilePicUrl,
                     onClickSignOut = {
-                        viewModel.signOut {
-                            navController.navigate(LevoSonusScreens.LoginScreen.name)
-                        }
+                        signOut(viewModel, navController)
                     },
                     onClickLeftIcon = {
                         viewModel.inflateProfilePic = !viewModel.inflateProfilePic
@@ -169,49 +174,31 @@ fun HomeScreenContent(modifier: Modifier, navController: NavController, viewMode
             )
         } else {
             val appsDataList = listOf(
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_voice_profile_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_voice_profile_label)) {
                     navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_equipment_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_equipment_label)) {
                     navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_departments_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_departments_label)) {
                     navController.navigate(LevoSonusScreens.DepartmentsScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_health_wellness_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_health_wellness_label)) {
                     navController.navigate(LevoSonusScreens.HealthAndWellnessScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_pay_benefits_label)) {
                     navController.navigate(LevoSonusScreens.PayAndBenefitsScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_orders_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_orders_label)) {
                     navController.navigate(LevoSonusScreens.OrdersScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_messages_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_messages_label)) {
                     navController.navigate(LevoSonusScreens.MessagesScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_announcements_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_announcements_label)) {
                     navController.navigate(LevoSonusScreens.AnnouncementsScreen.name)
                 },
-                NavTileData(
-                    title = stringResource(id = R.string.homescreen_tile_game_center_label)
-                ) {
+                NavTileData(title = stringResource(id = R.string.homescreen_tile_game_center_label)) {
                     navController.navigate(LevoSonusScreens.GameCenterScreen.name)
                 }
             ).sortedBy { data -> data.title }
