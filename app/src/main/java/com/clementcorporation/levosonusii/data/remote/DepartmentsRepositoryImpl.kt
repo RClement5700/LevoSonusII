@@ -13,7 +13,6 @@ import com.clementcorporation.levosonusii.util.Constants.FORKLIFTS_PARAM
 import com.clementcorporation.levosonusii.util.Constants.ORDER_PICKERS_PARAM
 import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.cancel
@@ -85,39 +84,35 @@ class DepartmentsRepositoryImpl @Inject constructor(
         businessId: String,
         isOrderPicker: Boolean
     ): Flow<Response<String>> = callbackFlow {
-        //TODO: Why doesn't this update the departmentId in Firebase?
-        val firebaseUserId = FirebaseAuth.getInstance().currentUser?.uid
-        firebaseUserId?.let { firebaseId ->
+        sessionDataStore.updateData {
             businessesRef.document(businessId)
                 .collection(USERS_ENDPOINT)
-                .document(firebaseId)
+                .document(it.firebaseId)
                 .update(DEPARTMENT_ID, departmentId)
-            sessionDataStore.updateData {
-                it.copy(
-                    organization = it.organization,
-                    firebaseId = it.firebaseId,
-                    employeeId = it.employeeId,
-                    emailAddress = it.emailAddress,
-                    password = it.password,
-                    departmentId = departmentId,
-                    machineId = it.machineId,
-                    scannerId = it.scannerId,
-                    headsetId = it.headsetId,
-                    operatorType = it.operatorType,
-                    voiceProfile = it.voiceProfile,
-                    messengerIds = it.messengerIds
-                )
-            }
-            val departmentsRef = businessesRef
-                .document(businessId)
-                .collection(DEPARTMENTS_ENDPOINT)
-                .document(departmentId)
-            departmentsRef.update(
-                if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
-                FieldValue.increment(1.0)
-            ).addOnCompleteListener {
-                close()
-            }
+            it.copy(
+                organization = it.organization,
+                firebaseId = it.firebaseId,
+                employeeId = it.employeeId,
+                emailAddress = it.emailAddress,
+                password = it.password,
+                departmentId = departmentId,
+                machineId = it.machineId,
+                scannerId = it.scannerId,
+                headsetId = it.headsetId,
+                operatorType = it.operatorType,
+                voiceProfile = it.voiceProfile,
+                messengerIds = it.messengerIds
+            )
+        }
+        val departmentsRef = businessesRef
+            .document(businessId)
+            .collection(DEPARTMENTS_ENDPOINT)
+            .document(departmentId)
+        departmentsRef.update(
+            if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
+            FieldValue.increment(1.0)
+        ).addOnCompleteListener {
+            close()
         }
         awaitClose {
             cancel()
