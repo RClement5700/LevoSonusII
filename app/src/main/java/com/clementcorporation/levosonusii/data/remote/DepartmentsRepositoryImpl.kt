@@ -16,12 +16,10 @@ import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DepartmentsRepositoryImpl @Inject constructor(
@@ -67,18 +65,14 @@ class DepartmentsRepositoryImpl @Inject constructor(
             .document(businessId)
             .collection(DEPARTMENTS_ENDPOINT)
             .document(departmentId)
-        departmentsRef.snapshots().map { snapshot ->
-            val department = snapshot.toObject(DepartmentDto::class.java)
-            if (department != null) {
-                trySend(Response.Success("${department.title} updated successfully"))
-            } else {
-                trySend(Response.Error("${department?.title} failed to update..."))
-            }
-        }
         departmentsRef.update(
             if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
             FieldValue.increment(-1.0)
-        ).addOnCompleteListener {
+        ).addOnSuccessListener {
+            trySend(Response.Success("Successfully updated department"))
+        }.addOnFailureListener {
+            trySend(Response.Error("Failed to update department"))
+        }.addOnCompleteListener {
             close()
         }
         awaitClose {
@@ -91,6 +85,7 @@ class DepartmentsRepositoryImpl @Inject constructor(
         businessId: String,
         isOrderPicker: Boolean
     ): Flow<Response<String>> = callbackFlow {
+        //TODO: Why doesn't this update the departmentId in Firebase?
         val firebaseUserId = FirebaseAuth.getInstance().currentUser?.uid
         firebaseUserId?.let { firebaseId ->
             businessesRef.document(businessId)
@@ -117,14 +112,6 @@ class DepartmentsRepositoryImpl @Inject constructor(
                 .document(businessId)
                 .collection(DEPARTMENTS_ENDPOINT)
                 .document(departmentId)
-            departmentsRef.snapshots().map { snapshot ->
-                val department = snapshot.toObject(DepartmentDto::class.java)
-                if (department != null) {
-                    trySend(Response.Success("${department.title} updated successfully"))
-                } else {
-                    trySend(Response.Error("${department?.title} failed to update..."))
-                }
-            }
             departmentsRef.update(
                 if (isOrderPicker) ORDER_PICKERS_PARAM else FORKLIFTS_PARAM,
                 FieldValue.increment(1.0)

@@ -58,7 +58,6 @@ class DepartmentsViewModel @Inject constructor(
 
     fun updateUsersDepartment() {
         scope.launch {
-            _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnApplyButtonClicked
             sessionDataStore.data.collect { userInfo ->
                 val currentDepartmentId = userInfo.departmentId
                 val newDepartment = departments[selectedIndex]
@@ -142,7 +141,7 @@ class DepartmentsViewModel @Inject constructor(
             ).collect { response ->
                 response.data?.let {
                     Log.d(TAG, it)
-                    _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated
+                    _departmentsScreenEventsStateFlow.value = DepartmentsScreenUiState.OnDataUpdated(response)
                 }
             }
         }
@@ -153,6 +152,5 @@ sealed class DepartmentsScreenUiState {
     data object Loading: DepartmentsScreenUiState()
     data class Error(val message: String): DepartmentsScreenUiState()
     data class DataRetrieved(val data: List<DepartmentUiModel>): DepartmentsScreenUiState()
-    data object OnApplyButtonClicked: DepartmentsScreenUiState()
-    data object OnDataUpdated: DepartmentsScreenUiState()
+    data class OnDataUpdated(val response: Response<String>): DepartmentsScreenUiState()
 }

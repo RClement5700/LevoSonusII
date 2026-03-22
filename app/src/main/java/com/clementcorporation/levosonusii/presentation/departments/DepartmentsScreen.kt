@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,6 +76,7 @@ fun DepartmentsScreen(navController: NavController) {
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
     ).value
+    val encodedUrl = URLEncoder.encode(userState.profilePicUrl, StandardCharsets.UTF_8.toString())
     val isHandlingDbUpdate = remember { mutableStateOf(false) }
     BackHandler {
         navController.popBackStack()
@@ -101,7 +104,7 @@ fun DepartmentsScreen(navController: NavController) {
                     },
                     onClickLeftIcon = {
                         CoroutineScope(Dispatchers.Main).launch {
-                            navController.navigate(LevoSonusScreens.HomeScreen.name)
+                            navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
                         }
                     }
                 )
@@ -175,11 +178,7 @@ fun DepartmentsScreen(navController: NavController) {
                             ),
                             onClick = {
                                 viewModel.updateUsersDepartment()
-                                Toast.makeText(context, "Department: ${viewModel.getCurrentDepartment().title}", Toast.LENGTH_SHORT).show()
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    val encodedUrl = URLEncoder.encode(userState.profilePicUrl, StandardCharsets.UTF_8.toString())
-                                    navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
-                                }
+                                isHandlingDbUpdate.value = true
                             }) {
                             if (isHandlingDbUpdate.value) {
                                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
@@ -224,11 +223,28 @@ fun DepartmentsScreen(navController: NavController) {
                     }
                 }
 
-                is DepartmentsScreenUiState.OnApplyButtonClicked -> {
-                    isHandlingDbUpdate.value = true
-                }
-
                 is DepartmentsScreenUiState.OnDataUpdated -> {
+                    if (uiState.response is Response.Success) {
+                        val toast = Toast.makeText(
+                            context,
+                            stringResource(
+                                R.string.departments_screen_department_success_toast_message,
+                                viewModel.getCurrentDepartment().title
+                            ),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        LaunchedEffect(toast) {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
+                            }
+                        }
+                    } else {
+                        Toast.makeText(
+                            context,
+                            stringResource(R.string.departments_screen_department_fail_toast_message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                     isHandlingDbUpdate.value = false
                 }
             }

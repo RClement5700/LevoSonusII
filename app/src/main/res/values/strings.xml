@@ -62,6 +62,8 @@
     <string name="departments_screen_department_electric_pallet_jack_operator_label">Order Pickers: %s</string>
     <string name="departments_screen_department_remaining_orders_label">Remaining Orders: %s</string>
     <string name="departments_screen_department_total_orders_label">Total Orders: %s</string>
+    <string name="departments_screen_department_success_toast_message">Department: %s</string>
+    <string name="departments_screen_department_fail_toast_message">Failed to update department</string>
 
     <!--Equipment Screen -->
     <string name="equipment_screen_toolbar_title_text">Equipment</string>
