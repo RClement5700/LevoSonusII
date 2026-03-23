@@ -36,45 +36,62 @@ class RegisterRepositoryImpl @Inject constructor(
     override fun register(businessId: String, firstName: String, lastName: String, password: String,
                           email: String): Flow<Response<LSUserInfo>> = callbackFlow {
         send(Response.Loading())
-        db.collection(BUSINESSES_ENDPOINT).document(businessId).get().addOnSuccessListener { businessSnapshot ->
-            val business = businessSnapshot.toObject(Business::class.java)
-            db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(USERS_ENDPOINT).get().addOnSuccessListener { usersSnapshot ->
-                val users = usersSnapshot.toObjects(LSUserDto::class.java)
-                val employeeId = "$businessId${(NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random()}"
-                val isIdInDb = users.find { it.employeeId == employeeId } != null
-                if (!isIdInDb) {
-                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(
-                        email, password).addOnSuccessListener { newUser ->
-                        newUser.user?.uid?.let { uid ->
-                            business?.let { mBusiness ->
-                                val userInfo = LSUserInfo(
-                                    name = "$firstName $lastName",
-                                    employeeId = employeeId,
-                                    firebaseId = uid,
-                                    password = password,
-                                    emailAddress = email,
-                                    organization = mBusiness
-                                )
-                                db.collection(BUSINESSES_ENDPOINT).document(businessId).collection(USERS_ENDPOINT).add(
-                                    userInfo.toDto().toMap()
-                                ).addOnSuccessListener {
-                                    Log.d(TAG, "Successfully Created A New User: ${userInfo.name}")
-                                    trySend(Response.Success(data = userInfo))
-                                }.addOnFailureListener {
-                                    trySend(Response.Error("Failed to add user to database"))
-                                    Log.d(TAG, "Failed to add user to database: ${it.message}")
+        db.collection(BUSINESSES_ENDPOINT)
+            .document(businessId)
+            .get()
+            .addOnSuccessListener { businessSnapshot ->
+                val business = businessSnapshot.toObject(Business::class.java)
+                db.collection(BUSINESSES_ENDPOINT)
+                    .document(businessId)
+                    .collection(USERS_ENDPOINT)
+                    .get()
+                    .addOnSuccessListener { usersSnapshot ->
+                        val users = usersSnapshot.toObjects(LSUserDto::class.java)
+                        val employeeId = "$businessId${(NEW_EMPLOYEE_ID_LOWER_BOUND..NEW_EMPLOYEE_ID_UPPER_BOUND).random()}"
+                        val isIdInDb = users.find { it.employeeId == employeeId } != null
+                        if (!isIdInDb) {
+                            FirebaseAuth.getInstance().createUserWithEmailAndPassword(
+                                email, password
+                            ).addOnSuccessListener { newUser ->
+                                newUser.user?.uid?.let { uid ->
+                                    business?.let { mBusiness ->
+                                        val userInfo = LSUserInfo(
+                                            name = "$firstName $lastName",
+                                            employeeId = employeeId,
+                                            firebaseId = uid,
+                                            password = password,
+                                            emailAddress = email,
+                                            organization = mBusiness
+                                        )
+                                        db.collection(BUSINESSES_ENDPOINT)
+                                            .document(businessId)
+                                            .collection(USERS_ENDPOINT)
+                                            .add(
+                                                userInfo.toDto().toMap()
+                                            ).addOnSuccessListener {
+                                                Log.d(TAG, "Successfully Created A New User: ${userInfo.name}")
+                                                trySend(Response.Success(data = userInfo))
+                                            }.addOnFailureListener {
+                                                trySend(Response.Error("Failed to add user to database"))
+                                                Log.d(TAG, "Failed to add user to database: ${it.message}")
+                                            }
+                                    }
                                 }
+                            }.addOnFailureListener {
+                                trySend(Response.Error("Failed to create user"))
+                                Log.d(TAG, "Failed to create user: ${it.message}")
                             }
+                        } else {
+                            register(businessId, firstName, lastName, password, email)
                         }
+                    }.addOnFailureListener {
+                        trySend(Response.Error("Failed to fetch users"))
+                        Log.d(TAG, "Failed to fetch users: ${it.message}")
                     }
-                } else {
-                    register(businessId, firstName, lastName, password, email)
-                }
+            }.addOnFailureListener {
+                trySend(Response.Error("Failed to fetch Business by ID"))
+                Log.d(TAG, "Failed to fetch Business by ID: ${it.message}")
             }
-        }.addOnFailureListener {
-            trySend(Response.Error("Failed to create new user"))
-            Log.d(TAG, "Failed to create new user: ${it.message}")
-        }
         awaitClose {
             cancel()
         }

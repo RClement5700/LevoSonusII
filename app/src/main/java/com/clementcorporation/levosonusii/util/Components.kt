@@ -31,7 +31,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -457,29 +457,40 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
                 }
                 Spacer(modifier = Modifier.weight(.2f))
                 Row(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(0.9f),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         onClick = onPositiveButtonClicked,
-                        colors = ButtonDefaults.buttonColors()//(backgroundColor = LS_BLUE)
+                        colors = ButtonColors(
+                            containerColor = LS_BLUE,
+                            contentColor = Color.White,
+                            disabledContentColor = Color.White,
+                            disabledContainerColor = Color.Gray
+                        )
                     ) {
-                        Text(text = stringResource(id = R.string.alert_dialog_positive_button_text), color = Color.White)
+                        Text(
+                            text = stringResource(id = R.string.alert_dialog_positive_button_text),
+                            color = Color.White,
+                            fontSize = 10.sp
+                        )
                     }
                     Button(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         onClick = onNegativeButtonClicked,
-                        colors = ButtonDefaults.buttonColors()//(backgroundColor = LS_BLUE)
+                        colors = ButtonColors(
+                            containerColor = LS_BLUE,
+                            contentColor = Color.White,
+                            disabledContentColor = Color.White,
+                            disabledContainerColor = Color.Gray
+                        )
                     ) {
-                        Text(text = stringResource(id = R.string.alert_dialog_negative_button_text), color = Color.White)
+                        Text(text = stringResource(id = R.string.alert_dialog_negative_button_text),
+                            color = Color.White,
+                            fontSize = 10.sp
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))

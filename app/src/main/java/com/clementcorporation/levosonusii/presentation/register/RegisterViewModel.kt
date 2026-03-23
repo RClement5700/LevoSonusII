@@ -36,7 +36,7 @@ sealed class RegisterScreenUiState {
 }
 
 private const val EMAIL_VALIDATOR_AT = "@"
-private const val EMAIL_VALIDATOR_COM = ".com"
+private const val EMAIL_VALIDATOR_DOT = "."
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -100,7 +100,8 @@ class RegisterViewModel @Inject constructor(
     }
     
     fun validateInputs(): Boolean {
-        return email.contains(EMAIL_VALIDATOR_AT) && email.contains(EMAIL_VALIDATOR_COM)
+        return email.contains(EMAIL_VALIDATOR_AT)
+                && email.contains(EMAIL_VALIDATOR_DOT)
                 && password.isNotEmpty() && password.isDigitsOnly()
                 && password.length == VALID_PASSWORD_LENGTH
                 && firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty()
@@ -109,7 +110,6 @@ class RegisterViewModel @Inject constructor(
 
     fun signIn(isCreatingVoiceProfile: Boolean) {
         viewModelScope.launch {
-            //TODO: mimick invoke call from LoginViewModel; need authenticateUseCase
             repo.signIn(businessId, employeeId.trim()).collectLatest { response ->
                 when (response) {
                     is Response.Success -> {
