@@ -1,31 +1,39 @@
-import java.io.FileInputStream
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-android")
-    id("dagger.hilt.android.plugin")
+    id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.clementcorporation.levosonusii"
     compileSdk = 35
-    val localPropertiesFile = rootProject.file("local.properties")
+
     val localProperties = Properties()
-    localProperties.load(FileInputStream(localPropertiesFile))
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        FileInputStream(localPropertiesFile).use { stream ->
+            localProperties.load(stream)
+        }
+    }
+
     defaultConfig {
         applicationId = "com.clementcorporation.levosonusii"
         minSdk = 30
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "PLACES_API_KEY", localProperties["placesApiKey"] as String)
+
+        val placesApiKey = localProperties.getProperty("placesApiKey") ?: ""
+        buildConfigField("String", "PLACES_API_KEY", "\"$placesApiKey\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
