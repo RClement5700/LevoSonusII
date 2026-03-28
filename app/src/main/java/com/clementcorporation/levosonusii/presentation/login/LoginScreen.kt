@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -57,9 +58,9 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.Constants.VALID_BUSINESS_ID_LENGTH
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
-import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.clementcorporation.levosonusii.util.LevoSonusUtil
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -73,114 +74,108 @@ fun LoginScreen(navController: NavController) {
     BackHandler {
         //Do Nothing
     }
-    LSSurface {
-        Column(
-            modifier = Modifier
-                .padding(
-                    top = when (configuration.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE -> 8.dp
-                        else -> 50.dp
-                    }
-                )
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = if (centerContent.value) Arrangement.Center else Arrangement.Top
-            ) {
-            when (uiState) {
-                is LoginScreenUiState.OnUserDataRetrieved -> {
-                    isLoading.value = false
-                    centerContent.value = false
-                    val profilePicUrl = uiState.user.profilePicUrl
-                    isLoading.value = false
-                    val encodedUrl = URLEncoder.encode(profilePicUrl, StandardCharsets.UTF_8.toString())
-                    navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = LevoSonusUtil.getTopPaddingPerConfiguration(configuration))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = LevoSonusUtil.arrangeContentPerConfiguration(centerContent)
+        ) {
+        when (uiState) {
+            is LoginScreenUiState.OnUserDataRetrieved -> {
+                isLoading.value = false
+                centerContent.value = false
+                val profilePicUrl = uiState.user.profilePicUrl
+                isLoading.value = false
+                val encodedUrl = URLEncoder.encode(profilePicUrl, StandardCharsets.UTF_8.toString())
+                navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
+            }
+            is LoginScreenUiState.OnFailedToLoadUser -> {
+                isLoading.value = false
+                centerContent.value = false
+                Snackbar(
+                    modifier = Modifier.fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = uiState.message,
+                        textAlign = TextAlign.Center,
+                        color = Color.White
+                    )
                 }
-                is LoginScreenUiState.OnFailedToLoadUser -> {
-                    isLoading.value = false
-                    centerContent.value = false
-                    Snackbar(
-                        modifier = Modifier.fillMaxWidth(0.9f),
-                        shape = RoundedCornerShape(8.dp),
-                    ) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = uiState.message,
-                            textAlign = TextAlign.Center,
-                            color = Color.White
-                        )
-                    }
-                }
-                is LoginScreenUiState.OnFailedToLoadBusinesses -> {
-                    isLoading.value = false
-                    centerContent.value = true
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                            .clickable { viewModel.fetchBusinesses() },
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.failed_to_load_error_message),
-                            textAlign = TextAlign.Center,
-                            color = Color.Black,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Icon(
-                            modifier = Modifier.size(48.dp),
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Try Again",
-                            tint = Color.Green
-                        )
-                    }
-                }
-                is LoginScreenUiState.OnLoading -> {
-                    centerContent.value = true
-                    isLoading.value = true
-                    CircularProgressIndicator(
+            }
+            is LoginScreenUiState.OnFailedToLoadBusinesses -> {
+                isLoading.value = false
+                centerContent.value = true
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .clickable { viewModel.fetchBusinesses() },
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.failed_to_load_error_message),
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Icon(
                         modifier = Modifier.size(48.dp),
-                        color = LS_BLUE,
-                        strokeWidth = 4.dp
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Try Again",
+                        tint = Color.Green
                     )
                 }
+            }
+            is LoginScreenUiState.OnLoading -> {
+                centerContent.value = true
+                isLoading.value = true
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = LS_BLUE,
+                    strokeWidth = 4.dp
+                )
+            }
 
-                is LoginScreenUiState.OnBusinessesRetrieved -> {
-                    isLoading.value = false
-                    centerContent.value = false
-                    LevoSonusLogo(LOGO_SIZE.dp)
-                    EmployeeIdInputField(
+            is LoginScreenUiState.OnBusinessesRetrieved -> {
+                isLoading.value = false
+                centerContent.value = false
+                LevoSonusLogo(LOGO_SIZE.dp)
+                EmployeeIdInputField(
+                    viewModel = viewModel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(PADDING.dp)
+                )
+                LSPasswordTextField(
+                    modifier = Modifier
+                        .padding(PADDING.dp)
+                        .fillMaxWidth(),
+                    userInput = viewModel.password,
+                    label = stringResource(id = R.string.label_password),
+                    onAction = KeyboardActions {
+                        viewModel.signIn()
+                    }
+                ) {
+                    if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
+                }
+                when (configuration.orientation) {
+                    Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
                         viewModel = viewModel,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(PADDING.dp)
+                        navController = navController,
+                        isLoading = isLoading
                     )
-                    LSPasswordTextField(
-                        modifier = Modifier
-                            .padding(PADDING.dp)
-                            .fillMaxWidth(),
-                        userInput = viewModel.password,
-                        label = stringResource(id = R.string.label_password),
-                        onAction = KeyboardActions {
-                            viewModel.signIn()
-                        }
-                    ) {
-                        if (it.length <= VALID_PASSWORD_LENGTH) viewModel.password = it
-                    }
-                    when (configuration.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE -> LandscapeButtonAndRegistrationContent(
-                            viewModel = viewModel,
-                            navController = navController,
-                            isLoading = isLoading
-                        )
 
-                        else -> PortraitButtonAndRegistrationContent(
-                            viewModel = viewModel,
-                            navController = navController,
-                            isLoading = isLoading
-                        )
-                    }
+                    else -> PortraitButtonAndRegistrationContent(
+                        viewModel = viewModel,
+                        navController = navController,
+                        isLoading = isLoading
+                    )
                 }
             }
         }

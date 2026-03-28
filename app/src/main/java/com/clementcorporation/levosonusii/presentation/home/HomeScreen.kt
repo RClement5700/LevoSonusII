@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.presentation.home
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +22,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,8 +37,8 @@ import com.clementcorporation.levosonusii.domain.models.NavTileData
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
-import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.clementcorporation.levosonusii.util.LevoSonusUtil
 import com.clementcorporation.levosonusii.util.NavTile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +54,7 @@ fun signOut(viewModel: HomeScreenViewModel, navController: NavController) {
 
 @Composable
 fun HomeScreen(navController: NavController, profilePicUrl: String?) {
+    val configuration = LocalConfiguration.current
     val viewModel: HomeScreenViewModel = hiltViewModel()
     val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
         initialValue = LSUserInfo(),
@@ -65,47 +64,45 @@ fun HomeScreen(navController: NavController, profilePicUrl: String?) {
     BackHandler {
         signOut(viewModel, navController)
     }
-    LSSurface {
-        Scaffold(
-            modifier = Modifier
-                .background(color = Color.White)
-                .fillMaxSize(),
-            topBar = {
-                LSAppBar(
-                    isHomeScreen = true,
-                    expandMenu = viewModel.expandMenu,
-                    title = userState.name,
-                    profilePicUrl = profilePicUrl,
-                    onClickSignOut = {
-                        signOut(viewModel, navController)
-                    },
-                    onClickLeftIcon = {
-                        viewModel.inflateProfilePic = !viewModel.inflateProfilePic
-                    },
-                    onLoading = {
-                        viewModel.showProgressBar = true
-                        viewModel.showAppBar = false
-                    },
-                    onSuccess = {
-                        viewModel.showAppBar = true
-                        viewModel.showProgressBar = false
-                    }
-                )
-            }
-        )
-        { paddingValues ->
-            if (viewModel.inflateProfilePic) InflatableProfilePic(
-                viewModel = viewModel,
-                imageUrl = profilePicUrl
-            )
-            HomeScreenContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = paddingValues.calculateTopPadding()),
-                navController = navController,
-                viewModel = viewModel
+    Scaffold(
+        modifier = Modifier
+            .padding(top = LevoSonusUtil.getTopPaddingPerConfiguration(configuration))
+            .fillMaxSize(),
+        topBar = {
+            LSAppBar(
+                isHomeScreen = true,
+                expandMenu = viewModel.expandMenu,
+                title = userState.name,
+                profilePicUrl = profilePicUrl,
+                onClickSignOut = {
+                    signOut(viewModel, navController)
+                },
+                onClickLeftIcon = {
+                    viewModel.inflateProfilePic = !viewModel.inflateProfilePic
+                },
+                onLoading = {
+                    viewModel.showProgressBar = true
+                    viewModel.showAppBar = false
+                },
+                onSuccess = {
+                    viewModel.showAppBar = true
+                    viewModel.showProgressBar = false
+                }
             )
         }
+    )
+    { paddingValues ->
+        if (viewModel.inflateProfilePic) InflatableProfilePic(
+            viewModel = viewModel,
+            imageUrl = profilePicUrl
+        )
+        HomeScreenContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding()),
+            navController = navController,
+            viewModel = viewModel
+        )
     }
 }
 

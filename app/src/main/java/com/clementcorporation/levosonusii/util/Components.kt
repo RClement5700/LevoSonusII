@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -47,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
@@ -239,6 +234,7 @@ fun LSProfileIcon(
 @Composable
 fun LSFAB(onClick: () -> Unit) {
     Column(
+        modifier = Modifier.zIndex(1f),
         verticalArrangement = Arrangement.Top
     ){
         val infoNote = stringResource(R.string.ls_fab_tooltip_note)
@@ -287,20 +283,6 @@ fun LSFAB(onClick: () -> Unit) {
             }
         }
     }
-}
-
-@Composable
-fun LSSurface(content : @Composable () -> Unit) {
-    Surface (
-        modifier = Modifier
-            .background(color = Color.White)
-            .fillMaxSize()
-            .padding(top = 16.dp)
-            .windowInsetsPadding(WindowInsets.navigationBars),
-        shadowElevation = ELEVATION.dp,
-        shape = RoundedCornerShape(CURVATURE.dp),
-        content = content
-    )
 }
 
 @Composable

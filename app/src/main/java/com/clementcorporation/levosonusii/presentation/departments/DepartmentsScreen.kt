@@ -1,8 +1,8 @@
 package com.clementcorporation.levosonusii.presentation.departments
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,14 +52,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
-import com.clementcorporation.levosonusii.util.Constants.BTN_HEIGHT
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
-import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.clementcorporation.levosonusii.util.LevoSonusUtil
 import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +69,7 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun DepartmentsScreen(navController: NavController) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val viewModel: DepartmentsViewModel = hiltViewModel()
     val uiState = viewModel.departmentsScreenEventsStateFlow.collectAsStateWithLifecycle().value
     val userState = viewModel.getSessionDataStore().data.collectAsStateWithLifecycle(
@@ -81,172 +82,176 @@ fun DepartmentsScreen(navController: NavController) {
     BackHandler {
         navController.popBackStack()
     }
-    LSSurface {
-        Scaffold(
-            modifier = Modifier
-                .background(color = Color.White)
-                .fillMaxSize(),
-            topBar = {
-                LSAppBar(
-                    expandMenu = viewModel.expandMenu,
-                    title = stringResource(id = R.string.departments_screen_title_text),
-                    profilePicUrl = null,
-                    onClickSignOut = {
-                        viewModel.signOut {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                navController.navigate(LevoSonusScreens.LoginScreen.name) {
-                                    popUpTo(navController.graph.id) {
-                                        inclusive = true
-                                    }
+    Scaffold(
+        modifier = Modifier
+            .padding(top = LevoSonusUtil.getTopPaddingPerConfiguration(configuration))
+            .fillMaxSize(),
+        topBar = {
+            LSAppBar(
+                expandMenu = viewModel.expandMenu,
+                title = stringResource(id = R.string.departments_screen_title_text),
+                profilePicUrl = null,
+                onClickSignOut = {
+                    viewModel.signOut {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navController.navigate(LevoSonusScreens.LoginScreen.name) {
+                                popUpTo(navController.graph.id) {
+                                    inclusive = true
                                 }
                             }
                         }
-                    },
-                    onClickLeftIcon = {
+                    }
+                },
+                onClickLeftIcon = {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
+                    }
+                }
+            )
+        }
+    ) { paddingValue ->
+        when (uiState) {
+
+            is DepartmentsScreenUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = paddingValue.calculateTopPadding()),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .zIndex(1f)
+                            .size(50.dp),
+                        strokeWidth = 2.dp,
+                        color = LS_BLUE
+                    )
+                }
+            }
+
+            is DepartmentsScreenUiState.DataRetrieved -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = paddingValue.calculateTopPadding()),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    HorizontalDivider(
+                        color = LS_BLUE,
+                        thickness = 2.dp,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(
+                                if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                                    0.65f else 0.9f
+                            )
+                    ) {
+                        val departments = uiState.data
+                        itemsIndexed(departments) { index, department ->
+                            DepartmentTile(
+                                index = index,
+                                title = department.title,
+                                icon = department.icon,
+                                totalOrders = department.totalOrders,
+                                remainingOrders = department.remainingOrders,
+                                forklifts = department.forklifts,
+                                orderPickers = department.orderPickers,
+                                viewModel = viewModel
+                            )
+                        }
+                    }
+                    Button(
+                        modifier = Modifier
+                            .padding(
+                                top = LevoSonusUtil.setPaddingPerConfiguration(configuration, 24, 0),
+                                start = PADDING.dp,
+                                end = PADDING.dp
+                            )
+                            .fillMaxSize(),
+                        shape = RoundedCornerShape(CURVATURE),
+                        elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LS_BLUE,
+                            contentColor = LS_BLUE,
+                            disabledContainerColor = Color.Gray,
+                            disabledContentColor = Color.Gray
+                        ),
+                        onClick = {
+                            viewModel.updateUsersDepartment()
+                            isHandlingDbUpdate.value = true
+                        }) {
+                        if (isHandlingDbUpdate.value) {
+                            CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.btn_text_apply),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            is DepartmentsScreenUiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = paddingValue.calculateTopPadding()),
+                    contentAlignment = Alignment.Center
+                )  {
+                    Column(
+                        modifier = Modifier
+                            .clickable { viewModel.fetchDepartmentsData() },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.failed_to_load_error_message),
+                            textAlign = TextAlign.Center,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Icon(
+                            modifier = Modifier.size(48.dp),
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Try Again",
+                            tint = Color.Green
+                        )
+                    }
+                }
+            }
+
+            is DepartmentsScreenUiState.OnDataUpdated -> {
+                if (uiState.response is Response.Success) {
+                    val toast = Toast.makeText(
+                        context,
+                        stringResource(
+                            R.string.departments_screen_department_success_toast_message,
+                            viewModel.getCurrentDepartment().title
+                        ),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    LaunchedEffect(toast) {
                         CoroutineScope(Dispatchers.Main).launch {
                             navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
                         }
                     }
-                )
-            }
-        ) { paddingValue ->
-            when (uiState) {
-
-                is DepartmentsScreenUiState.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValue.calculateTopPadding()),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .zIndex(1f)
-                                .size(50.dp),
-                            strokeWidth = 2.dp,
-                            color = LS_BLUE
-                        )
-                    }
+                } else {
+                    Toast.makeText(
+                        context,
+                        stringResource(R.string.departments_screen_department_fail_toast_message),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-
-                is DepartmentsScreenUiState.DataRetrieved -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValue.calculateTopPadding()),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        HorizontalDivider(
-                            color = LS_BLUE,
-                            thickness = 2.dp,
-                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(0.9f)
-                        ) {
-                            val departments = uiState.data
-                            itemsIndexed(departments) { index, department ->
-                                DepartmentTile(
-                                    index = index,
-                                    title = department.title,
-                                    icon = department.icon,
-                                    totalOrders = department.totalOrders,
-                                    remainingOrders = department.remainingOrders,
-                                    forklifts = department.forklifts,
-                                    orderPickers = department.orderPickers,
-                                    viewModel = viewModel
-                                )
-                            }
-                        }
-                        Button(
-                            modifier = Modifier
-                                .padding(PADDING.dp)
-                                .fillMaxWidth()
-                                .height(BTN_HEIGHT.dp),
-                            shape = RoundedCornerShape(CURVATURE),
-                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = ELEVATION.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = LS_BLUE,
-                                contentColor = LS_BLUE,
-                                disabledContainerColor = Color.Gray,
-                                disabledContentColor = Color.Gray
-                            ),
-                            onClick = {
-                                viewModel.updateUsersDepartment()
-                                isHandlingDbUpdate.value = true
-                            }) {
-                            if (isHandlingDbUpdate.value) {
-                                CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
-                            } else {
-                                Text(
-                                    text = stringResource(id = R.string.btn_text_apply),
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
-
-                is DepartmentsScreenUiState.Error -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValue.calculateTopPadding()),
-                        contentAlignment = Alignment.Center
-                    )  {
-                        Column(
-                            modifier = Modifier
-                                .clickable { viewModel.fetchDepartmentsData() },
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.failed_to_load_error_message),
-                                textAlign = TextAlign.Center,
-                                color = Color.Black,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Icon(
-                                modifier = Modifier.size(48.dp),
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Try Again",
-                                tint = Color.Green
-                            )
-                        }
-                    }
-                }
-
-                is DepartmentsScreenUiState.OnDataUpdated -> {
-                    if (uiState.response is Response.Success) {
-                        val toast = Toast.makeText(
-                            context,
-                            stringResource(
-                                R.string.departments_screen_department_success_toast_message,
-                                viewModel.getCurrentDepartment().title
-                            ),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        LaunchedEffect(toast) {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                navController.navigate("${LevoSonusScreens.HomeScreen.name}/${encodedUrl}")
-                            }
-                        }
-                    } else {
-                        Toast.makeText(
-                            context,
-                            stringResource(R.string.departments_screen_department_fail_toast_message),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    isHandlingDbUpdate.value = false
-                }
+                isHandlingDbUpdate.value = false
             }
         }
     }

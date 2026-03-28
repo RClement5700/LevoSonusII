@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -60,10 +61,10 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.Constants.VALID_PASSWORD_LENGTH
 import com.clementcorporation.levosonusii.util.LSAlertDialog
 import com.clementcorporation.levosonusii.util.LSPasswordTextField
-import com.clementcorporation.levosonusii.util.LSSurface
 import com.clementcorporation.levosonusii.util.LSTextField
 import com.clementcorporation.levosonusii.util.LevoSonusLogo
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
+import com.clementcorporation.levosonusii.util.LevoSonusUtil
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -78,162 +79,156 @@ fun RegisterScreen(navController: NavController) {
     BackHandler {
         navController.popBackStack()
     }
-    LSSurface {
-        Column(
-            modifier = Modifier
-                .imePadding()
-                .padding(
-                    top = when (configuration.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE -> 8.dp
-                        else -> 50.dp
-                    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .padding(top = LevoSonusUtil.getTopPaddingPerConfiguration(configuration))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = if (centerContent.value) Arrangement.Center else Arrangement.Top
+    ) {
+        when(uiState) {
+            is RegisterScreenUiState.OnLoading -> {
+                centerContent.value = true
+                isLoading.value = true
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = LS_BLUE,
+                    strokeWidth = 4.dp
                 )
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = if (centerContent.value) Arrangement.Center else Arrangement.Top
-        ) {
-            when(uiState) {
-                is RegisterScreenUiState.OnLoading -> {
-                    centerContent.value = true
-                    isLoading.value = true
-                    CircularProgressIndicator(
+            }
+            is RegisterScreenUiState.OnBusinessesRetrieved -> {
+                isLoading.value = false
+                centerContent.value = false
+                when(configuration.orientation) {
+                    Configuration.ORIENTATION_LANDSCAPE -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(0.9f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            LevoSonusLogo(LOGO_SIZE.dp)
+                            BusinessIdInputField(
+                                viewModel = viewModel,
+                                modifier = Modifier.fillMaxWidth(0.48f)
+                            )
+                        }
+                        LandscapeContent(
+                            viewModel = viewModel,
+                            navController = navController,
+                            isLoading = isLoading
+                        )
+                    }
+                    else -> {
+                        LevoSonusLogo(LOGO_SIZE.dp)
+                        PortraitContent(
+                            viewModel = viewModel,
+                            navController = navController,
+                            isLoading = isLoading
+                        )
+                    }
+                }
+            }
+            is RegisterScreenUiState.OnFailedToLoadBusinesses -> {
+                isLoading.value = false
+                centerContent.value = true
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .clickable { viewModel.fetchBusinesses() },
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.failed_to_load_error_message),
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Icon(
                         modifier = Modifier.size(48.dp),
-                        color = LS_BLUE,
-                        strokeWidth = 4.dp
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Try Again",
+                        tint = Color.Green
                     )
                 }
-                is RegisterScreenUiState.OnBusinessesRetrieved -> {
-                    isLoading.value = false
-                    centerContent.value = false
-                    when(configuration.orientation) {
-                        Configuration.ORIENTATION_LANDSCAPE -> {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                LevoSonusLogo(LOGO_SIZE.dp)
-                                BusinessIdInputField(
-                                    viewModel = viewModel,
-                                    modifier = Modifier.fillMaxWidth(0.55f)
-                                )
-                            }
-                            LandscapeContent(
-                                viewModel = viewModel,
-                                navController = navController,
-                                isLoading = isLoading
-                            )
-                        }
-                        else -> {
-                            LevoSonusLogo(LOGO_SIZE.dp)
-                            PortraitContent(
-                                viewModel = viewModel,
-                                navController = navController,
-                                isLoading = isLoading
-                            )
-                        }
-                    }
+            }
+            is RegisterScreenUiState.OnUserDataRetrieved -> {
+                viewModel.onNewUserCreated()
+                showNewUserDialog.value = true
+            }
+            is RegisterScreenUiState.OnFailedToLoadUser -> {
+                isLoading.value = false
+                centerContent.value = true
+                Toast.makeText(
+                    context,
+                    uiState.message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            is RegisterScreenUiState.OnSignInSuccess -> {
+                isLoading.value = false
+                SideEffect {
+                    if (uiState.isCreatingVoiceProfile)
+                        navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
+                    else navController.navigate(LevoSonusScreens.HomeScreen.name)
                 }
-                is RegisterScreenUiState.OnFailedToLoadBusinesses -> {
-                    isLoading.value = false
-                    centerContent.value = true
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                            .clickable { viewModel.fetchBusinesses() },
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.failed_to_load_error_message),
-                            textAlign = TextAlign.Center,
-                            color = Color.Black,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Icon(
-                            modifier = Modifier.size(48.dp),
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Try Again",
-                            tint = Color.Green
-                        )
-                    }
-                }
-                is RegisterScreenUiState.OnUserDataRetrieved -> {
-                    viewModel.onNewUserCreated()
-                    showNewUserDialog.value = true
-                }
-                is RegisterScreenUiState.OnFailedToLoadUser -> {
-                    isLoading.value = false
-                    centerContent.value = true
+            }
+            is RegisterScreenUiState.OnSignInFailure -> {
+                isLoading.value = false
+                centerContent.value = true
+                Toast.makeText(
+                    context,
+                    uiState.message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+        if (showNewUserDialog.value) {
+            val newUserDialog = stringResource(
+                R.string.register_screen_new_user_dialog_body,
+                viewModel.firstName,
+                viewModel.lastName,
+                viewModel.email,
+                viewModel.employeeId
+            )
+            val screenshotMessage = stringResource(R.string.register_screen_take_screenshot_toast_message)
+            LSAlertDialog(
+                showAlertDialog = showNewUserDialog,
+                dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
+                dialogBody = remember {
+                    mutableStateOf(newUserDialog)
+                },
+                onPositiveButtonClicked = {
+                    showNewUserDialog.value = false
+                    showVoiceProfileDialog.value = true
+                },
+                onNegativeButtonClicked = {
                     Toast.makeText(
                         context,
-                        uiState.message,
+                        screenshotMessage,
                         Toast.LENGTH_LONG
                     ).show()
                 }
-                is RegisterScreenUiState.OnSignInSuccess -> {
-                    isLoading.value = false
-                    SideEffect {
-                        if (uiState.isCreatingVoiceProfile)
-                            navController.navigate(LevoSonusScreens.VoiceProfileScreen.name)
-                        else navController.navigate(LevoSonusScreens.HomeScreen.name)
-                    }
+            )
+        }
+        if (showVoiceProfileDialog.value) {
+            showNewUserDialog.value = false
+            LSAlertDialog(
+                showAlertDialog = showVoiceProfileDialog,
+                dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
+                onPositiveButtonClicked = {
+                    showVoiceProfileDialog.value = false
+                    viewModel.signIn(true)
+                },
+                onNegativeButtonClicked = {
+                    showVoiceProfileDialog.value = false
+                    viewModel.signIn(false)
                 }
-                is RegisterScreenUiState.OnSignInFailure -> {
-                    isLoading.value = false
-                    centerContent.value = true
-                    Toast.makeText(
-                        context,
-                        uiState.message,
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            if (showNewUserDialog.value) {
-                val newUserDialog = stringResource(
-                    R.string.register_screen_new_user_dialog_body,
-                    viewModel.firstName,
-                    viewModel.lastName,
-                    viewModel.email,
-                    viewModel.employeeId
-                )
-                val screenshotMessage = stringResource(R.string.register_screen_take_screenshot_toast_message)
-                LSAlertDialog(
-                    showAlertDialog = showNewUserDialog,
-                    dialogTitle = stringResource(id = R.string.register_alert_dialog_title),
-                    dialogBody = remember {
-                        mutableStateOf(newUserDialog)
-                    },
-                    onPositiveButtonClicked = {
-                        showNewUserDialog.value = false
-                        showVoiceProfileDialog.value = true
-                    },
-                    onNegativeButtonClicked = {
-                        Toast.makeText(
-                            context,
-                            screenshotMessage,
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                )
-            }
-            if (showVoiceProfileDialog.value) {
-                showNewUserDialog.value = false
-                LSAlertDialog(
-                    showAlertDialog = showVoiceProfileDialog,
-                    dialogTitle = stringResource(id = R.string.voice_profile_alert_dialog_title),
-                    onPositiveButtonClicked = {
-                        showVoiceProfileDialog.value = false
-                        viewModel.signIn(true)
-                    },
-                    onNegativeButtonClicked = {
-                        showVoiceProfileDialog.value = false
-                        viewModel.signIn(false)
-                    }
-                )
-            }
+            )
         }
     }
 }
