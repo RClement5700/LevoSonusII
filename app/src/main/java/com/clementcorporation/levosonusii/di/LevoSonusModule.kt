@@ -76,7 +76,7 @@ object LevoSonusModule {
 
     @Provides
     @Singleton
-    fun providesEquipmentRepository(): EquipmentRepository = EquipmentRepositoryImpl()
+    fun providesEquipmentRepository(db: FirebaseFirestore): EquipmentRepository = EquipmentRepositoryImpl(db)
 
     @Provides
     @Singleton

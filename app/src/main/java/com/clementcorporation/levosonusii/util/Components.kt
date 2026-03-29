@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -43,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
@@ -80,6 +84,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.ConnectionType
+import com.clementcorporation.levosonusii.presentation.departments.DepartmentsViewModel
+import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
@@ -479,4 +486,128 @@ fun LSAlertDialog(showAlertDialog: MutableState<Boolean>, dialogTitle: String,
             }
         }
     )
+}
+
+@Composable
+fun DepartmentTile(
+    index: Int,
+    icon: Int,
+    title: String,
+    forklifts: Int,
+    orderPickers: Int,
+    remainingOrders: String,
+    totalOrders: String,
+    viewModel: DepartmentsViewModel
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .selectable(
+                selected = index == viewModel.selectedIndex,
+                onClick = {
+                    if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
+                }
+            ),
+        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(
+                    modifier = Modifier.size(48.dp),
+                    painter = painterResource(id = icon),
+                    tint = Color.Black,
+                    contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_forklift_operator_label, forklifts),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_remaining_orders_label, remainingOrders),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label, orderPickers),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = stringResource(id = R.string.departments_screen_department_total_orders_label, totalOrders),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EquipmentTile(
+    viewModel: EquipmentScreenViewModel,
+    index: Int,
+    title: String,
+    icon: Int? = null,
+    connectionType: ConnectionType? = null,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .selectable(
+                selected = index == viewModel.selectedIndex,
+                onClick = {
+                    if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
+                }
+            ),
+        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+
+
+
+        }
+    }
 }

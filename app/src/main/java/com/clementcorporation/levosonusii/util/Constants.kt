@@ -5,7 +5,9 @@ import androidx.compose.ui.graphics.Color
 object Constants {
     const val BUSINESSES_ENDPOINT = "businesses"
     const val USERS_ENDPOINT = "users"
-    const val EQUIPMENT_ENDPOINT = "equipment"
+    const val MACHINES_ENDPOINT = "machines"
+    const val SCANNERS_ENDPOINT = "scanners"
+    const val HEADSETS_ENDPOINT = "headsets"
     const val DEPARTMENTS_ENDPOINT = "departments"
     const val ORDER_PICKERS_PARAM = "orderPickers"
     const val FORKLIFTS_PARAM = "forklifts"

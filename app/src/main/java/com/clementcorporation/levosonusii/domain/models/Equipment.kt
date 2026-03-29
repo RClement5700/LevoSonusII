@@ -2,14 +2,55 @@ package com.clementcorporation.levosonusii.domain.models
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import kotlin.Boolean
 
-sealed class Equipment(val id: String) {
-    data class Headset(val connection: String, val serialNumber: String, val isAvailable: Boolean,
-                       val isSelected: MutableState<Boolean> = mutableStateOf(false)): Equipment(serialNumber)
-    data class ElectricPalletJack(val serialNumber: String, val isAvailable: Boolean,
-                                  val isSelected: MutableState<Boolean> = mutableStateOf(false)): Equipment(serialNumber)
-    data class Forklift(val serialNumber: String, val isAvailable: Boolean,
-                        val isSelected: MutableState<Boolean> = mutableStateOf(false)): Equipment(serialNumber)
-    data class ProductScanner(val connection: String, val serialNumber: String, val isAvailable: Boolean,
-                              val isSelected: MutableState<Boolean> = mutableStateOf(false)): Equipment(serialNumber)
+data class EquipmentDto(
+    val serialNumber: String = "",
+    val isAvailable: Boolean = true,
+    val connectionType: String? = null,
+    val machineType: String? = null
+)
+
+fun EquipmentDto.toEquipmentUiModel(): EquipmentUiModel =
+    EquipmentUiModel(
+        connectionType = connectionType?.toConnectionType(),
+        machineType = machineType?.toMachineType(),
+        serialNumber = serialNumber,
+        isAvailable = isAvailable.toColor(),
+        isSelected = mutableStateOf(false)
+    )
+
+data class EquipmentUiModel(
+    val connectionType: ConnectionType? = null,
+    val machineType: MachineType? = null,
+    val serialNumber: String,
+    val isAvailable: Color,
+    val isSelected: MutableState<Boolean> = mutableStateOf(false),
+)
+
+fun String.toConnectionType() =
+    when (this.lowercase()) {
+        ConnectionType.WIRED.name.lowercase() -> ConnectionType.WIRED
+        ConnectionType.BLUETOOTH.name.lowercase() -> ConnectionType.BLUETOOTH
+        else -> null
+    }
+
+fun String.toMachineType() =
+    when (this.lowercase()) {
+        MachineType.ElectricPalletJack.name.lowercase() -> MachineType.ElectricPalletJack
+        MachineType.Forklift.name.lowercase() -> MachineType.Forklift
+        else -> null
+    }
+
+fun Boolean.toColor() = if (this) Color.Green else Color.Red
+
+enum class ConnectionType {
+    WIRED,
+    BLUETOOTH
+}
+
+enum class MachineType(name: String) {
+    ElectricPalletJack("Electric Pallet Jack"),
+    Forklift("Forklift")
 }

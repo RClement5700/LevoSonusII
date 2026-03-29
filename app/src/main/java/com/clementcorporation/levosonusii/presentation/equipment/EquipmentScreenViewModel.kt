@@ -1,18 +1,27 @@
 package com.clementcorporation.levosonusii.presentation.equipment
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class EquipmentScreenUiState {
+    data object OnLoading: EquipmentScreenUiState()
+    data class OnDataRetrieved(val data: List<EquipmentUiModel>): EquipmentScreenUiState()
+    data class OnFailedToLoadData(val message: String): EquipmentScreenUiState()
+}
 @HiltViewModel
-class EquipmentScreenViewModel @Inject constructor(
+open class EquipmentScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
-
+    var selectedIndex by mutableIntStateOf(-1)
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)
 

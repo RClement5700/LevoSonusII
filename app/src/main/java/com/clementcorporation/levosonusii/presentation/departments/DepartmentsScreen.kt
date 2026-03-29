@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -29,7 +26,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +51,7 @@ import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import com.clementcorporation.levosonusii.util.DepartmentTile
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.LevoSonusUtil
@@ -252,93 +248,6 @@ fun DepartmentsScreen(navController: NavController) {
                     ).show()
                 }
                 isHandlingDbUpdate.value = false
-            }
-        }
-    }
-}
-
-@Composable
-fun DepartmentTile(
-    index: Int,
-    icon: Int,
-    title: String,
-    forklifts: Int,
-    orderPickers: Int,
-    remainingOrders: String,
-    totalOrders: String,
-    viewModel: DepartmentsViewModel
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .selectable(
-                selected = index == viewModel.selectedIndex,
-                onClick = {
-                    if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
-                }
-            ),
-        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
-        shadowElevation = 8.dp,
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    modifier = Modifier.size(48.dp),
-                    painter = painterResource(id = icon),
-                    tint = Color.Black,
-                    contentDescription = stringResource(id = R.string.departments_screen_department_icon_content_description)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = title,
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.departments_screen_department_forklift_operator_label, forklifts),
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = stringResource(id = R.string.departments_screen_department_remaining_orders_label, remainingOrders),
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.departments_screen_department_electric_pallet_jack_operator_label, orderPickers),
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = stringResource(id = R.string.departments_screen_department_total_orders_label, totalOrders),
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
         }
     }
