@@ -35,7 +35,10 @@ class EquipmentRepositoryImpl @Inject constructor(
             businessDocRef.collection(equipmentEndpoint).get()
                 .addOnSuccessListener { result ->
                     val equipmentDtos = result.toObjects(EquipmentDto::class.java)
-                    val equipment = equipmentDtos.map { it.toEquipmentUiModel() }.sortedBy { it.serialNumber }
+                    val equipment = equipmentDtos
+                        .filter { it.isAvailable }
+                        .sortedBy { it.serialNumber }
+                        .map { it.toEquipmentUiModel() }
                     if (equipment.isNotEmpty()) {
                         trySend(Response.Success(equipment))
                     } else {

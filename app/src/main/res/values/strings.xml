@@ -70,6 +70,8 @@
     <string name="equipment_screen_machines_tile_title_text">Machines</string>
     <string name="equipment_screen_scanners_tile_title_text">Scanners</string>
     <string name="equipment_screen_headsets_tile_title_text">Headsets</string>
+    <string name="equipment_screen_serial_number_label_text">Serial No: %s</string>
+
 
     <!-- Voice Profile Screen -->
     <string name="voice_profile_screen_toolbar_title">Voice Profile</string>

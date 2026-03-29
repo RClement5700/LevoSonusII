@@ -85,6 +85,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.ConnectionType
+import com.clementcorporation.levosonusii.domain.models.MachineType
 import com.clementcorporation.levosonusii.presentation.departments.DepartmentsViewModel
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenViewModel
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
@@ -580,9 +581,8 @@ fun EquipmentTile(
     viewModel: EquipmentScreenViewModel,
     index: Int,
     title: String,
-    icon: Int? = null,
     connectionType: ConnectionType? = null,
-    onClick: () -> Unit
+    machineType: MachineType? = null,
 ) {
     Surface(
         modifier = Modifier
@@ -605,9 +605,44 @@ fun EquipmentTile(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-
-
-
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                machineType?.let { type ->
+                    val icon = when (type.name) {
+                        MachineType.ElectricPalletJack.name -> R.drawable.electric_pallet_jack_icon
+                        MachineType.Forklift.name -> R.drawable.forklift_icon
+                        else -> 0
+                    }
+                    Icon(
+                        modifier = Modifier.size(48.dp),
+                        painter = painterResource(id = icon),
+                        tint = Color.Black,
+                        contentDescription = "Machine Type Icon"
+                    )
+                }
+                //TODO: find out why this icon is not displaying for Headsets
+                connectionType?.let { type ->
+                    val icon = when (type) {
+                        ConnectionType.WIRED -> R.drawable.cable_icon
+                        ConnectionType.BLUETOOTH -> android.R.drawable.stat_sys_data_bluetooth
+                    }
+                    Icon(
+                        modifier = Modifier.size(48.dp),
+                        painter = painterResource(id = icon),
+                        tint = Color.Black,
+                        contentDescription = "Connection Type Icon"
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.equipment_screen_serial_number_label_text,title),
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }

@@ -140,10 +140,7 @@ fun HeadsetsScreen(navController: NavController) {
                                     viewModel = viewModel,
                                     index = index,
                                     title = headset.serialNumber,
-                                    //icon = R.drawable.bluetooth
-                                ) {
-
-                                }
+                                )
                             }
                         }
                         Button(
