@@ -15,6 +15,7 @@ class EquipmentScreenViewModel @Inject constructor(
 
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)
+
     fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {
             showProgressBar.value = true
