@@ -15,6 +15,7 @@ import com.clementcorporation.levosonusii.domain.repositories.LoginRepository
 import com.clementcorporation.levosonusii.domain.repositories.RegisterRepository
 import com.clementcorporation.levosonusii.domain.use_cases.AuthenticateUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.GetBusinessesUseCase
+import com.clementcorporation.levosonusii.domain.use_cases.SessionDataStoreUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignInUseCase
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.util.LSUserInfoSerializer
@@ -36,6 +37,11 @@ object LevoSonusModule {
 
     private val Context.sessionDataStore by dataStore(fileName = SESSION_FILE_NAME, serializer = LSUserInfoSerializer)
     private val Context.voiceProfileDataStore by dataStore(fileName = VOICE_PROFILE_FILE_NAME, serializer = VoiceProfileSerializer)
+
+    @Provides
+    @Singleton
+    fun providesSessionDataStoreUseCase(sessionDataStore: DataStore<LSUserInfo>): SessionDataStoreUseCase =
+        SessionDataStoreUseCase(sessionDataStore)
 
     @Provides
     @Singleton

@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,7 +90,9 @@ fun LoginScreen(navController: NavController) {
                 val profilePicUrl = uiState.user.profilePicUrl
                 isLoading.value = false
                 val encodedUrl = URLEncoder.encode(profilePicUrl, StandardCharsets.UTF_8.toString())
-                navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
+                LaunchedEffect(navController) {
+                    navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
+                }
             }
             is LoginScreenUiState.OnFailedToLoadUser -> {
                 isLoading.value = false
