@@ -2,11 +2,13 @@ package com.clementcorporation.levosonusii.domain.models
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.google.firebase.firestore.PropertyName
 import kotlin.Boolean
 
 data class EquipmentDto(
     val serialNumber: String = "",
-    val isAvailable: Boolean = true,
+    @get:PropertyName("isAvailable") @set:PropertyName("isAvailable")
+    var isAvailable: Boolean = true,
     val connectionType: String? = null,
     val machineType: String? = null
 )

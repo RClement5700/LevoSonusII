@@ -33,13 +33,14 @@ class HeadsetsScreenViewModel @Inject constructor(
         viewModelScope.launch {
             sessionDataStore.data.collect { userInfo ->
                 val businessId = userInfo.organization?.id
+                val equipmentId = userInfo.headsetId
                 if (businessId?.isBlank() == true) {
                     _headsetsScreenUiState.value =
                         EquipmentScreenUiState.OnFailedToLoadData("Invalid business ID. Please sign in again.")
                     return@collect
                 }
                 businessId?.let {
-                    repo.getHeadsets(businessId).collect { response ->
+                    repo.getHeadsets(businessId, equipmentId).collect { response ->
                         when (response) {
                             is Response.Success -> {
                                 response.data?.let { headsetsData ->

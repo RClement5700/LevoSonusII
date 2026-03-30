@@ -23,6 +23,7 @@ class EquipmentRepositoryImpl @Inject constructor(
 
     private fun getEquipment(
         businessId: String,
+        equipmentId: String,
         equipmentEndpoint: String,
         errorMessage: String
     ): Flow<Response<List<EquipmentUiModel>>> = callbackFlow {
@@ -35,11 +36,16 @@ class EquipmentRepositoryImpl @Inject constructor(
             businessDocRef.collection(equipmentEndpoint).get()
                 .addOnSuccessListener { result ->
                     val equipmentDtos = result.toObjects(EquipmentDto::class.java)
-                    val equipment = equipmentDtos
+                    val myEquipment = equipmentDtos.find {
+                        dto -> dto.serialNumber == equipmentId
+                    }?.toEquipmentUiModel()
+                    var equipment = equipmentDtos
                         .map { uiModel -> uiModel.toEquipmentUiModel() }
                         .filter { uiModel -> uiModel.isAvailable }
                         .sortedBy { uiModel -> uiModel.serialNumber }
-
+                    myEquipment?.let { equipment = equipment.toMutableList().apply {
+                        add(0, it)
+                    }.toList() }
                     if (equipment.isNotEmpty()) {
                         trySend(Response.Success(equipment))
                     } else {
@@ -54,23 +60,26 @@ class EquipmentRepositoryImpl @Inject constructor(
                 cancel()
             }
         }
-    override fun getHeadsets(businessId: String) =
+    override fun getHeadsets(businessId: String, equipmentId: String) =
         getEquipment(
             businessId = businessId,
+            equipmentId = equipmentId,
             equipmentEndpoint = HEADSETS_ENDPOINT,
-            errorMessage = "Failed to retrieve data for headsets"
+            errorMessage = "Failed to retrieve data for headsets",
         )
 
-    override fun getScanners(businessId: String) =
+    override fun getScanners(businessId: String, equipmentId: String) =
         getEquipment(
             businessId = businessId,
+            equipmentId = equipmentId,
             equipmentEndpoint = SCANNERS_ENDPOINT,
             errorMessage = "Failed to retrieve data for scanners"
         )
 
-    override fun getMachines(businessId: String) =
+    override fun getMachines(businessId: String, equipmentId: String) =
         getEquipment(
             businessId = businessId,
+            equipmentId = equipmentId,
             equipmentEndpoint = MACHINES_ENDPOINT,
             errorMessage = "Failed to retrieve data for machines"
         )
