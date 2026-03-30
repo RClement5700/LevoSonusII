@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.domain.models
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import kotlin.Boolean
 
 data class EquipmentDto(
@@ -17,7 +16,7 @@ fun EquipmentDto.toEquipmentUiModel(): EquipmentUiModel =
         connectionType = connectionType?.toConnectionType(),
         machineType = machineType?.toMachineType(),
         serialNumber = serialNumber,
-        isAvailable = isAvailable.toColor(),
+        isAvailable = isAvailable,
         isSelected = mutableStateOf(false)
     )
 
@@ -25,7 +24,7 @@ data class EquipmentUiModel(
     val connectionType: ConnectionType? = null,
     val machineType: MachineType? = null,
     val serialNumber: String,
-    val isAvailable: Color,
+    val isAvailable: Boolean,
     val isSelected: MutableState<Boolean> = mutableStateOf(false),
 )
 
@@ -42,8 +41,6 @@ fun String.toMachineType() =
         MachineType.Forklift.name.lowercase() -> MachineType.Forklift
         else -> null
     }
-
-fun Boolean.toColor() = if (this) Color.Green else Color.Red
 
 enum class ConnectionType {
     WIRED,

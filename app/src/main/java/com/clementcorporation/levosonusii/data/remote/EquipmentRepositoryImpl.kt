@@ -36,9 +36,10 @@ class EquipmentRepositoryImpl @Inject constructor(
                 .addOnSuccessListener { result ->
                     val equipmentDtos = result.toObjects(EquipmentDto::class.java)
                     val equipment = equipmentDtos
-                        .filter { it.isAvailable }
-                        .sortedBy { it.serialNumber }
-                        .map { it.toEquipmentUiModel() }
+                        .map { uiModel -> uiModel.toEquipmentUiModel() }
+                        .filter { uiModel -> uiModel.isAvailable }
+                        .sortedBy { uiModel -> uiModel.serialNumber }
+
                     if (equipment.isNotEmpty()) {
                         trySend(Response.Success(equipment))
                     } else {

@@ -85,6 +85,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.ConnectionType
+import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.MachineType
 import com.clementcorporation.levosonusii.presentation.departments.DepartmentsViewModel
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenViewModel
@@ -580,9 +581,7 @@ fun DepartmentTile(
 fun EquipmentTile(
     viewModel: EquipmentScreenViewModel,
     index: Int,
-    title: String,
-    connectionType: ConnectionType? = null,
-    machineType: MachineType? = null,
+    uiModel: EquipmentUiModel
 ) {
     Surface(
         modifier = Modifier
@@ -610,7 +609,7 @@ fun EquipmentTile(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                machineType?.let { type ->
+                uiModel.machineType?.let { type ->
                     val icon = when (type.name) {
                         MachineType.ElectricPalletJack.name -> R.drawable.electric_pallet_jack_icon
                         MachineType.Forklift.name -> R.drawable.forklift_icon
@@ -623,8 +622,7 @@ fun EquipmentTile(
                         contentDescription = "Machine Type Icon"
                     )
                 }
-                //TODO: find out why this icon is not displaying for Headsets
-                connectionType?.let { type ->
+                uiModel.connectionType?.let { type ->
                     val icon = when (type) {
                         ConnectionType.WIRED -> R.drawable.cable_icon
                         ConnectionType.BLUETOOTH -> android.R.drawable.stat_sys_data_bluetooth
@@ -638,7 +636,10 @@ fun EquipmentTile(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = stringResource(R.string.equipment_screen_serial_number_label_text,title),
+                    text = stringResource(
+                        R.string.equipment_screen_serial_number_label_text,
+                        uiModel.serialNumber
+                    ),
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyMedium
                 )

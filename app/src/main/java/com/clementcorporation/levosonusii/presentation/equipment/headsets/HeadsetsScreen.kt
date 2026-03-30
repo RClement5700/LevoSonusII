@@ -139,7 +139,7 @@ fun HeadsetsScreen(navController: NavController) {
                                 EquipmentTile(
                                     viewModel = viewModel,
                                     index = index,
-                                    title = headset.serialNumber,
+                                    uiModel = headset
                                 )
                             }
                         }
