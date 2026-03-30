@@ -139,7 +139,8 @@ fun HeadsetsScreen(navController: NavController) {
                                 EquipmentTile(
                                     viewModel = viewModel,
                                     index = index,
-                                    uiModel = headset
+                                    uiModel = headset,
+                                    alreadySelected = index == 0
                                 )
                             }
                         }

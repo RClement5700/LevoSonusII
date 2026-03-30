@@ -46,6 +46,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -93,6 +95,7 @@ import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import com.clementcorporation.levosonusii.util.LevoSonusUtil.invisible
 import kotlinx.coroutines.launch
 
 private const val LOGO_DESCRIPTION = "LevoSonus Logo"
@@ -581,7 +584,8 @@ fun DepartmentTile(
 fun EquipmentTile(
     viewModel: EquipmentScreenViewModel,
     index: Int,
-    uiModel: EquipmentUiModel
+    uiModel: EquipmentUiModel,
+    alreadySelected: Boolean
 ) {
     Surface(
         modifier = Modifier
@@ -607,7 +611,7 @@ fun EquipmentTile(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 uiModel.machineType?.let { type ->
                     val icon = when (type.name) {
@@ -642,6 +646,15 @@ fun EquipmentTile(
                     ),
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyMedium
+                )
+                RadioButton(
+                    modifier = Modifier.invisible(!alreadySelected),
+                    selected = true,
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color.Black,
+                        unselectedColor = Color.Gray
+                    ),
+                    onClick = null
                 )
             }
         }
