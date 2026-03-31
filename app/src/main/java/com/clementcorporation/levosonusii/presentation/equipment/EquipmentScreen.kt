@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
+import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
@@ -28,14 +30,26 @@ import com.clementcorporation.levosonusii.util.NavTile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
+private fun onBackPressed(
+    navController: NavController,
+    profilePicUrl: String?
+) {
+    val encodedUrl = URLEncoder.encode(profilePicUrl, StandardCharsets.UTF_8.toString())
+    CoroutineScope(Dispatchers.Main).launch {
+        navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
+    }
+}
 @Composable
 fun EquipmentScreen(navController: NavController) {
     val configuration = LocalConfiguration.current
     val viewModel: EquipmentScreenViewModel = hiltViewModel()
-
+    val userInfo = viewModel.getSessionDataStore().data.collectAsState(initial = LSUserInfo()).value
+    val profilePicUrl = userInfo.profilePicUrl
     BackHandler {
-        navController.popBackStack()
+        onBackPressed(navController, profilePicUrl)
     }
 
     Scaffold(
@@ -59,7 +73,7 @@ fun EquipmentScreen(navController: NavController) {
                     }
                 },
                 onClickLeftIcon = {
-                    navController.popBackStack()
+                    onBackPressed(navController, profilePicUrl)
                 }
             )
         }

@@ -22,7 +22,7 @@ class HeadsetsScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val repo: EquipmentRepository,
     private val signOutUseCase: SignOutUseCase
-): EquipmentScreenViewModel(signOutUseCase) {
+): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
     var headsets: List<EquipmentUiModel> = listOf()
     private val _headsetsScreenUiState = MutableStateFlow<EquipmentScreenUiState>(EquipmentScreenUiState.OnLoading)
     val headsetsScreenUiState = _headsetsScreenUiState.asStateFlow()
