@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.equipment.headsets
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,7 +66,6 @@ fun HeadsetsScreen(navController: NavController) {
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
     ).value
-    val isHandlingDbUpdate = remember { mutableStateOf(false) }
     BackHandler {
         navController.popBackStack()
     }
@@ -161,10 +160,9 @@ fun HeadsetsScreen(navController: NavController) {
                                 disabledContentColor = Color.Gray
                             ),
                             onClick = {
-                                //viewModel.updateUsersDepartment() TODO: copy functionality for headsets
-                                isHandlingDbUpdate.value = true
+                                viewModel.onApplyButtonClicked()
                             }) {
-                            if (isHandlingDbUpdate.value) {
+                            if (viewModel.isHandlingDbUpdate) {
                                 CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
                             } else {
                                 Text(
@@ -173,6 +171,24 @@ fun HeadsetsScreen(navController: NavController) {
                                     fontWeight = FontWeight.Bold
                                 )
                             }
+                        }
+                    }
+                }
+
+                is EquipmentScreenUiState.OnDataUpdated -> {
+                    val context = navController.context
+                    LaunchedEffect(navController) {
+                        Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.departments_screen_headset_success_toast_message,
+                                viewModel.headsets[viewModel.selectedIndex].serialNumber
+
+                            ),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navController.navigate(LevoSonusScreens.EquipmentScreen.name)
                         }
                     }
                 }

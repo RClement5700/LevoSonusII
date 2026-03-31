@@ -1,13 +1,13 @@
 package com.clementcorporation.levosonusii.data.remote
 
+import android.util.Log
 import com.clementcorporation.levosonusii.domain.models.EquipmentDto
 import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.toEquipmentUiModel
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
-import com.clementcorporation.levosonusii.util.Constants.HEADSETS_ENDPOINT
-import com.clementcorporation.levosonusii.util.Constants.MACHINES_ENDPOINT
-import com.clementcorporation.levosonusii.util.Constants.SCANNERS_ENDPOINT
+import com.clementcorporation.levosonusii.util.Constants.IS_AVAILABLE_KEY
+import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.cancel
@@ -16,16 +16,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
+private const val TAG = "EquipmentRepositoryImpl"
 class EquipmentRepositoryImpl @Inject constructor(
     private val db: FirebaseFirestore
 ): EquipmentRepository {
     val businessesRef = db.collection(BUSINESSES_ENDPOINT)
 
-    private fun getEquipment(
+    override fun getEquipment(
         businessId: String,
         equipmentId: String,
-        equipmentEndpoint: String,
-        errorMessage: String
+        equipmentEndpoint: String
     ): Flow<Response<List<EquipmentUiModel>>> = callbackFlow {
             if (businessId.isBlank()) {
                 trySend(Response.Error("Invalid business ID"))
@@ -49,10 +49,10 @@ class EquipmentRepositoryImpl @Inject constructor(
                     if (equipment.isNotEmpty()) {
                         trySend(Response.Success(equipment))
                     } else {
-                        trySend(Response.Error(errorMessage))
+                        trySend(Response.Error("$equipmentEndpoint returned empty list"))
                     }
                 }.addOnFailureListener { failure ->
-                    trySend(Response.Error(failure.message.orEmpty()))
+                    trySend(Response.Error("Failed to retrieve data for $equipmentEndpoint: ${failure.message.orEmpty()}"))
                 }.addOnCompleteListener {
                     close()
                 }
@@ -60,27 +60,52 @@ class EquipmentRepositoryImpl @Inject constructor(
                 cancel()
             }
         }
-    override fun getHeadsets(businessId: String, equipmentId: String) =
-        getEquipment(
-            businessId = businessId,
-            equipmentId = equipmentId,
-            equipmentEndpoint = HEADSETS_ENDPOINT,
-            errorMessage = "Failed to retrieve data for headsets",
-        )
 
-    override fun getScanners(businessId: String, equipmentId: String) =
-        getEquipment(
-            businessId = businessId,
-            equipmentId = equipmentId,
-            equipmentEndpoint = SCANNERS_ENDPOINT,
-            errorMessage = "Failed to retrieve data for scanners"
-        )
-
-    override fun getMachines(businessId: String, equipmentId: String) =
-        getEquipment(
-            businessId = businessId,
-            equipmentId = equipmentId,
-            equipmentEndpoint = MACHINES_ENDPOINT,
-            errorMessage = "Failed to retrieve data for machines"
-        )
+    override fun setEquipmentId(
+        businessId: String,
+        employeeId: String,
+        equipmentKey: String,
+        newEquipmentId: String,
+        currentEquipmentId: String,
+        equipmentEndpoint: String
+    ): Flow<Response<Boolean>> = callbackFlow {
+        //TODO: Investigate why setting isAvailable to true doesn't work and why headsetId is not being updated in the user credentials
+        if (businessId.isBlank()) {
+            trySend(Response.Error("Invalid business ID"))
+            close()
+            return@callbackFlow
+        }
+        val businessDocRef = businessesRef.document(businessId)
+        with (businessDocRef) {
+            collection(USERS_ENDPOINT)
+                .document(employeeId)
+                .update(equipmentKey, newEquipmentId)
+                .addOnSuccessListener {
+                    Log.e(TAG, "Updated $equipmentKey to $newEquipmentId")
+                }.addOnFailureListener {
+                    Log.e(TAG, "Failed to update $equipmentKey to $newEquipmentId")
+                }
+            with(collection(equipmentEndpoint)) {
+                document(currentEquipmentId).update(IS_AVAILABLE_KEY, true)
+                    .addOnSuccessListener {
+                        Log.e(TAG, "Set $equipmentEndpoint: $currentEquipmentId to available")
+                    }.addOnFailureListener {
+                        Log.e(TAG, "Failed to set $equipmentEndpoint: $currentEquipmentId to available")
+                    }
+                document(newEquipmentId).update(IS_AVAILABLE_KEY, false)
+                    .addOnSuccessListener {
+                        Log.e(TAG, "Set $equipmentEndpoint: $newEquipmentId to unavailable")
+                        trySend(Response.Success(null))
+                    }.addOnFailureListener { failure ->
+                        Log.e(TAG, "Failed to set $equipmentEndpoint: $currentEquipmentId to unavailable")
+                        trySend(Response.Error(failure.message.orEmpty()))
+                    }.addOnCompleteListener {
+                        close()
+                    }
+            }
+        }
+        awaitClose {
+            cancel()
+        }
+    }
 }

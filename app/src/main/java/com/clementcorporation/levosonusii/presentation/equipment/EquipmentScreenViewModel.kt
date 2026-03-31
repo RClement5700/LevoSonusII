@@ -15,6 +15,7 @@ import javax.inject.Inject
 sealed class EquipmentScreenUiState {
     data object OnLoading: EquipmentScreenUiState()
     data class OnDataRetrieved(val data: List<EquipmentUiModel>): EquipmentScreenUiState()
+    data object OnDataUpdated: EquipmentScreenUiState()
     data class OnFailedToLoadData(val message: String): EquipmentScreenUiState()
 }
 @HiltViewModel
@@ -24,6 +25,7 @@ open class EquipmentScreenViewModel @Inject constructor(
     var selectedIndex by mutableIntStateOf(-1)
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)
+    var isHandlingDbUpdate by mutableStateOf(false)
 
     fun signOut(navigate: () -> Unit) {
         viewModelScope.launch {

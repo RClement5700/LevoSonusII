@@ -8,6 +8,8 @@ import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepositor
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenViewModel
+import com.clementcorporation.levosonusii.util.Constants.HEADSETS_ENDPOINT
+import com.clementcorporation.levosonusii.util.Constants.HEADSET_ID
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +42,11 @@ class HeadsetsScreenViewModel @Inject constructor(
                     return@collect
                 }
                 businessId?.let {
-                    repo.getHeadsets(businessId, equipmentId).collect { response ->
+                    repo.getEquipment(
+                        businessId = businessId,
+                        equipmentId = equipmentId,
+                        equipmentEndpoint = HEADSETS_ENDPOINT
+                    ).collect { response ->
                         when (response) {
                             is Response.Success -> {
                                 response.data?.let { headsetsData ->
@@ -67,6 +73,61 @@ class HeadsetsScreenViewModel @Inject constructor(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    fun onApplyButtonClicked() {
+        viewModelScope.launch {
+            isHandlingDbUpdate = true
+            val selectedHeadset = headsets[selectedIndex]
+            sessionDataStore.updateData { userInfo ->
+                if (selectedIndex.toString() != userInfo.headsetId) {
+                    repo.setEquipmentId(
+                        businessId = userInfo.organization?.id.orEmpty(),
+                        employeeId = userInfo.employeeId,
+                        equipmentKey = HEADSET_ID,
+                        currentEquipmentId = userInfo.headsetId,
+                        newEquipmentId = selectedHeadset.id,
+                        equipmentEndpoint = HEADSETS_ENDPOINT
+                    ).collect { response ->
+                        when (response) {
+                            is Response.Success -> {
+                                _headsetsScreenUiState.value = EquipmentScreenUiState.OnDataUpdated
+                            }
+
+                            is Response.Error -> {
+                                response.message?.let { errorMessage ->
+                                    _headsetsScreenUiState.value =
+                                        EquipmentScreenUiState.OnFailedToLoadData(errorMessage)
+                                }
+                            }
+
+                            is Response.Loading -> {
+                                _headsetsScreenUiState.value = EquipmentScreenUiState.OnLoading
+                            }
+                        }
+                    }
+                    userInfo.copy(
+                        organization = userInfo.organization,
+                        employeeId = userInfo.employeeId,
+                        firebaseId = userInfo.firebaseId,
+                        name = userInfo.name,
+                        emailAddress = userInfo.emailAddress,
+                        password = userInfo.password,
+                        profilePicUrl = userInfo.profilePicUrl,
+                        machineId = userInfo.machineId,
+                        scannerId = userInfo.scannerId,
+                        headsetId = selectedHeadset.serialNumber,
+                        departmentId = userInfo.departmentId,
+                        operatorType = userInfo.operatorType,
+                        messengerIds = arrayListOf(),
+                        voiceProfile = hashMapOf()
+                    )
+                } else {
+                    _headsetsScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(headsets)
+                    userInfo.copy()
                 }
             }
         }

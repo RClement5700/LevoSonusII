@@ -6,6 +6,7 @@ import com.google.firebase.firestore.PropertyName
 import kotlin.Boolean
 
 data class EquipmentDto(
+    val id: String = "",
     val serialNumber: String = "",
     @get:PropertyName("isAvailable") @set:PropertyName("isAvailable")
     var isAvailable: Boolean = true,
@@ -18,6 +19,7 @@ fun EquipmentDto.toEquipmentUiModel(): EquipmentUiModel =
         connectionType = connectionType?.toConnectionType(),
         machineType = machineType?.toMachineType(),
         serialNumber = serialNumber,
+        id = id,
         isAvailable = isAvailable,
         isSelected = mutableStateOf(false)
     )
@@ -25,6 +27,7 @@ fun EquipmentDto.toEquipmentUiModel(): EquipmentUiModel =
 data class EquipmentUiModel(
     val connectionType: ConnectionType? = null,
     val machineType: MachineType? = null,
+    val id: String,
     val serialNumber: String,
     val isAvailable: Boolean,
     val isSelected: MutableState<Boolean> = mutableStateOf(false),

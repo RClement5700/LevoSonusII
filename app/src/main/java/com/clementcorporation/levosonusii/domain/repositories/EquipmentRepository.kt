@@ -5,7 +5,18 @@ import com.clementcorporation.levosonusii.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface EquipmentRepository {
-    fun getHeadsets(businessId: String, equipmentId: String): Flow<Response<List<EquipmentUiModel>>>
-    fun getScanners(businessId: String, equipmentId: String): Flow<Response<List<EquipmentUiModel>>>
-    fun getMachines(businessId: String, equipmentId: String): Flow<Response<List<EquipmentUiModel>>>
+    fun getEquipment(
+        businessId: String,
+        equipmentId: String,
+        equipmentEndpoint: String
+    ): Flow<Response<List<EquipmentUiModel>>>
+
+    fun setEquipmentId(
+        businessId: String,
+        employeeId: String,
+        equipmentKey: String,
+        newEquipmentId: String,
+        currentEquipmentId: String,
+        equipmentEndpoint: String
+    ): Flow<Response<Boolean>>
 }
