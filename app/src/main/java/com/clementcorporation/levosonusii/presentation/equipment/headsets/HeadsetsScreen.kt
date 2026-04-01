@@ -176,7 +176,7 @@ fun HeadsetsScreen(navController: NavController) {
                         Toast.makeText(
                             context,
                             context.getString(
-                                R.string.departments_screen_headset_success_toast_message,
+                                R.string.headsets_screen_headset_success_toast_message,
                                 viewModel.headsets[viewModel.selectedIndex].serialNumber
 
                             ),
