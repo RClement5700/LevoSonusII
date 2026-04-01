@@ -81,15 +81,16 @@ class HeadsetsScreenViewModel @Inject constructor(
     fun onApplyButtonClicked() {
         viewModelScope.launch {
             isHandlingDbUpdate = true
+            val currentHeadset = headsets.first()
             val selectedHeadset = headsets[selectedIndex]
             sessionDataStore.updateData { userInfo ->
                 if (selectedIndex.toString() != userInfo.headsetId) {
                     repo.setEquipmentId(
                         businessId = userInfo.organization?.id.orEmpty(),
-                        employeeId = userInfo.employeeId,
+                        firebaseId = userInfo.firebaseId,
                         equipmentKey = HEADSET_ID,
-                        currentEquipmentId = userInfo.headsetId,
-                        newEquipmentId = selectedHeadset.id,
+                        currentEquipment = currentHeadset,
+                        newEquipment = selectedHeadset,
                         equipmentEndpoint = HEADSETS_ENDPOINT
                     ).collect { response ->
                         when (response) {

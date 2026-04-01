@@ -13,10 +13,10 @@ interface EquipmentRepository {
 
     fun setEquipmentId(
         businessId: String,
-        employeeId: String,
+        firebaseId: String,
         equipmentKey: String,
-        newEquipmentId: String,
-        currentEquipmentId: String,
+        newEquipment: EquipmentUiModel,
+        currentEquipment: EquipmentUiModel,
         equipmentEndpoint: String
     ): Flow<Response<Boolean>>
 }
