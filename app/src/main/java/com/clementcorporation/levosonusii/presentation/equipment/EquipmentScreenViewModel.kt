@@ -23,7 +23,7 @@ sealed class EquipmentScreenUiState {
 @HiltViewModel
 open class EquipmentScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
-    private val sessionDateStore: DataStore<LSUserInfo>
+    private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
     var selectedIndex by mutableIntStateOf(-1)
     val showProgressBar = mutableStateOf(true)
@@ -38,5 +38,5 @@ open class EquipmentScreenViewModel @Inject constructor(
         }
     }
 
-    fun getSessionDataStore() = sessionDateStore
+    fun getSessionDataStore() = sessionDataStore
 }

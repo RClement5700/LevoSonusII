@@ -71,8 +71,9 @@
     <string name="equipment_screen_scanners_tile_title_text">Scanners</string>
     <string name="equipment_screen_headsets_tile_title_text">Headsets</string>
     <string name="equipment_screen_serial_number_label_text">Serial No: %s</string>
-    <string name="headsets_screen_headset_success_toast_message">Headset: %s</string>
-    <string name="scanners_screen_headset_success_toast_message">Scanner: %s</string>
+    <string name="headsets_screen_headset_success_toast_message">New Headset ID: %s</string>
+    <string name="scanners_screen_headset_success_toast_message">New Scanner ID: %s</string>
+    <string name="machines_screen_headset_success_toast_message">New Machine ID: %s</string>
 
 
     <!-- Voice Profile Screen -->
