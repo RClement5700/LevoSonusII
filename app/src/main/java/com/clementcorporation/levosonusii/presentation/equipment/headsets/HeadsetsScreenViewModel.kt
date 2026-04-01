@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.presentation.equipment.headsets
 
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
@@ -12,8 +11,6 @@ import com.clementcorporation.levosonusii.util.Constants.HEADSETS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.HEADSET_ID
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,9 +20,6 @@ class HeadsetsScreenViewModel @Inject constructor(
     private val repo: EquipmentRepository,
     private val signOutUseCase: SignOutUseCase
 ): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
-    var headsets: List<EquipmentUiModel> = listOf()
-    private val _headsetsScreenUiState = MutableStateFlow<EquipmentScreenUiState>(EquipmentScreenUiState.OnLoading)
-    val headsetsScreenUiState = _headsetsScreenUiState.asStateFlow()
 
     init {
         fetchHeadsetsData()
@@ -37,7 +31,7 @@ class HeadsetsScreenViewModel @Inject constructor(
                 val businessId = userInfo.organization?.id
                 val equipmentId = userInfo.headsetId
                 if (businessId?.isBlank() == true) {
-                    _headsetsScreenUiState.value =
+                    _equipmentScreenUiState.value =
                         EquipmentScreenUiState.OnFailedToLoadData("Invalid business ID. Please sign in again.")
                     return@collect
                 }
@@ -50,26 +44,26 @@ class HeadsetsScreenViewModel @Inject constructor(
                         when (response) {
                             is Response.Success -> {
                                 response.data?.let { headsetsData ->
-                                    headsets = headsetsData
-                                    headsets.find {
+                                    equipmentList = headsetsData
+                                    equipmentList.find {
                                         it.serialNumber == userInfo.headsetId
                                     }?.let { headset ->
-                                        selectedIndex = headsets.indexOf(headset)
+                                        selectedIndex = equipmentList.indexOf(headset)
                                     }
-                                    _headsetsScreenUiState.value =
-                                        EquipmentScreenUiState.OnDataRetrieved(headsets)
+                                    _equipmentScreenUiState.value =
+                                        EquipmentScreenUiState.OnDataRetrieved(equipmentList)
                                 }
                             }
 
                             is Response.Error -> {
                                 response.message?.let { errorMessage ->
-                                    _headsetsScreenUiState.value =
+                                    _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnFailedToLoadData(errorMessage)
                                 }
                             }
 
                             is Response.Loading -> {
-                                _headsetsScreenUiState.value = EquipmentScreenUiState.OnLoading
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnLoading
                             }
                         }
                     }
@@ -81,10 +75,10 @@ class HeadsetsScreenViewModel @Inject constructor(
     fun onApplyButtonClicked() {
         viewModelScope.launch {
             isHandlingDbUpdate = true
-            val currentHeadset = headsets.first()
-            val selectedHeadset = headsets[selectedIndex]
+            val currentHeadset = equipmentList.first()
+            val selectedHeadset = equipmentList[selectedIndex]
             sessionDataStore.updateData { userInfo ->
-                if (selectedIndex.toString() != userInfo.headsetId) {
+                if (selectedIndex != 0) {
                     repo.setEquipmentId(
                         businessId = userInfo.organization?.id.orEmpty(),
                         firebaseId = userInfo.firebaseId,
@@ -95,18 +89,18 @@ class HeadsetsScreenViewModel @Inject constructor(
                     ).collect { response ->
                         when (response) {
                             is Response.Success -> {
-                                _headsetsScreenUiState.value = EquipmentScreenUiState.OnDataUpdated
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataUpdated
                             }
 
                             is Response.Error -> {
                                 response.message?.let { errorMessage ->
-                                    _headsetsScreenUiState.value =
+                                    _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnFailedToLoadData(errorMessage)
                                 }
                             }
 
                             is Response.Loading -> {
-                                _headsetsScreenUiState.value = EquipmentScreenUiState.OnLoading
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnLoading
                             }
                         }
                     }
@@ -127,10 +121,11 @@ class HeadsetsScreenViewModel @Inject constructor(
                         voiceProfile = hashMapOf()
                     )
                 } else {
-                    _headsetsScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(headsets)
+                    _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
                     userInfo.copy()
                 }
             }
+            isHandlingDbUpdate = false
         }
     }
 }

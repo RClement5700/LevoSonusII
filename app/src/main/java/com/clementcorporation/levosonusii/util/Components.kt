@@ -614,10 +614,9 @@ fun EquipmentTile(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 uiModel.machineType?.let { type ->
-                    val icon = when (type.name) {
-                        MachineType.ElectricPalletJack.name -> R.drawable.electric_pallet_jack_icon
-                        MachineType.Forklift.name -> R.drawable.forklift_icon
-                        else -> 0
+                    val icon = when (type) {
+                        MachineType.ElectricPalletJack -> R.drawable.electric_pallet_jack_icon
+                        MachineType.Forklift -> R.drawable.forklift_icon
                     }
                     Icon(
                         modifier = Modifier.size(48.dp),

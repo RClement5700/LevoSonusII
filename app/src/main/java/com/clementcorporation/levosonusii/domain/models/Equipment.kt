@@ -52,7 +52,7 @@ enum class ConnectionType {
     BLUETOOTH
 }
 
-enum class MachineType(name: String) {
-    ElectricPalletJack("Electric Pallet Jack"),
-    Forklift("Forklift")
+enum class MachineType {
+    ElectricPalletJack,
+    Forklift
 }

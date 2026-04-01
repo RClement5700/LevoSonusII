@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
+import com.clementcorporation.levosonusii.presentation.equipment.SearchableEquipmentInputField
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
@@ -59,12 +60,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MachinesScreen(navController: NavController) {
-    //TODO: Add a searchbar that filters the list with a typing delay of 3 seconds because operators
-    //      will likely find their machine then want to match the serial number on the machine
-    //      to a corresponding number on screen rather than scrolling through a list
+    //TODO: Add a dropdown menu next to the SearchBar that selects the machineType so users only filter by the selected machineType
     val configuration = LocalConfiguration.current
     val viewModel: MachinesScreenViewModel = hiltViewModel()
-    val uiState = viewModel.machinesScreenUiState.collectAsStateWithLifecycle(
+    val uiState = viewModel.equipmentScreenUiState.collectAsStateWithLifecycle(
         initialValue = EquipmentScreenUiState.OnLoading,
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
@@ -120,6 +119,13 @@ fun MachinesScreen(navController: NavController) {
                             color = LS_BLUE,
                             thickness = 2.dp,
                             modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        SearchableEquipmentInputField(
+                            viewModel = viewModel,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PADDING.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyColumn(
@@ -179,7 +185,7 @@ fun MachinesScreen(navController: NavController) {
                             context,
                             context.getString(
                                 R.string.machines_screen_headset_success_toast_message,
-                                viewModel.machines[viewModel.selectedIndex].serialNumber
+                                viewModel.equipmentList[viewModel.selectedIndex].serialNumber
 
                             ),
                             Toast.LENGTH_SHORT

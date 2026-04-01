@@ -2,7 +2,6 @@ package com.clementcorporation.levosonusii.presentation.equipment.machines
 
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
@@ -12,8 +11,6 @@ import com.clementcorporation.levosonusii.util.Constants.MACHINES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.MACHINE_ID
 import com.clementcorporation.levosonusii.util.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,10 +20,6 @@ class MachinesScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val signOutUseCase: SignOutUseCase
 ): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
-
-    var machines: List<EquipmentUiModel> = listOf()
-    private val _machinesScreenUiState = MutableStateFlow<EquipmentScreenUiState>(EquipmentScreenUiState.OnLoading)
-    val machinesScreenUiState = _machinesScreenUiState.asStateFlow()
 
     init {
         fetchMachinesData()
@@ -38,7 +31,7 @@ class MachinesScreenViewModel @Inject constructor(
                 val businessId = userInfo.organization?.id
                 val equipmentId = userInfo.machineId
                 if (businessId?.isBlank() == true) {
-                    _machinesScreenUiState.value =
+                    _equipmentScreenUiState.value =
                         EquipmentScreenUiState.OnFailedToLoadData("Invalid business ID. Please sign in again.")
                     return@collect
                 }
@@ -51,26 +44,26 @@ class MachinesScreenViewModel @Inject constructor(
                         when (response) {
                             is Response.Success -> {
                                 response.data?.let { machinesData ->
-                                    machines = machinesData
-                                    machines.find {
+                                    equipmentList = machinesData
+                                    equipmentList.find {
                                         it.serialNumber == userInfo.machineId
                                     }?.let { machine ->
-                                        selectedIndex = machines.indexOf(machine)
+                                        selectedIndex = equipmentList.indexOf(machine)
                                     }
-                                    _machinesScreenUiState.value =
-                                        EquipmentScreenUiState.OnDataRetrieved(machines)
+                                    _equipmentScreenUiState.value =
+                                        EquipmentScreenUiState.OnDataRetrieved(equipmentList)
                                 }
                             }
 
                             is Response.Error -> {
                                 response.message?.let { errorMessage ->
-                                    _machinesScreenUiState.value =
+                                    _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnFailedToLoadData(errorMessage)
                                 }
                             }
 
                             is Response.Loading -> {
-                                _machinesScreenUiState.value = EquipmentScreenUiState.OnLoading
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnLoading
                             }
                         }
                     }
@@ -82,10 +75,10 @@ class MachinesScreenViewModel @Inject constructor(
     fun onApplyButtonClicked() {
         viewModelScope.launch {
             isHandlingDbUpdate = true
-            val currentMachine = machines.first()
-            val selectedMachine = machines[selectedIndex]
+            val currentMachine = equipmentList.first()
+            val selectedMachine = equipmentList[selectedIndex]
             sessionDataStore.updateData { userInfo ->
-                if (selectedIndex.toString() != userInfo.headsetId) {
+                if (selectedIndex != 0) {
                     repo.setEquipmentId(
                         businessId = userInfo.organization?.id.orEmpty(),
                         firebaseId = userInfo.firebaseId,
@@ -96,18 +89,18 @@ class MachinesScreenViewModel @Inject constructor(
                     ).collect { response ->
                         when (response) {
                             is Response.Success -> {
-                                _machinesScreenUiState.value = EquipmentScreenUiState.OnDataUpdated
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataUpdated
                             }
 
                             is Response.Error -> {
                                 response.message?.let { errorMessage ->
-                                    _machinesScreenUiState.value =
+                                    _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnFailedToLoadData(errorMessage)
                                 }
                             }
 
                             is Response.Loading -> {
-                                _machinesScreenUiState.value = EquipmentScreenUiState.OnLoading
+                                _equipmentScreenUiState.value = EquipmentScreenUiState.OnLoading
                             }
                         }
                     }
@@ -128,10 +121,11 @@ class MachinesScreenViewModel @Inject constructor(
                         voiceProfile = hashMapOf()
                     )
                 } else {
-                    _machinesScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(machines)
+                    _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
                     userInfo.copy()
                 }
             }
+            isHandlingDbUpdate = false
         }
     }
 }

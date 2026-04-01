@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
+import com.clementcorporation.levosonusii.presentation.equipment.SearchableEquipmentInputField
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
@@ -61,7 +62,7 @@ import kotlinx.coroutines.launch
 fun ScannersScreen(navController: NavController) {
     val configuration = LocalConfiguration.current
     val viewModel: ScannersScreenViewModel = hiltViewModel()
-    val uiState = viewModel.scannersScreenUiState.collectAsStateWithLifecycle(
+    val uiState = viewModel.equipmentScreenUiState.collectAsStateWithLifecycle(
         initialValue = EquipmentScreenUiState.OnLoading,
         lifecycle = LocalLifecycleOwner.current.lifecycle,
         context = Dispatchers.IO
@@ -117,6 +118,13 @@ fun ScannersScreen(navController: NavController) {
                             color = LS_BLUE,
                             thickness = 2.dp,
                             modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        SearchableEquipmentInputField(
+                            viewModel = viewModel,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PADDING.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyColumn(
@@ -176,7 +184,7 @@ fun ScannersScreen(navController: NavController) {
                             context,
                             context.getString(
                                 R.string.scanners_screen_headset_success_toast_message,
-                                viewModel.scanners[viewModel.selectedIndex].serialNumber
+                                viewModel.equipmentList[viewModel.selectedIndex].serialNumber
 
                             ),
                             Toast.LENGTH_SHORT

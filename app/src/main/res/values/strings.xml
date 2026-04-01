@@ -74,6 +74,7 @@
     <string name="headsets_screen_headset_success_toast_message">New Headset ID: %s</string>
     <string name="scanners_screen_headset_success_toast_message">New Scanner ID: %s</string>
     <string name="machines_screen_headset_success_toast_message">New Machine ID: %s</string>
+    <string name="label_equipment_id">Equipment Id</string>
 
 
     <!-- Voice Profile Screen -->
