@@ -26,6 +26,7 @@ import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.LevoSonusUtil
+import com.clementcorporation.levosonusii.util.LevoSonusUtil.navigateAfterSignOut
 import com.clementcorporation.levosonusii.util.NavTile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,13 +64,7 @@ fun EquipmentScreen(navController: NavController) {
                 profilePicUrl = null,
                 onClickSignOut = {
                     viewModel.signOut {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            navController.navigate(LevoSonusScreens.LoginScreen.name) {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                }
-                            }
-                        }
+                        navigateAfterSignOut(navController)
                     }
                 },
                 onClickLeftIcon = {

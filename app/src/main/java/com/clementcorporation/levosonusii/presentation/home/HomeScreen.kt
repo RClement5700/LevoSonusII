@@ -49,16 +49,13 @@ import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.LevoSonusUtil
+import com.clementcorporation.levosonusii.util.LevoSonusUtil.navigateAfterSignOut
 import com.clementcorporation.levosonusii.util.NavTile
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 fun signOut(viewModel: HomeScreenViewModel, navController: NavController) {
     viewModel.signOut {
-        CoroutineScope(Dispatchers.Main).launch {
-            navController.navigate(LevoSonusScreens.LoginScreen.name)
-        }
+        navigateAfterSignOut(navController)
     }
 }
 

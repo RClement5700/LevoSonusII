@@ -10,6 +10,10 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object LevoSonusUtil {
 
@@ -41,4 +45,14 @@ object LevoSonusUtil {
             }
         )
     } else this
+
+    fun navigateAfterSignOut(navController: NavController) {
+        CoroutineScope(Dispatchers.Main).launch {
+            navController.navigate(LevoSonusScreens.LoginScreen.name) {
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                }
+            }
+        }
+    }
 }

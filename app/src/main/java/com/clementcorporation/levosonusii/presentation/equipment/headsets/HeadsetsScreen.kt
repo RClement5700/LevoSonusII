@@ -52,6 +52,7 @@ import com.clementcorporation.levosonusii.util.EquipmentTile
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.LevoSonusUtil
+import com.clementcorporation.levosonusii.util.LevoSonusUtil.navigateAfterSignOut
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,13 +81,7 @@ fun HeadsetsScreen(navController: NavController) {
                 profilePicUrl = null,
                 onClickSignOut = {
                     viewModel.signOut {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            navController.navigate(LevoSonusScreens.LoginScreen.name) {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                }
-                            }
-                        }
+                        navigateAfterSignOut(navController)
                     }
                 },
                 onClickLeftIcon = {
