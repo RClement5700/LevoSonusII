@@ -95,6 +95,7 @@ import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.ELEVATION
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
 import com.clementcorporation.levosonusii.util.Constants.PADDING
+import com.clementcorporation.levosonusii.util.Constants.SELECTED_COLOR
 import com.clementcorporation.levosonusii.util.LevoSonusUtil.invisible
 import kotlinx.coroutines.launch
 
@@ -514,7 +515,7 @@ fun DepartmentTile(
                     if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
                 }
             ),
-        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
+        color = if (index == viewModel.selectedIndex) SELECTED_COLOR else Color.White,
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -597,7 +598,7 @@ fun EquipmentTile(
                     if (viewModel.selectedIndex != index) viewModel.selectedIndex = index
                 }
             ),
-        color = if (index == viewModel.selectedIndex) Color.Cyan else Color.White,
+        color = if (index == viewModel.selectedIndex) SELECTED_COLOR else Color.White,
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(8.dp)
     ) {

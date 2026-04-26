@@ -1,8 +1,13 @@
 package com.clementcorporation.levosonusii.presentation.equipment.machines
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
+import com.clementcorporation.levosonusii.domain.models.MachineType
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
@@ -20,9 +25,46 @@ class MachinesScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val signOutUseCase: SignOutUseCase
 ): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
+    val sortList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
+    val filterList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
+    var selectedSortMenuIndex by mutableIntStateOf(-1)
+    var selectedFilterMenuIndex by mutableIntStateOf(-1)
+    var wasSortButtonClicked by mutableStateOf(false)
+    var wasFilterButtonClicked by mutableStateOf(false)
+
+    val expandMachineTypeMenu = mutableStateOf(false)
 
     init {
         fetchMachinesData()
+    }
+
+    fun getMenuItems() =
+        if (wasFilterButtonClicked) {
+            sortList
+        } else if (wasSortButtonClicked) {
+            filterList
+        } else emptyList()
+
+    fun getMenuIndex() =
+        if (wasSortButtonClicked) selectedSortMenuIndex
+        else if (wasFilterButtonClicked) selectedFilterMenuIndex
+        else -1
+
+    fun setMenuIndex(index: Int) {
+        if (wasSortButtonClicked && selectedSortMenuIndex != index) selectedSortMenuIndex = index
+        else if (wasSortButtonClicked && selectedSortMenuIndex == index) selectedSortMenuIndex = -1
+        else if (wasFilterButtonClicked && selectedFilterMenuIndex != index) selectedFilterMenuIndex = index
+        else if (wasFilterButtonClicked && selectedFilterMenuIndex == index) selectedFilterMenuIndex = -1
+    }
+
+    fun filterByMachineType(machineType: MachineType? = null) {
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
+            machineType?.let {
+                equipmentList.filter { it.machineType == machineType }
+            } ?: run {
+                equipmentList
+            }
+        )
     }
 
     fun fetchMachinesData() {

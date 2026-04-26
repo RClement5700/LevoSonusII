@@ -7,6 +7,7 @@ import com.clementcorporation.levosonusii.domain.models.toEquipmentUiModel
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.util.Constants.BUSINESSES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.IS_AVAILABLE_KEY
+import com.clementcorporation.levosonusii.util.Constants.MACHINES_ENDPOINT
 import com.clementcorporation.levosonusii.util.Constants.USERS_ENDPOINT
 import com.clementcorporation.levosonusii.util.Response
 import com.google.firebase.firestore.FirebaseFirestore
@@ -45,7 +46,9 @@ class EquipmentRepositoryImpl @Inject constructor(
                     .sortedBy { uiModel -> uiModel.serialNumber }
                 myEquipment?.let { equipment = equipment.toMutableList().apply {
                     add(0, it)
-                }.toList().distinctBy { listItem -> listItem.serialNumber } }
+                }.toList().distinctBy { listItem ->
+                    if (equipmentEndpoint == MACHINES_ENDPOINT) listItem.id else listItem.serialNumber
+                }}
                 if (equipment.isNotEmpty()) {
                     trySend(Response.Success(equipment))
                 } else {

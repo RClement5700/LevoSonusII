@@ -2,20 +2,29 @@ package com.clementcorporation.levosonusii.presentation.equipment
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -115,7 +124,12 @@ fun EquipmentScreen(navController: NavController) {
 }
 
 @Composable
-fun SearchableEquipmentInputField(viewModel: EquipmentScreenViewModel, modifier: Modifier) {
+fun SearchableEquipmentInputField(
+    viewModel: EquipmentScreenViewModel,
+    modifier: Modifier,
+    onFilterButtonClicked: () -> Unit = {},
+    onSortButtonClicked: () -> Unit = {}
+) {
     OutlinedTextField(
         modifier = modifier,
         value = viewModel.equipmentIdInput,
@@ -135,6 +149,35 @@ fun SearchableEquipmentInputField(viewModel: EquipmentScreenViewModel, modifier:
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black
         ),
+        trailingIcon = {
+            Row(modifier = Modifier.padding(end = 24.dp)) {
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    onClick = {
+                        onSortButtonClicked()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                        contentDescription = "Sort Button"
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                VerticalDivider(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    onClick = {
+                        onFilterButtonClicked()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Filter Button"
+                    )
+                }
+            }
+        },
         shape = RoundedCornerShape(CURVATURE.dp),
         singleLine = true,
         maxLines = 1,
