@@ -1,6 +1,7 @@
 package com.clementcorporation.levosonusii.util
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -239,6 +240,13 @@ fun LSProfileIcon(
         onSuccess = {
             onSuccess()
             isLoading.value = false
+        },
+        onError = { error ->
+            isLoading.value = false
+            Log.e(
+                "LSProfileIcon",
+                "Error loading profile picture: Image URL: $imageUrl\n${error.result.throwable}"
+            )
         }
     )
 }
