@@ -250,7 +250,7 @@ fun MachinesScreen(navController: NavController) {
                                             disabledContentColor = Color.Gray
                                         ),
                                         onClick = {
-                                            //viewModel.onApplyButtonClicked()
+                                            viewModel.filterByMachineType()
                                         }) {
                                         Text(
                                             text = stringResource(id = R.string.btn_text_apply),

@@ -8,6 +8,7 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.MachineType
+import com.clementcorporation.levosonusii.domain.models.toMachineType
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
@@ -57,7 +58,9 @@ class MachinesScreenViewModel @Inject constructor(
         else if (wasFilterButtonClicked && selectedFilterMenuIndex == index) selectedFilterMenuIndex = -1
     }
 
-    fun filterByMachineType(machineType: MachineType? = null) {
+    fun filterByMachineType() {
+        //Works for Forklifts but not for Pallet Jacks
+        val machineType = filterList[selectedFilterMenuIndex].toMachineType()
         _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
             machineType?.let {
                 equipmentList.filter { it.machineType == machineType }
