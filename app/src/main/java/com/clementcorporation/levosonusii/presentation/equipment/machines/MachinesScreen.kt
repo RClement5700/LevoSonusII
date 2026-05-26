@@ -71,7 +71,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MachinesScreen(navController: NavController) {
-    //TODO: Add a dropdown menu next to the SearchBar that selects the machineType so users only filter by the selected machineType
     val configuration = LocalConfiguration.current
     val viewModel: MachinesScreenViewModel = hiltViewModel()
     val uiState = viewModel.equipmentScreenUiState.collectAsStateWithLifecycle(
@@ -200,7 +199,7 @@ fun MachinesScreen(navController: NavController) {
                                                             .padding(8.dp)
                                                             .selectable(
                                                                 selected = index == viewModel.getMenuIndex(),
-                                                                onClick = { viewModel.setMenuIndex(index) }
+                                                                onClick = {}
                                                             ),
                                                         color = if (index == viewModel.getMenuIndex()) SELECTED_COLOR else Color.White,
                                                         shadowElevation = 8.dp,
@@ -250,7 +249,7 @@ fun MachinesScreen(navController: NavController) {
                                             disabledContentColor = Color.Gray
                                         ),
                                         onClick = {
-                                            viewModel.filterByMachineType()
+                                            viewModel.onMenuApplyButtonClicked()
                                         }) {
                                         Text(
                                             text = stringResource(id = R.string.btn_text_apply),
@@ -267,7 +266,9 @@ fun MachinesScreen(navController: NavController) {
                                             )
                                             .fillMaxSize(),
                                         shape = RoundedCornerShape(CURVATURE),
-                                        onClick = { /* Handle click */ },
+                                        onClick = {
+                                            viewModel.onMenuClearButtonClicked()
+                                        },
                                         border = BorderStroke(1.dp, LS_BLUE),
                                         colors = ButtonDefaults.outlinedButtonColors(
                                         containerColor = Color.Transparent,

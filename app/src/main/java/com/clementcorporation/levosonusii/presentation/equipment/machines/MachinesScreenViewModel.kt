@@ -8,7 +8,6 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.MachineType
-import com.clementcorporation.levosonusii.domain.models.toMachineType
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
 import com.clementcorporation.levosonusii.domain.use_cases.SignOutUseCase
 import com.clementcorporation.levosonusii.presentation.equipment.EquipmentScreenUiState
@@ -58,16 +57,41 @@ class MachinesScreenViewModel @Inject constructor(
         else if (wasFilterButtonClicked && selectedFilterMenuIndex == index) selectedFilterMenuIndex = -1
     }
 
-    fun filterByMachineType() {
-        //Works for Forklifts but not for Pallet Jacks
-        val machineType = filterList[selectedFilterMenuIndex].toMachineType()
+    //TODO: Add functionality to sort and filter based on the list as it's presently displayed rather than a static list
+    fun onMenuApplyButtonClicked() {
+        if (wasSortButtonClicked) sortByMachineType()
+        else if (wasFilterButtonClicked) filterByMachineType()
+        expandMachineTypeMenu.value = false
+    }
+
+    fun onMenuClearButtonClicked() {
+        if (wasSortButtonClicked) clearSort()
+        else if (wasFilterButtonClicked) clearFilters()
+        expandMachineTypeMenu.value = false
+    }
+
+    private fun filterByMachineType() {
+        val machineType = filterList[selectedFilterMenuIndex]
         _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
-            machineType?.let {
-                equipmentList.filter { it.machineType == machineType }
-            } ?: run {
-                equipmentList
-            }
+            equipmentList.filter { it.machineType?.label == machineType }
         )
+    }
+
+    private fun clearFilters() {
+        selectedFilterMenuIndex = -1
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
+    }
+
+    private fun sortByMachineType() {
+        val machineType = sortList[selectedSortMenuIndex]
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
+            equipmentList.sortedByDescending { it.machineType?.label == machineType }
+        )
+    }
+
+    private fun clearSort() {
+        selectedSortMenuIndex = -1
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
     }
 
     fun fetchMachinesData() {
