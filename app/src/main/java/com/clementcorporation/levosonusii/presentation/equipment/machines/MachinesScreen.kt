@@ -267,7 +267,7 @@ fun MachinesScreen(navController: NavController) {
                                             .fillMaxSize(),
                                         shape = RoundedCornerShape(CURVATURE),
                                         onClick = {
-                                            viewModel.onMenuClearButtonClicked()
+                                            viewModel.onMenuResetButtonClicked()
                                         },
                                         border = BorderStroke(1.dp, LS_BLUE),
                                         colors = ButtonDefaults.outlinedButtonColors(
@@ -276,7 +276,7 @@ fun MachinesScreen(navController: NavController) {
                                         )
                                     ) {
                                         Text(
-                                            text = stringResource(id = R.string.btn_text_clear),
+                                            text = stringResource(id = R.string.btn_text_reset),
                                             color = LS_BLUE,
                                             fontWeight = FontWeight.Bold
                                         )

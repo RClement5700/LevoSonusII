@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
+import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.MachineType
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
@@ -25,6 +26,8 @@ class MachinesScreenViewModel @Inject constructor(
     private val sessionDataStore: DataStore<LSUserInfo>,
     private val signOutUseCase: SignOutUseCase
 ): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
+
+    var mutableEquipmentList = listOf<EquipmentUiModel>()
     val sortList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
     val filterList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
     var selectedSortMenuIndex by mutableIntStateOf(-1)
@@ -57,41 +60,30 @@ class MachinesScreenViewModel @Inject constructor(
         else if (wasFilterButtonClicked && selectedFilterMenuIndex == index) selectedFilterMenuIndex = -1
     }
 
-    //TODO: Add functionality to sort and filter based on the list as it's presently displayed rather than a static list
     fun onMenuApplyButtonClicked() {
         if (wasSortButtonClicked) sortByMachineType()
         else if (wasFilterButtonClicked) filterByMachineType()
         expandMachineTypeMenu.value = false
     }
 
-    fun onMenuClearButtonClicked() {
-        if (wasSortButtonClicked) clearSort()
-        else if (wasFilterButtonClicked) clearFilters()
+    fun onMenuResetButtonClicked() {
+        selectedFilterMenuIndex = -1
+        selectedSortMenuIndex = -1
+        mutableEquipmentList = equipmentList
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
         expandMachineTypeMenu.value = false
     }
 
     private fun filterByMachineType() {
         val machineType = filterList[selectedFilterMenuIndex]
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
-            equipmentList.filter { it.machineType?.label == machineType }
-        )
-    }
-
-    private fun clearFilters() {
-        selectedFilterMenuIndex = -1
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
+        mutableEquipmentList = equipmentList.filter { it.machineType?.label == machineType }
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
     }
 
     private fun sortByMachineType() {
         val machineType = sortList[selectedSortMenuIndex]
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(
-            equipmentList.sortedByDescending { it.machineType?.label == machineType }
-        )
-    }
-
-    private fun clearSort() {
-        selectedSortMenuIndex = -1
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
+        mutableEquipmentList = mutableEquipmentList.sortedByDescending { it.machineType?.label == machineType }
+        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
     }
 
     fun fetchMachinesData() {
@@ -114,6 +106,7 @@ class MachinesScreenViewModel @Inject constructor(
                             is Response.Success -> {
                                 response.data?.let { machinesData ->
                                     equipmentList = machinesData
+                                    mutableEquipmentList = machinesData
                                     equipmentList.find {
                                         it.serialNumber == userInfo.machineId
                                     }?.let { machine ->
