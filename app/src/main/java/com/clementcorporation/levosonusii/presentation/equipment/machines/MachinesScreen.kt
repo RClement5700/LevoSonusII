@@ -138,10 +138,12 @@ fun MachinesScreen(navController: NavController) {
                                     .fillMaxWidth()
                                     .padding(PADDING.dp),
                                 onFilterButtonClicked = {
+                                    viewModel.wasSortButtonClicked = false
                                     viewModel.wasFilterButtonClicked = true
                                     viewModel.expandMachineTypeMenu.value = !viewModel.expandMachineTypeMenu.value
                                 },
                                 onSortButtonClicked = {
+                                    viewModel.wasFilterButtonClicked = false
                                     viewModel.wasSortButtonClicked = true
                                     viewModel.expandMachineTypeMenu.value = !viewModel.expandMachineTypeMenu.value
                                 }
@@ -298,7 +300,7 @@ fun MachinesScreen(navController: NavController) {
                                         viewModel = viewModel,
                                         index = index,
                                         uiModel = scanner,
-                                        alreadySelected = index == 0
+                                        alreadySelected = index == viewModel.savedIndex
                                     )
                                 }
                             }
@@ -343,7 +345,6 @@ fun MachinesScreen(navController: NavController) {
                             context.getString(
                                 R.string.machines_screen_headset_success_toast_message,
                                 viewModel.equipmentList[viewModel.selectedIndex].serialNumber
-
                             ),
                             Toast.LENGTH_SHORT
                         ).show()

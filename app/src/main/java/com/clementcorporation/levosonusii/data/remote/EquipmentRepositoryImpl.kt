@@ -44,11 +44,13 @@ class EquipmentRepositoryImpl @Inject constructor(
                     .map { uiModel -> uiModel.toEquipmentUiModel() }
                     .filter { uiModel -> uiModel.isAvailable }
                     .sortedBy { uiModel -> uiModel.serialNumber }
-                myEquipment?.let { equipment = equipment.toMutableList().apply {
-                    add(0, it)
-                }.toList().distinctBy { listItem ->
-                    if (equipmentEndpoint == MACHINES_ENDPOINT) listItem.id else listItem.serialNumber
-                }}
+                myEquipment?.let {
+                    equipment = equipment.toMutableList().apply {
+                        add(0, it)
+                    }.toList().distinctBy { listItem ->
+                        if (equipmentEndpoint == MACHINES_ENDPOINT) listItem.id else listItem.serialNumber
+                    }
+                }
                 if (equipment.isNotEmpty()) {
                     trySend(Response.Success(equipment))
                 } else {

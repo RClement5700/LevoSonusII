@@ -29,6 +29,7 @@ open class EquipmentScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val sessionDataStore: DataStore<LSUserInfo>
 ): ViewModel() {
+    var savedIndex by mutableIntStateOf(-1)
     var selectedIndex by mutableIntStateOf(-1)
     val showProgressBar = mutableStateOf(true)
     val expandMenu = mutableStateOf(false)

@@ -34,7 +34,6 @@ class MachinesScreenViewModel @Inject constructor(
     var selectedFilterMenuIndex by mutableIntStateOf(-1)
     var wasSortButtonClicked by mutableStateOf(false)
     var wasFilterButtonClicked by mutableStateOf(false)
-
     val expandMachineTypeMenu = mutableStateOf(false)
 
     init {
@@ -69,21 +68,37 @@ class MachinesScreenViewModel @Inject constructor(
     fun onMenuResetButtonClicked() {
         selectedFilterMenuIndex = -1
         selectedSortMenuIndex = -1
+        savedIndex = 0
+        selectedIndex = equipmentList.indexOf(mutableEquipmentList[selectedIndex])
         mutableEquipmentList = equipmentList
         _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
         expandMachineTypeMenu.value = false
     }
 
     private fun filterByMachineType() {
-        val machineType = filterList[selectedFilterMenuIndex]
-        mutableEquipmentList = equipmentList.filter { it.machineType?.label == machineType }
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+        viewModelScope.launch {
+            sessionDataStore.data.collect { userInfo ->
+                val selectedEquipment = equipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
+                val machineType = filterList[selectedFilterMenuIndex]
+                mutableEquipmentList = equipmentList.filter { it.machineType?.label == machineType }
+                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
+                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
+                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+            }
+        }
     }
 
     private fun sortByMachineType() {
-        val machineType = sortList[selectedSortMenuIndex]
-        mutableEquipmentList = mutableEquipmentList.sortedByDescending { it.machineType?.label == machineType }
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+        viewModelScope.launch {
+            sessionDataStore.data.collect { userInfo ->
+                val selectedEquipment = mutableEquipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
+                val machineType = sortList[selectedSortMenuIndex]
+                mutableEquipmentList = mutableEquipmentList.sortedByDescending { it.machineType?.label == machineType }
+                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
+                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
+                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+            }
+        }
     }
 
     fun fetchMachinesData() {
@@ -111,6 +126,7 @@ class MachinesScreenViewModel @Inject constructor(
                                         it.serialNumber == userInfo.machineId
                                     }?.let { machine ->
                                         selectedIndex = equipmentList.indexOf(machine)
+                                        savedIndex = equipmentList.indexOf(machine)
                                     }
                                     _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnDataRetrieved(equipmentList)

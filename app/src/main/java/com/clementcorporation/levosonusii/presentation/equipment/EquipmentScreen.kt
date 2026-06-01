@@ -62,6 +62,7 @@ private fun onBackPressed(
         navController.navigate("${LevoSonusScreens.HomeScreen.name}/$encodedUrl")
     }
 }
+
 @Composable
 fun EquipmentScreen(navController: NavController) {
     val configuration = LocalConfiguration.current
