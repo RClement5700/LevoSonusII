@@ -50,6 +50,7 @@ class HeadsetsScreenViewModel @Inject constructor(
                                         it.serialNumber == userInfo.headsetId
                                     }?.let { headset ->
                                         selectedIndex = equipmentList.indexOf(headset)
+                                        savedIndex = equipmentList.indexOf(headset)
                                     }
                                     _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnDataRetrieved(equipmentList)

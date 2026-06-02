@@ -50,6 +50,7 @@ class ScannersScreenViewModel @Inject constructor(
                                         it.serialNumber == userInfo.scannerId
                                     }?.let { scanner ->
                                         selectedIndex = equipmentList.indexOf(scanner)
+                                        savedIndex = equipmentList.indexOf(scanner)
                                     }
                                     _equipmentScreenUiState.value =
                                         EquipmentScreenUiState.OnDataRetrieved(equipmentList)
