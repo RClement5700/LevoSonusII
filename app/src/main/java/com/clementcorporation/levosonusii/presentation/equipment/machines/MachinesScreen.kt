@@ -132,22 +132,7 @@ fun MachinesScreen(navController: NavController) {
                                 modifier = Modifier.padding(start = 8.dp, end = 8.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            SearchableEquipmentInputField(
-                                viewModel = viewModel,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(PADDING.dp),
-                                onFilterButtonClicked = {
-                                    viewModel.wasSortButtonClicked = false
-                                    viewModel.wasFilterButtonClicked = true
-                                    viewModel.expandMachineTypeMenu.value = !viewModel.expandMachineTypeMenu.value
-                                },
-                                onSortButtonClicked = {
-                                    viewModel.wasFilterButtonClicked = false
-                                    viewModel.wasSortButtonClicked = true
-                                    viewModel.expandMachineTypeMenu.value = !viewModel.expandMachineTypeMenu.value
-                                }
-                            )
+                            SearchableEquipmentInputField(viewModel = viewModel)
                             Box(
                                 modifier = Modifier
                                     .wrapContentSize()
@@ -159,7 +144,7 @@ fun MachinesScreen(navController: NavController) {
                                         .fillMaxWidth(0.5f)
                                         .fillMaxHeight(0.3f),
                                     scrollState = rememberScrollState(),
-                                    expanded = viewModel.expandMachineTypeMenu.value,
+                                    expanded = viewModel.expandFilterSortMenu.value,
                                     shape = RoundedCornerShape(8.dp),
                                     properties = PopupProperties(
                                         dismissOnBackPress = false,
@@ -169,17 +154,18 @@ fun MachinesScreen(navController: NavController) {
                                     onDismissRequest = {
                                         viewModel.wasSortButtonClicked = false
                                         viewModel.wasFilterButtonClicked = false
-                                        viewModel.expandMachineTypeMenu.value = false
+                                        viewModel.expandFilterSortMenu.value = false
                                     }
                                 ) {
                                     Text(
                                         modifier = Modifier.fillMaxWidth(),
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold,
-                                        text =
-                                            if (viewModel.wasSortButtonClicked) "Sort By:"
-                                            else if (viewModel.wasFilterButtonClicked) "Filter By:"
-                                            else "Sort By:"
+                                        text = when {
+                                            viewModel.wasSortButtonClicked -> stringResource(R.string.menu_item_sort_by_label)
+                                            viewModel.wasFilterButtonClicked -> stringResource(R.string.menu_item_filter_by_label)
+                                            else -> stringResource(R.string.menu_item_sort_by_label)
+                                        }
                                     )
                                     HorizontalDivider(
                                         modifier = Modifier
@@ -192,7 +178,7 @@ fun MachinesScreen(navController: NavController) {
                                             .height(100.dp)
                                             .width(250.dp)
                                     ) {
-                                        itemsIndexed(viewModel.getMenuItems()) { index, item ->
+                                        itemsIndexed(viewModel.getMachineTypeMenuItems()) { index, item ->
                                             DropdownMenuItem(
                                                 text = {
                                                     Surface(
@@ -251,7 +237,7 @@ fun MachinesScreen(navController: NavController) {
                                             disabledContentColor = Color.Gray
                                         ),
                                         onClick = {
-                                            viewModel.onMenuApplyButtonClicked()
+                                            viewModel.onMachineTypeMenuApplyButtonClicked()
                                         }) {
                                         Text(
                                             text = stringResource(id = R.string.btn_text_apply),

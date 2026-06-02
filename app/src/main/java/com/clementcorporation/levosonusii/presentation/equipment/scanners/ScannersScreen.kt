@@ -120,12 +120,7 @@ fun ScannersScreen(navController: NavController) {
                             modifier = Modifier.padding(start = 8.dp, end = 8.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        SearchableEquipmentInputField(
-                            viewModel = viewModel,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(PADDING.dp)
-                        )
+                        SearchableEquipmentInputField(viewModel = viewModel)
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyColumn(
                             modifier = Modifier

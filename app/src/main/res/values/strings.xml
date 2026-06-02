@@ -76,6 +76,8 @@
     <string name="machines_screen_headset_success_toast_message">New Machine ID: %s</string>
     <string name="label_equipment_id">Equipment Id</string>
     <string name="btn_text_reset">Reset</string>
+    <string name="menu_item_sort_by_label">Sort By:</string>
+    <string name="menu_item_filter_by_label">Filter By:</string>
 
 
     <!-- Voice Profile Screen -->

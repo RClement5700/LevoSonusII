@@ -45,6 +45,7 @@ class ScannersScreenViewModel @Inject constructor(
                             is Response.Success -> {
                                 response.data?.let { scannersData ->
                                     equipmentList = scannersData
+                                    mutableEquipmentList = scannersData
                                     equipmentList.find {
                                         it.serialNumber == userInfo.scannerId
                                     }?.let { scanner ->

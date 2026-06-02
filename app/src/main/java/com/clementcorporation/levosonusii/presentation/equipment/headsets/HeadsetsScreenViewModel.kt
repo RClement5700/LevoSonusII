@@ -45,6 +45,7 @@ class HeadsetsScreenViewModel @Inject constructor(
                             is Response.Success -> {
                                 response.data?.let { headsetsData ->
                                     equipmentList = headsetsData
+                                    mutableEquipmentList = headsetsData
                                     equipmentList.find {
                                         it.serialNumber == userInfo.headsetId
                                     }?.let { headset ->

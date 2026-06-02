@@ -1,12 +1,7 @@
 package com.clementcorporation.levosonusii.presentation.equipment.machines
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
-import com.clementcorporation.levosonusii.domain.models.EquipmentUiModel
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.domain.models.MachineType
 import com.clementcorporation.levosonusii.domain.repositories.EquipmentRepository
@@ -27,78 +22,11 @@ class MachinesScreenViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase
 ): EquipmentScreenViewModel(signOutUseCase, sessionDataStore) {
 
-    var mutableEquipmentList = listOf<EquipmentUiModel>()
-    val sortList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
-    val filterList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
-    var selectedSortMenuIndex by mutableIntStateOf(-1)
-    var selectedFilterMenuIndex by mutableIntStateOf(-1)
-    var wasSortButtonClicked by mutableStateOf(false)
-    var wasFilterButtonClicked by mutableStateOf(false)
-    val expandMachineTypeMenu = mutableStateOf(false)
+    val sortMachineTypeList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
+    val filterMachineTypeList = listOf(MachineType.ElectricPalletJack.label, MachineType.Forklift.label)
 
     init {
         fetchMachinesData()
-    }
-
-    fun getMenuItems() =
-        if (wasFilterButtonClicked) {
-            sortList
-        } else if (wasSortButtonClicked) {
-            filterList
-        } else emptyList()
-
-    fun getMenuIndex() =
-        if (wasSortButtonClicked) selectedSortMenuIndex
-        else if (wasFilterButtonClicked) selectedFilterMenuIndex
-        else -1
-
-    fun setMenuIndex(index: Int) {
-        if (wasSortButtonClicked && selectedSortMenuIndex != index) selectedSortMenuIndex = index
-        else if (wasSortButtonClicked && selectedSortMenuIndex == index) selectedSortMenuIndex = -1
-        else if (wasFilterButtonClicked && selectedFilterMenuIndex != index) selectedFilterMenuIndex = index
-        else if (wasFilterButtonClicked && selectedFilterMenuIndex == index) selectedFilterMenuIndex = -1
-    }
-
-    fun onMenuApplyButtonClicked() {
-        if (wasSortButtonClicked) sortByMachineType()
-        else if (wasFilterButtonClicked) filterByMachineType()
-        expandMachineTypeMenu.value = false
-    }
-
-    fun onMenuResetButtonClicked() {
-        selectedFilterMenuIndex = -1
-        selectedSortMenuIndex = -1
-        savedIndex = 0
-        selectedIndex = equipmentList.indexOf(mutableEquipmentList[selectedIndex])
-        mutableEquipmentList = equipmentList
-        _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(equipmentList)
-        expandMachineTypeMenu.value = false
-    }
-
-    private fun filterByMachineType() {
-        viewModelScope.launch {
-            sessionDataStore.data.collect { userInfo ->
-                val selectedEquipment = equipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
-                val machineType = filterList[selectedFilterMenuIndex]
-                mutableEquipmentList = equipmentList.filter { it.machineType?.label == machineType }
-                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
-                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
-                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
-            }
-        }
-    }
-
-    private fun sortByMachineType() {
-        viewModelScope.launch {
-            sessionDataStore.data.collect { userInfo ->
-                val selectedEquipment = mutableEquipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
-                val machineType = sortList[selectedSortMenuIndex]
-                mutableEquipmentList = mutableEquipmentList.sortedByDescending { it.machineType?.label == machineType }
-                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
-                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
-                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
-            }
-        }
     }
 
     fun fetchMachinesData() {
@@ -204,6 +132,45 @@ class MachinesScreenViewModel @Inject constructor(
                 }
             }
             isHandlingDbUpdate = false
+        }
+    }
+
+    fun getMachineTypeMenuItems() =
+        if (wasFilterButtonClicked) {
+            sortMachineTypeList
+        } else if (wasSortButtonClicked) {
+            filterMachineTypeList
+        } else emptyList()
+
+    fun onMachineTypeMenuApplyButtonClicked() {
+        if (wasSortButtonClicked) sortByMachineType()
+        else if (wasFilterButtonClicked) filterByMachineType()
+        expandFilterSortMenu.value = false
+    }
+
+    private fun filterByMachineType() {
+        viewModelScope.launch {
+            sessionDataStore.data.collect { userInfo ->
+                val selectedEquipment = equipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
+                val machineType = filterMachineTypeList[selectedFilterMenuIndex]
+                mutableEquipmentList = equipmentList.filter { it.machineType?.label == machineType }
+                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
+                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
+                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+            }
+        }
+    }
+
+    private fun sortByMachineType() {
+        viewModelScope.launch {
+            sessionDataStore.data.collect { userInfo ->
+                val selectedEquipment = mutableEquipmentList[selectedIndex.takeIf { it != -1 } ?: 0]
+                val machineType = sortMachineTypeList[selectedSortMenuIndex]
+                mutableEquipmentList = mutableEquipmentList.sortedByDescending { it.machineType?.label == machineType }
+                selectedIndex = mutableEquipmentList.indexOf(selectedEquipment).takeIf { it != -1 } ?: 0
+                savedIndex = mutableEquipmentList.indexOf(mutableEquipmentList.find { it.serialNumber == userInfo.machineId })
+                _equipmentScreenUiState.value = EquipmentScreenUiState.OnDataRetrieved(mutableEquipmentList)
+            }
         }
     }
 }

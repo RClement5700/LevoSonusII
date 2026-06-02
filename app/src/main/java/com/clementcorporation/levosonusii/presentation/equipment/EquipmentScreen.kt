@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,6 +43,7 @@ import com.clementcorporation.levosonusii.R
 import com.clementcorporation.levosonusii.domain.models.LSUserInfo
 import com.clementcorporation.levosonusii.util.Constants.CURVATURE
 import com.clementcorporation.levosonusii.util.Constants.LS_BLUE
+import com.clementcorporation.levosonusii.util.Constants.PADDING
 import com.clementcorporation.levosonusii.util.LSAppBar
 import com.clementcorporation.levosonusii.util.LevoSonusScreens
 import com.clementcorporation.levosonusii.util.LevoSonusUtil
@@ -125,14 +127,11 @@ fun EquipmentScreen(navController: NavController) {
 }
 
 @Composable
-fun SearchableEquipmentInputField(
-    viewModel: EquipmentScreenViewModel,
-    modifier: Modifier,
-    onFilterButtonClicked: () -> Unit = {},
-    onSortButtonClicked: () -> Unit = {}
-) {
+fun SearchableEquipmentInputField(viewModel: EquipmentScreenViewModel) {
     OutlinedTextField(
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PADDING.dp),
         value = viewModel.equipmentIdInput,
         onValueChange = { query ->
             viewModel.equipmentIdInput = query
@@ -155,7 +154,9 @@ fun SearchableEquipmentInputField(
                 IconButton(
                     modifier = Modifier.size(24.dp),
                     onClick = {
-                        onSortButtonClicked()
+                        viewModel.wasFilterButtonClicked = false
+                        viewModel.wasSortButtonClicked = true
+                        viewModel.expandFilterSortMenu.value = !viewModel.expandFilterSortMenu.value
                     }
                 ) {
                     Icon(
@@ -169,7 +170,9 @@ fun SearchableEquipmentInputField(
                 IconButton(
                     modifier = Modifier.size(24.dp),
                     onClick = {
-                        onFilterButtonClicked()
+                        viewModel.wasSortButtonClicked = false
+                        viewModel.wasFilterButtonClicked = true
+                        viewModel.expandFilterSortMenu.value = !viewModel.expandFilterSortMenu.value
                     }
                 ) {
                     Icon(
